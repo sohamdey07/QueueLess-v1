@@ -4,8 +4,21 @@ dotenv.config();
 if (!process.env.MONGODB_URI) {
     throw new Error("MONGODB_URI is not defined in the environment variables");
 }
-if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not defined in the environment variables");
+
+if (!process.env.REDIS_URL) {
+    throw new Error("REDIS_URL is not defined in the environment variables");
+}
+
+if (!process.env.ACCESS_TOKEN_SECRET) {
+    throw new Error("ACCESS_TOKEN_SECRET is not defined in the environment variables");
+}
+
+if (!process.env.REFRESH_TOKEN_SECRET) {
+    throw new Error("REFRESH_TOKEN_SECRET is not defined in the environment variables");
+}
+
+if (!process.env.IMAGEKIT_PRIVATE_KEY) {
+    throw new Error("IMAGEKIT_PRIVATE_KEY is not defined in the environment variables");
 }
 
 
@@ -15,7 +28,13 @@ const config = {
     logLevel: process.env.LOG_LEVEL || 'info',
     mongodbUri: process.env.MONGODB_URI,
     redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
-    jwtSecret: process.env.JWT_SECRET,
+    accessTokenSecret: process.env.ACCESS_TOKEN_SECRET,
+    refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,
+    imagekitPrivateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    googleRefreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+    googleUser: process.env.GOOGLE_USER
 };
 
 export default config;

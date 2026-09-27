@@ -1,8 +1,10 @@
+import http from "http";
 import app from "./src/app.js";
 import config from "./src/config/env.js";
 import { connectDB } from "./src/config/db.js";
 import logger from "./src/utils/logger.js";
 import {connectRedis} from "./src/config/redis.js";
+import {initializeSocket} from "./sockets/socket.js";
 
 const PORT = config.port;
 
@@ -11,7 +13,11 @@ async function startServer() {
         await connectDB();
         await connectRedis();
 
-        app.listen(PORT, () => {
+        const server = http.createServer(app);
+
+        initializeSocket(server);
+
+        server.listen(PORT, () => {
             logger.info(`Server is running on port ${PORT}`);
         });
     } catch (error) {

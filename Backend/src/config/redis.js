@@ -15,7 +15,7 @@ redisClient.on("ready", () => {
 });
 
 redisClient.on("error", (error) => {
-  logger.error("Redis error:", error);
+    logger.error(error, "Redis error");
 });
 
 redisClient.on("reconnecting", () => {
@@ -28,7 +28,7 @@ const connectRedis = async () => {
       await redisClient.connect();
     }
   } catch (error) {
-    logger.error("Redis connection failed:", error);
+    logger.error(error, "Redis connection failed");
     process.exit(1);
   }
 };
