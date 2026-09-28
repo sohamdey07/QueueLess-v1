@@ -1,48 +1,57 @@
-import { verifyAccessToken } from "../utils/jwt.js";
 import { errorResponse } from "../utils/apiResponse.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 import logger from "../utils/logger.js";
 
 const authenticate = (req, res, next) => {
-    try {
-        const authHeader = req.headers.authorization;
+	const authHeader = req.headers.authorization;
 
-        if (!authHeader) {
-            return errorResponse(res, {
-                statusCode: 401,
-                message: "Authentication required"
-            });
-        }
+	if (!authHeader) {
+		return errorResponse(res, {
+			statusCode: 401,
+			message: "Authentication required. Provide a Bearer access token."
+		});
+	}
 
-        const [scheme, token] = authHeader.split(" ");
+	const [scheme, token] = authHeader.trim().split(/\s+/);
 
-        if (scheme !== "Bearer" || !token) {
-            return errorResponse(res, {
-                statusCode: 401,
-                message: "Invalid authorization header"
-            });
-        }
+	if (scheme !== "Bearer" || !token) {
+		return errorResponse(res, {
+			statusCode: 401,
+			message: "Invalid authorization header. Use Bearer <access_token>."
+		});
+	}
 
-        const decoded = verifyAccessToken(token);
+	try {
+		const decoded = verifyAccessToken(token);
+		const userId = decoded?.id || decoded?.userId;
 
-        if (!decoded?.userId) {
-            return errorResponse(res, {
-                statusCode: 401,
-                message: "Invalid access token"
-            });
-        }
+		if (!userId) {
+			return errorResponse(res, {
+				statusCode: 401,
+				message: "Invalid access token"
+			});
+		}
 
-        req.user = decoded.id;
+		req.user = {
+			id: userId,
+			role: decoded.role,
+			email: decoded.email,
+			sessionId: decoded.sessionId
+		};
 
-        next();
+		return next();
+	} catch (error) {
+		logger.warn({
+			error: error.message,
+			method: req.method,
+			url: req.originalUrl
+		}, "Access token verification failed");
 
-    } catch (error) {
-        logger.error(error, "Authentication error");
-
-        return errorResponse(res, {
+		errorResponse(res, {
             statusCode: 401,
             message: "Invalid or expired access token"
         });
-    }
+	}
 };
 
 export default authenticate;

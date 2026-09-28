@@ -39,6 +39,13 @@ const errorMiddleware = (error, req, res, next) => {
 		message = "Invalid or expired authentication token";
 		errors = null;
 	}
+	else if (error.name === "MulterError") {
+		statusCode = 400;
+		message = error.code === "LIMIT_UNEXPECTED_FILE"
+			? `Unexpected file field: ${error.field || "unknown"}`
+			: "Invalid file upload";
+		errors = null;
+	}
 
 	if (statusCode < 400 || statusCode > 599) {
 		statusCode = 500;

@@ -12,7 +12,8 @@ const serviceSchema = new mongoose.Schema(
             type: String,
             required: true,
             uppercase: true,
-            trim: true
+            trim: true,
+            unique: true
         },
 
         description: {

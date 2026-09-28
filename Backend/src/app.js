@@ -4,8 +4,10 @@ import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import helmet from "helmet";
 import logger from "./utils/logger.js";
-import authRoutes from "./routes/auth.route.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
+
+import authRoutes from "./routes/auth.route.js";
+import serviceRoutes from "./routes/service.route.js";
 
 
 
@@ -51,7 +53,10 @@ app.use(
 
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/service", serviceRoutes);
 
+
+// Error handling middleware
 app.use(errorMiddleware);
 
 export default app;

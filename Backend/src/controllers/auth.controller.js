@@ -1,18 +1,21 @@
-import {generateAccessToken,generateRefreshToken,verifyAccessToken,verifyRefreshToken,hashedToken} from "../utils/jwt.js";
-
-import {generateOTP, getOtpHtml } from "../utils/mail.js";
-
-import {hashPassword,comparePassword} from "../utils/password.js";
-import logger from "../utils/logger.js";
 import userModel from "../models/user.model.js";
 import sessionModel from "../models/session.model.js";
+
+import {
+    generateAccessToken,
+    generateRefreshToken,
+    verifyRefreshToken,
+    hashedToken} from "../utils/jwt.js";
+import {generateOTP, getOtpHtml } from "../utils/mail.js";
+import {hashPassword,comparePassword} from "../utils/password.js";
 import {successResponse,errorResponse} from "../utils/apiResponse.js";
+
 import {sendEmail} from "../services/mail.service.js";
 import { storeOTP,verifyOTP } from "../services/otp.service.js";
 
 
 //Register a new user
-export async function registerUser(req,res){
+export async function registerUser(req,res,next){
     try{
         const {name,email,password} = req.body;
 
@@ -63,7 +66,7 @@ export async function registerUser(req,res){
 }   
 
 //verify account
-export async function verifyAccount(req,res){
+export async function verifyAccount(req,res,next){
     try{
         const {email,otp} = req.body;
 
@@ -118,7 +121,7 @@ export async function verifyAccount(req,res){
 }
 
 //login function
-export async function login(req,res){
+export async function login(req,res,next){
     try{
         const {email,password} = req.body;
 
@@ -162,7 +165,7 @@ export async function login(req,res){
             ipAddress:req.ip
         });
 
-        const accessToken = generateAccessToken({id:user._id, role:user.role, sessionId:newSession._id});
+        const accessToken = generateAccessToken({id:user._id, role:user.role, email:user.email, sessionId:newSession._id});
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
@@ -189,7 +192,7 @@ export async function login(req,res){
 }
 
 //logout function
-export async function logout(req,res){
+export async function logout(req,res,next){
     try{
         const {refreshToken} = req.cookies;
 
@@ -232,7 +235,7 @@ export async function logout(req,res){
 }
 
 //rotate refresh and access token function
-export async function rotateToken(req,res){
+export async function rotateToken(req,res,next){
     try{
         const {refreshToken} = req.cookies;
 

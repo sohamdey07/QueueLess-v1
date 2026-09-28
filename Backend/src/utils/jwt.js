@@ -7,7 +7,7 @@ const generateAccessToken = (payload) => {
         payload,
         config.accessTokenSecret,
         {
-            expiresIn: "10m"
+            expiresIn: "15m"
         }
     );
 };
