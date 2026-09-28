@@ -5,6 +5,7 @@ import pinoHttp from "pino-http";
 import helmet from "helmet";
 import logger from "./utils/logger.js";
 import authRoutes from "./routes/auth.route.js";
+import errorMiddleware from "./middlewares/error.middleware.js";
 
 
 
@@ -51,5 +52,6 @@ app.use(
 
 app.use("/api/v1/auth", authRoutes);
 
+app.use(errorMiddleware);
 
 export default app;

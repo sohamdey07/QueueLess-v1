@@ -58,13 +58,7 @@ export async function registerUser(req,res){
         );
     }
     catch(err){
-        logger.error(err);
-        return errorResponse(res,
-            {
-                statusCode:500,
-                message:"User registration failed due to server error"
-            }
-        );
+        next(err);
     }
 }   
 
@@ -119,11 +113,7 @@ export async function verifyAccount(req,res){
         );
     }
     catch(err){
-        logger.error(err);
-        return errorResponse(res,{
-            statusCode:500,
-            message:"Account verification failed due to server error"
-        });
+        next(err);
     }
 }
 
@@ -144,7 +134,7 @@ export async function login(req,res){
 
         if(!user.isVerified){
             return errorResponse(res,{
-                statusCode:400,
+                statusCode:401,
                 message:"Account not verified. Please verify your account before logging in."
             });
         }
@@ -154,7 +144,7 @@ export async function login(req,res){
 
         if(!isPasswordValid){
             return errorResponse(res,{
-                statusCode:400,
+                statusCode:401,
                 message:"Invalid password"
             });
         }
@@ -172,7 +162,7 @@ export async function login(req,res){
             ipAddress:req.ip
         });
 
-        const accessToken = generateAccessToken({id:user._id, email:user.email, sessionId:newSession._id});
+        const accessToken = generateAccessToken({id:user._id, role:user.role, sessionId:newSession._id});
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
@@ -194,11 +184,7 @@ export async function login(req,res){
         });
     }
     catch(err){
-        logger.error(err);
-        return errorResponse(res,{
-            statusCode:500,
-            message:"Login failed due to server error"
-        });
+        next(err);
     }
 }
 
@@ -209,7 +195,7 @@ export async function logout(req,res){
 
         if(!refreshToken){
             return errorResponse(res,{
-                statusCode:400,
+                statusCode:401,
                 message:"No refresh token found, user is not logged in"
             });
         }
@@ -221,7 +207,7 @@ export async function logout(req,res){
 
         if(!session){
             return errorResponse(res,{
-                statusCode:400,
+                statusCode:401,
                 message:"Invalid refresh token, user is not logged in"
             });
         }
@@ -241,15 +227,78 @@ export async function logout(req,res){
         });
     }
     catch(err){
-        logger.error(err);
-        return errorResponse(res,{
-            statusCode:500,
-            message:"Logout failed due to server error"
-        });
+        next(err);
     }
 }
 
 //rotate refresh and access token function
+export async function rotateToken(req,res){
+    try{
+        const {refreshToken} = req.cookies;
+
+        if(!refreshToken){
+            return errorResponse(res,{
+                statusCode:401,
+                message:"No refresh token found, user is not logged in"
+            });
+        }
+
+        const hashedRefreshToken = hashedToken(refreshToken);
+
+        //find the session
+        const session = await sessionModel.findOne({refreshTokenHash:hashedRefreshToken});
+
+        if(!session || session.revoke){
+            return errorResponse(res,{
+                statusCode:401,
+                message:"Invalid refresh token, user is not logged in"
+            });
+        }
+
+        //verify the refresh token
+        const decoded = verifyRefreshToken(refreshToken);
+
+        if(!decoded){
+            return errorResponse(res,{
+                statusCode:401,
+                message:"Invalid refresh token, user is not logged in"
+            });
+        }
+
+        //generate new refresh token
+        const newRefreshToken = generateRefreshToken({id:decoded.id, email:decoded.email});
+
+        const newHashedRefreshToken = hashedToken(newRefreshToken);
+
+        //update the session with new refresh token
+        session.refreshTokenHash = newHashedRefreshToken;
+        await session.save();
+
+        //generate new access token
+        const accessToken = generateAccessToken({id:decoded.id, role:decoded.role, sessionId:session._id});
+
+        res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        return successResponse(res,{
+            statusCode:200,
+            message:"Token rotated successfully",
+            data:{
+                accessToken:accessToken
+            }
+        });
+
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+
 //forgot password function
 
 

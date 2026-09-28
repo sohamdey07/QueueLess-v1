@@ -21,10 +21,24 @@ if (!process.env.IMAGEKIT_PRIVATE_KEY) {
     throw new Error("IMAGEKIT_PRIVATE_KEY is not defined in the environment variables");
 }
 
+if (!process.env.GOOGLE_CLIENT_ID) {
+    throw new Error("GOOGLE_CLIENT_ID is not defined in the environment variables");
+}
 
+if (!process.env.GOOGLE_CLIENT_SECRET) {
+    throw new Error("GOOGLE_CLIENT_SECRET is not defined in the environment variables");
+}
+
+if (!process.env.GOOGLE_REFRESH_TOKEN) {
+    throw new Error("GOOGLE_REFRESH_TOKEN is not defined in the environment variables");
+}
+
+if (!process.env.GOOGLE_USER) {
+    throw new Error("GOOGLE_USER is not defined in the environment variables");
+}
 
 const config = {
-    port: process.env.PORT || 3000,
+    port: process.env.PORT,
     logLevel: process.env.LOG_LEVEL || 'info',
     mongodbUri: process.env.MONGODB_URI,
     redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
