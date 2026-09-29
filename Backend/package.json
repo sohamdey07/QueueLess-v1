@@ -4,7 +4,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+     "test:appointment:concurrency": "node tests/appointment-concurrency.js"
   },
   "keywords": [],
   "author": "",

@@ -109,7 +109,7 @@ export async function updateService(req, res, next) {
                 $set: updateData
             },
             {
-                new: true,
+                returnDocument: "after",
                 runValidators: true
             }
         );

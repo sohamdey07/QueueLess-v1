@@ -11,7 +11,12 @@ async function connectDB() {
         if (!uri) {
             throw new Error("MongoDB URI not found in environment variables.");
         }
-        await mongoose.connect(uri);
+        await mongoose.connect(uri,{
+                maxPoolSize: 50,
+                minPoolSize: 5,
+                maxIdleTimeMS: 30000,
+                waitQueueTimeoutMS: 10000
+        });
         logger.info("Connected to MongoDB successfully.");
     }
     catch (error) {
