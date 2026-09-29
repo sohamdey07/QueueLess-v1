@@ -9,6 +9,7 @@ import errorMiddleware from "./middlewares/error.middleware.js";
 import authRoutes from "./routes/auth.route.js";
 import serviceRoutes from "./routes/service.route.js";
 import availabilityRoutes from "./routes/availability.route.js";
+import appointmentRoutes from "./routes/appointment.route.js";
 
 
 
@@ -56,6 +57,7 @@ app.use(
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/service", serviceRoutes);
 app.use("/api/v1/availability", availabilityRoutes);
+app.use("/api/v1/appointments", appointmentRoutes);
 
 
 // Error handling middleware
