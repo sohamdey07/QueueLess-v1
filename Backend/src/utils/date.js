@@ -5,7 +5,7 @@ const getTodayDate = () => {
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
 
-    return `${day}-${month}-${year}`;
+    return `${year}-${month}-${day}`;
 };
 
 const formatDate = (date) => {
@@ -19,7 +19,7 @@ const formatDate = (date) => {
     const month = String(value.getMonth() + 1).padStart(2, "0");
     const day = String(value.getDate()).padStart(2, "0");
 
-    return `${day}-${month}-${year}`;
+    return `${year}-${month}-${day}`;
 };
 
 const isToday = (date) => {

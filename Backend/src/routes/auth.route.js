@@ -31,7 +31,7 @@ router.post(
     authFuntion.login
 );
 
-// POST /api/v1/auth/refresh-token
+// POST /api/v1/auth/rotate-token
 router.post(
     "/rotate-token",
     authRateLimit.rotateTokenLimiter,

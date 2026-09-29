@@ -165,7 +165,7 @@ export async function login(req,res,next){
             ipAddress:req.ip
         });
 
-        const accessToken = generateAccessToken({id:user._id, role:user.role, email:user.email, sessionId:newSession._id});
+        const accessToken = generateAccessToken({id:user._id, role:user.role,sessionId:newSession._id});
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
@@ -268,6 +268,15 @@ export async function rotateToken(req,res,next){
             });
         }
 
+        const user = await userModel.findById(session.userId).select("role");
+
+        if(!user){
+            return errorResponse(res,{
+                statusCode:401,
+                message:"Invalid refresh token, user is not logged in"
+            });
+        }
+
         //generate new refresh token
         const newRefreshToken = generateRefreshToken({id:decoded.id, email:decoded.email});
 
@@ -278,7 +287,7 @@ export async function rotateToken(req,res,next){
         await session.save();
 
         //generate new access token
-        const accessToken = generateAccessToken({id:decoded.id, role:decoded.role, sessionId:session._id});
+        const accessToken = generateAccessToken({id:decoded.id, role:user.role, sessionId:session._id});
 
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,

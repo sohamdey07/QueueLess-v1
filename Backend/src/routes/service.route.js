@@ -45,14 +45,14 @@ router.delete("/delete/:serviceId",
     serviceFunction.deleteService
 );
 
-//GET /api/v1/service/all  -- PUBLIC ACCESS
+//GET /api/v1/service/all  -- ACCESS FOR ALL ROLES
 router.get("/all",
     serviceRateLimit.getAllServiceLimiter,
     authenticate,
     serviceFunction.getAllServices
 );
 
-//GET /api/v1/service/:serviceId  -- PUBLIC ACCESS
+//GET /api/v1/service/:serviceId  -- ACCESS FOR ALL ROLES
 router.get("/:serviceId",
     serviceRateLimit.getServiceByIdLimiter,
     authenticate,
