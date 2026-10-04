@@ -16,19 +16,42 @@ router.post(
     "/:serviceId/:availabilityId",
     authenticate,
     authorizeRoles("CUSTOMER"),
-    // appointmentLimiter.bookAppointmentLimiter,
+    appointmentLimiter.bookAppointmentLimiter,
     validate(createAppointmentSchema, "params"),
     appointmentFunction.createAppointment
 )
 
 
 //GET /api/v1/appointments/
+router.get(
+    "/",
+    authenticate,
+    authorizeRoles("CUSTOMER"),
+    appointmentLimiter.getAppointmentsLimiter,
+    appointmentFunction.getAppointments
+)
 
 
 //GET /api/v1/appointments/:appointmentId
+router.get(
+    "/:appointmentId",
+    authenticate,
+    authorizeRoles("CUSTOMER"),
+    appointmentLimiter.getAppointmentsLimiter,
+    validate(appointmentParamsSchema, "params"),
+    appointmentFunction.getAppointmentById
+)
 
 
 //PATCH /api/v1/appointments/:appointmentId/cancel
+router.patch(
+    "/:appointmentId/cancel",
+    authenticate,
+    authorizeRoles("CUSTOMER"),
+    appointmentLimiter.cancelAppointmentLimiter,
+    validate(appointmentParamsSchema, "params"),
+    appointmentFunction.cancelAppointment
+)
 
 
 export default router
