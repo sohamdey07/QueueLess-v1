@@ -2,13 +2,6 @@ import mongoose from "mongoose";
 
 const queueEntrySchema = new mongoose.Schema(
     {
-        queueId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Queue",
-            required: true,
-            index: true
-        },
-
         appointmentId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Appointment",
@@ -17,26 +10,24 @@ const queueEntrySchema = new mongoose.Schema(
             index: true
         },
 
-        customerId: {
+        serviceId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
+            ref: "Service",
+            required: true,
             index: true
         },
 
-        token: {
-            type: String,
-            required: true
+        queueId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Queue",
+            required: true,
+            index: true
         },
 
-        sequenceNumber: {
+        tokenNumber: {
             type: Number,
-            required: true
-        },
-
-        position: {
-            type: Number,
-            required: true
+            required: true,
+            min: 1
         },
 
         status: {
@@ -44,10 +35,9 @@ const queueEntrySchema = new mongoose.Schema(
             enum: [
                 "WAITING",
                 "CALLED",
-                "IN_SERVICE",
+                "SERVING",
                 "COMPLETED",
                 "SKIPPED",
-                "CANCELLED",
                 "NO_SHOW"
             ],
             default: "WAITING",
@@ -60,12 +50,17 @@ const queueEntrySchema = new mongoose.Schema(
             default: null
         },
 
+        joinedAt: {
+            type: Date,
+            default: Date.now
+        },
+
         calledAt: {
             type: Date,
             default: null
         },
 
-        serviceStartedAt: {
+        servingAt: {
             type: Date,
             default: null
         },
@@ -73,11 +68,6 @@ const queueEntrySchema = new mongoose.Schema(
         completedAt: {
             type: Date,
             default: null
-        },
-
-        joinedAt: {
-            type: Date,
-            default: Date.now
         }
     },
     {
@@ -86,21 +76,13 @@ const queueEntrySchema = new mongoose.Schema(
 );
 
 queueEntrySchema.index(
-    { queueId: 1, token: 1 },
+    { queueId: 1, tokenNumber: 1 },
     { unique: true }
 );
 
-queueEntrySchema.index(
-    { queueId: 1, sequenceNumber: 1 },
-    { unique: true }
+const QueueEntry = mongoose.model(
+    "QueueEntry",
+    queueEntrySchema
 );
-
-queueEntrySchema.index({
-    queueId: 1,
-    status: 1,
-    position: 1
-});
-
-const QueueEntry = mongoose.model("QueueEntry",queueEntrySchema);
 
 export default QueueEntry;

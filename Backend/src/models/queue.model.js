@@ -5,28 +5,32 @@ const queueSchema = new mongoose.Schema(
         serviceId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Service",
-            required: true
+            required: true,
+            index: true
         },
 
         date: {
             type: String,
-            required: true
+            required: true,
+            index: true
+        },
+
+        currentToken: {
+            type: Number,
+            default: 0,
+            min: 0
+        },
+
+        nextToken: {
+            type: Number,
+            default: 1,
+            min: 1
         },
 
         status: {
             type: String,
-            enum: ["OPEN", "CLOSED"],
-            default: "OPEN"
-        },
-
-        lastTokenNumber: {
-            type: Number,
-            default: 0
-        },
-
-        currentToken: {
-            type: String,
-            default: null
+            enum: ["ACTIVE", "CLOSED"],
+            default: "ACTIVE"
         }
     },
     {

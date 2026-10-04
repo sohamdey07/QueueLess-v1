@@ -54,4 +54,7 @@ router.patch(
 )
 
 
+//POST /api/v1/appointments/:appointmentId/check-in
+
+
 export default router

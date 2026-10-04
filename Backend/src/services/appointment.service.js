@@ -6,6 +6,11 @@ import availabilityModel from "../models/dailyAvailability.model.js";
 import idempotencyKeyModel from "../models/idempotencyKey.model.js";
 import userModel from "../models/user.model.js";
 import serviceModel from "../models/service.model.js";
+import { sendEmail } from "./mail.service.js";
+import getAppointmentConfirmationHtml from "../utils/appointmentEmail.js";
+import getAppointmentConfirmationText from "../utils/appointmentEmailText.js";
+
+import logger from "../utils/logger.js";
 
 import {
     isValidDateString,
@@ -13,6 +18,8 @@ import {
 } from "../utils/date.js";
 
 import { generateAppointmentId } from "../utils/generateId.js";
+
+
 
 
 // ============================================================
@@ -527,6 +534,43 @@ const createAppointment = async ({
             // ------------------------------------------------
             // Transaction successful
             // ------------------------------------------------
+
+            if (!result.idempotent) {
+
+            try {
+                await sendEmail(
+                    user.email,
+                    `Appointment Confirmed - ${result.data.appointmentId}`,
+                    getAppointmentConfirmationText({
+                        name: user.name,
+                        email: user.email,
+                        phone: user.phone,
+                        serviceName: result.data.serviceName,
+                        appointmentDate: result.data.appointmentDate,
+                        appointmentId: result.data.appointmentId
+                    }),
+                    getAppointmentConfirmationHtml({
+                        name: user.name,
+                        email: user.email,
+                        phone: user.phone,
+                        serviceName: result.data.serviceName,
+                        appointmentDate: result.data.appointmentDate,
+                        appointmentId: result.data.appointmentId
+                    })
+                );
+            } catch (emailError) {
+                logger.error(
+                    {
+                        err: emailError,
+                        appointmentId: result.data.appointmentId,
+                        email: user.email
+                    },
+                    "Failed to send appointment confirmation email"
+                );
+            }
+        }
+
+
 
             return result;
 
