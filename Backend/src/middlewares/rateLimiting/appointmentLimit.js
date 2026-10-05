@@ -48,9 +48,22 @@ const cancelAppointmentLimiter = rateLimit({
     }
 });
 
+const checkInLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+
+    standardHeaders: true,
+    legacyHeaders: false,
+
+    message: {
+        success: false,
+        message: "Too many check-in attempts. Please try again later."
+    }
+});
 
 export {
     bookAppointmentLimiter,
     getAppointmentsLimiter,
     cancelAppointmentLimiter,
+    checkInLimiter
 };

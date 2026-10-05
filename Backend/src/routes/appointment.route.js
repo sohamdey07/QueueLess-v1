@@ -55,6 +55,13 @@ router.patch(
 
 
 //POST /api/v1/appointments/:appointmentId/check-in
-
+router.post(
+    "/:appointmentId/check-in",
+    authenticate,
+    authorizeRoles("CUSTOMER"),
+    appointmentLimiter.checkInLimiter,
+    validate(appointmentParamsSchema, "params"),
+    appointmentFunction.checkInAppointment
+)
 
 export default router

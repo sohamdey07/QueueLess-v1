@@ -1,8 +1,11 @@
 import {createAppointment as createAppointmentService} from "../services/appointment.service.js";
 import {successResponse,errorResponse} from "../utils/apiResponse.js";
+import mongoose from "mongoose";
 import appointmentModel from "../models/appointment.model.js";
 import availabilityModel from "../models/dailyAvailability.model.js";
-import {isPastDate} from "../utils/date.js";
+import queueModel from "../models/queue.model.js";
+import queueEntryModel from "../models/queueEntry.model.js";
+import {isPastDate,getTodayDate} from "../utils/date.js";
 
 
 
@@ -224,5 +227,241 @@ export async function cancelAppointment(req, res, next) {
 
     } finally {
         await session.endSession();
+    }
+}
+
+//function for checking in an appointment
+export async function checkInAppointment(req, res, next) {
+
+    try {
+        const { appointmentId } = req.params;
+        const userId = req.user.id;
+
+        const session = await mongoose.startSession();
+
+        try {
+
+            let result;
+
+            await session.withTransaction(async () => {
+
+                // ------------------------------------------------
+                // 1. Find appointment
+                // ------------------------------------------------
+
+                const appointment = await appointmentModel.findOne({
+                    appointmentId,
+                    customerId: userId
+                }).session(session);
+
+                if (!appointment) {
+                    const error = new Error(
+                        "Appointment not found"
+                    );
+
+                    error.statusCode = 404;
+
+                    throw error;
+                }
+
+                if (!mongoose.isValidObjectId(appointment.serviceId)) {
+                    const error = new Error(
+                        "Appointment has an invalid service reference"
+                    );
+
+                    error.statusCode = 500;
+
+                    throw error;
+                }
+
+
+                // ------------------------------------------------
+                // 2. Check appointment status
+                // ------------------------------------------------
+
+                if (appointment.status !== "BOOKED") {
+
+                    const error = new Error(
+                        `Appointment cannot be checked in because its current status is ${appointment.status}`
+                    );
+
+                    error.statusCode = 409;
+
+                    throw error;
+                }
+
+
+                // ------------------------------------------------
+                // 3. Check appointment date
+                // ------------------------------------------------
+
+                const today = getTodayDate();
+
+                if (appointment.appointmentDate !== today) {
+
+                    if (isPastDate(appointment.appointmentDate)) {
+
+                        const error = new Error(
+                            "You cannot check in for a past appointment"
+                        );
+
+                        error.statusCode = 400;
+
+                        throw error;
+                    }
+
+                    const error = new Error(
+                        "You can only check in for today's appointment"
+                    );
+
+                    error.statusCode = 400;
+
+                    throw error;
+                }
+
+
+                // ------------------------------------------------
+                // 4. Get queue and generate token atomically
+                // ------------------------------------------------
+
+                const updatedQueue =
+                    await queueModel.findOneAndUpdate(
+                        {
+                            serviceId: appointment.serviceId,
+                            date: appointment.appointmentDate,
+                            status: "ACTIVE"
+                        },
+                        {
+                            $setOnInsert: {
+                                serviceId: appointment.serviceId,
+                                date: appointment.appointmentDate,
+                                currentToken: 0,
+                                nextToken: 1,
+                                status: "ACTIVE"
+                            },
+
+                            $inc: {
+                                nextToken: 1
+                            }
+                        },
+                        {
+                            upsert: true,
+                            new: true,
+                            session
+                        }
+                    );
+
+                if (!updatedQueue) {
+
+                    const error = new Error(
+                        "Unable to generate queue token"
+                    );
+
+                    error.statusCode = 500;
+
+                    throw error;
+                }
+
+
+                // ------------------------------------------------
+                // 5. Determine token number
+                // ------------------------------------------------
+
+                const tokenNumber =
+                    updatedQueue.nextToken - 1;
+
+
+                // ------------------------------------------------
+                // 6. Create queue entry
+                // ------------------------------------------------
+
+                const [queueEntry] =
+                    await queueEntryModel.create(
+                        [
+                            {
+                                appointmentId: appointment._id,
+                                serviceId:appointment.serviceId,
+                                queueId:updatedQueue._id,
+                                tokenNumber,
+                                status: "WAITING",
+                                counterId: null,
+                                joinedAt: new Date(),
+                                calledAt: null,
+                                servingAt: null,
+                                completedAt: null
+                            }
+                        ],
+                        {
+                            session
+                        }
+                    );
+
+
+                // ------------------------------------------------
+                // 7. Update appointment
+                // ------------------------------------------------
+
+                appointment.status = "CHECKED_IN";
+                appointment.queueEntryId =queueEntry._id;
+                appointment.counterId = null;
+                appointment.checkedInAt =new Date();
+
+                await appointment.save({
+                    session
+                });
+
+
+                // ------------------------------------------------
+                // 8. Prepare response
+                // ------------------------------------------------
+
+                result = {
+                    appointmentId:appointment.appointmentId,
+                    serviceId:appointment.serviceId,
+                    appointmentDate:appointment.appointmentDate,
+                    queueEntryId:queueEntry._id,
+                    tokenNumber,
+                    status:appointment.status,
+                    joinedAt:queueEntry.joinedAt
+                };
+
+            });
+
+
+            // ----------------------------------------------------
+            // Transaction successful
+            // ----------------------------------------------------
+
+            return successResponse(res, {
+                statusCode: 200,
+                message: "Appointment checked in successfully",
+                data: result
+            });
+
+        } finally {
+
+            await session.endSession();
+
+        }
+
+    } catch (error) {
+
+        // Duplicate appointment check-in
+        if (error?.code === 11000) {
+
+            return errorResponse(res, {
+                statusCode: 409,
+                message: "Appointment has already been checked in"
+            });
+        }
+
+        if (error?.name === "CastError") {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: `Invalid ${error.path || "resource"} identifier`
+            });
+        }
+
+        next(error);
     }
 }
