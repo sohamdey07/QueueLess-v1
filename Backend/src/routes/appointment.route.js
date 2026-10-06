@@ -11,12 +11,22 @@ import { createAppointmentSchema, appointmentParamsSchema } from "../validations
 
 const router = express.Router()
 
+//POST /api/v1/appointments/:appointmentId/check-in
+router.post(
+    "/:appointmentId/check-in",
+    authenticate,
+    authorizeRoles("CUSTOMER"),
+    // appointmentLimiter.checkInLimiter,
+    validate(appointmentParamsSchema, "params"),
+    appointmentFunction.checkInAppointment
+)
+
 //POST /api/v1/appointments/:serviceId/:availabilityId
 router.post(
     "/:serviceId/:availabilityId",
     authenticate,
     authorizeRoles("CUSTOMER"),
-    appointmentLimiter.bookAppointmentLimiter,
+    // appointmentLimiter.bookAppointmentLimiter,
     validate(createAppointmentSchema, "params"),
     appointmentFunction.createAppointment
 )
@@ -54,14 +64,11 @@ router.patch(
 )
 
 
-//POST /api/v1/appointments/:appointmentId/check-in
-router.post(
-    "/:appointmentId/check-in",
-    authenticate,
-    authorizeRoles("CUSTOMER"),
-    appointmentLimiter.checkInLimiter,
-    validate(appointmentParamsSchema, "params"),
-    appointmentFunction.checkInAppointment
+router.get(
+    "/services/:serviceId",
+    appointmentFunction.getAllAppointmentIds
 )
+
+
 
 export default router

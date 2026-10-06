@@ -237,6 +237,13 @@ export async function checkInAppointment(req, res, next) {
         const { appointmentId } = req.params;
         const userId = req.user.id;
 
+        if (!mongoose.isValidObjectId(userId)) {
+            const error = new Error("Invalid authentication user identifier");
+            error.statusCode = 401;
+            throw error;
+        }
+
+        const customerId = new mongoose.Types.ObjectId(userId);
         const session = await mongoose.startSession();
 
         try {
@@ -251,7 +258,7 @@ export async function checkInAppointment(req, res, next) {
 
                 const appointment = await appointmentModel.findOne({
                     appointmentId,
-                    customerId: userId
+                    customerId
                 }).session(session);
 
                 if (!appointment) {
@@ -336,7 +343,6 @@ export async function checkInAppointment(req, res, next) {
                                 serviceId: appointment.serviceId,
                                 date: appointment.appointmentDate,
                                 currentToken: 0,
-                                nextToken: 1,
                                 status: "ACTIVE"
                             },
 
@@ -368,7 +374,7 @@ export async function checkInAppointment(req, res, next) {
                 // ------------------------------------------------
 
                 const tokenNumber =
-                    updatedQueue.nextToken - 1;
+                    updatedQueue.nextToken;
 
 
                 // ------------------------------------------------
@@ -462,6 +468,32 @@ export async function checkInAppointment(req, res, next) {
             });
         }
 
+        next(error);
+    }
+}
+
+
+//get all the appintment ID
+export async function getAllAppointmentIds(req, res, next) {
+    try{
+        const serviceId = req.params.serviceId;
+        const appointments = await appointmentModel.find({ serviceId: serviceId }).select('appointmentId');
+
+        if (!appointments || appointments.length === 0) {
+            return successResponse(res, {
+                statusCode: 200,
+                message: "No appointments found",
+                data: []
+            });
+        }
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Appointment IDs retrieved successfully",
+            data: appointments.map(appointment => appointment.appointmentId)
+        });
+
+    }
+    catch (error) {
         next(error);
     }
 }

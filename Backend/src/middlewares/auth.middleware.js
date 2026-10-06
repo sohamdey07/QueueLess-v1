@@ -1,6 +1,7 @@
 import { verifyAccessToken } from "../utils/jwt.js"
 import { errorResponse } from "../utils/apiResponse.js"
 import logger from "../utils/logger.js"
+import mongoose from "mongoose";
 
 
 function authenticate(req, res, next) {
@@ -24,9 +25,12 @@ function authenticate(req, res, next) {
 
     try {
         const decoded = verifyAccessToken(token);
-		console.log("Decoded token:", decoded); // Debugging line
 
-        if (!decoded?.id || !decoded?.role) {
+        if (
+            !decoded?.id ||
+            !decoded?.role ||
+            !mongoose.isValidObjectId(decoded.id)
+        ) {
             return errorResponse(res, {
                 statusCode: 401,
                 message: "Invalid access token"
@@ -34,7 +38,7 @@ function authenticate(req, res, next) {
         }
 
         req.user = {
-            id: decoded.userId,
+            id: decoded.id.toString(),
             role: decoded.role,
             email: decoded.email,
             sessionId: decoded.sessionId

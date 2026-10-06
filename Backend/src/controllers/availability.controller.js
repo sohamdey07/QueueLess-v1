@@ -1,16 +1,22 @@
 import availabilityModel from "../models/dailyAvailability.model.js";
 import serviceModel from "../models/service.model.js";
+import queueModel from "../models/queue.model.js";
+
 import { successResponse, errorResponse} from "../utils/apiResponse.js";
 import { isValidDateString, isPastDate } from "../utils/date.js";
 
+import mongoose from "mongoose";
+
 
 //create availability function
-export async function createAvailability(req, res,next) {
-    try{
+export async function createAvailability(req, res, next) {
+    const session = await mongoose.startSession();
+
+    try {
         const { serviceId } = req.params;
         const { date, capacity } = req.body;
 
-         // Date validation
+        // Date validation
         if (!isValidDateString(date)) {
             return errorResponse(res, {
                 statusCode: 400,
@@ -25,8 +31,8 @@ export async function createAvailability(req, res,next) {
                 message: "Availability cannot be created for a past date"
             });
         }
-        
-        //check service exists
+
+        // Check service exists
         const service = await serviceModel.findById(serviceId);
 
         if (!service) {
@@ -35,22 +41,56 @@ export async function createAvailability(req, res,next) {
                 message: "Service not found"
             });
         }
-        
-        //check duplicate availability for the same service and date
-        const existingAvailability = await availabilityModel.findOne({ serviceId, date });
+
+        // Check duplicate availability
+        const existingAvailability =
+            await availabilityModel.findOne({
+                serviceId,
+                date
+            });
 
         if (existingAvailability) {
             return errorResponse(res, {
                 statusCode: 400,
-                message: "Availability for this service on the specified date already exists"
+                message:
+                    "Availability for this service on the specified date already exists"
             });
         }
 
-        //create new availability
-        const newAvailability = await availabilityModel.create({
-            serviceId,
-            date,
-            capacity
+        let newAvailability;
+
+        await session.withTransaction(async () => {
+
+            // Create availability
+            const [availability] =
+                await availabilityModel.create(
+                    [
+                        {
+                            serviceId,
+                            date,
+                            capacity,
+                            bookedCount: 0,
+                            status: "OPEN"
+                        }
+                    ],
+                    { session }
+                );
+
+            newAvailability = availability;
+
+            // Create queue for this service + date
+            await queueModel.create(
+                [
+                    {
+                        serviceId,
+                        date,
+                        currentToken: 0,
+                        nextToken: 1,
+                        status: "ACTIVE"
+                    }
+                ],
+                { session }
+            );
         });
 
         return successResponse(res, {
@@ -59,9 +99,10 @@ export async function createAvailability(req, res,next) {
             data: newAvailability
         });
 
-    }
-    catch (error) {
+    } catch (error) {
         next(error);
+    } finally {
+        await session.endSession();
     }
 }
 
