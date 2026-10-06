@@ -6,8 +6,7 @@ const queueEntrySchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Appointment",
             required: true,
-            unique: true,
-            index: true
+            unique: true
         },
 
         serviceId: {
@@ -20,8 +19,7 @@ const queueEntrySchema = new mongoose.Schema(
         queueId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Queue",
-            required: true,
-            index: true
+            required: true
         },
 
         tokenNumber: {
@@ -80,9 +78,6 @@ queueEntrySchema.index(
     { unique: true }
 );
 
-const QueueEntry = mongoose.model(
-    "QueueEntry",
-    queueEntrySchema
-);
+const QueueEntry = mongoose.model("QueueEntry", queueEntrySchema);
 
 export default QueueEntry;
