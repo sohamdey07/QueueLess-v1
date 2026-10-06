@@ -32,8 +32,6 @@ const counterSchema = new mongoose.Schema(
     }
 );
 
-counterSchema.index({ code: 1 }, { unique: true });
-
 const Counter = mongoose.model("Counter", counterSchema);
 
 export default Counter;

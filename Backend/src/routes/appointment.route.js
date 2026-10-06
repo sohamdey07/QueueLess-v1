@@ -64,11 +64,5 @@ router.patch(
 )
 
 
-router.get(
-    "/services/:serviceId",
-    appointmentFunction.getAllAppointmentIds
-)
-
-
 
 export default router

@@ -477,32 +477,3 @@ export async function checkInAppointment(req, res, next) {
 
 
 
-
-
-
-
-
-//get all the appintment ID
-export async function getAllAppointmentIds(req, res, next) {
-    try{
-        const serviceId = req.params.serviceId;
-        const appointments = await appointmentModel.find({ serviceId: serviceId }).select('appointmentId');
-        
-        if (!appointments || appointments.length === 0) {
-            return successResponse(res, {
-                statusCode: 200,
-                message: "No appointments found",
-                data: []
-            });
-        }
-        return successResponse(res, {
-            statusCode: 200,
-            message: "Appointment IDs retrieved successfully",
-            data: appointments.map(appointment => appointment.appointmentId)
-        });
-        
-    }
-    catch (error) {
-        next(error);
-    }
-}
