@@ -52,7 +52,9 @@ const config = {
     
     testQueueId: process.env.TEST_QUEUE_ID,
     testStaff1AccessToken: process.env.TEST_STAFF_1_ACCESS_TOKEN,
-    testStaff2AccessToken: process.env.TEST_STAFF_2_ACCESS_TOKEN
+    testStaff2AccessToken: process.env.TEST_STAFF_2_ACCESS_TOKEN,
+
+    clientUrl: process.env.CLIENT_URL || "http://localhost:5173"
 };
 
 export default config;

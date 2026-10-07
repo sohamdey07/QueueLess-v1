@@ -53,4 +53,14 @@ router.post(
     queueFunction.completeQueueService
 );
 
+//GET /api/v1/queue/:queueId
+router.get(
+    "/:queueId",
+    authenticate,
+    authorizeRoles("CUSTOMER"),
+    validate(queueParamsSchema, "params"),
+    queueFunction.getQueueStatus
+);
+
+
 export default router;

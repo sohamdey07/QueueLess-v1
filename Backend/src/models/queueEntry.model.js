@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const queueEntrySchema = new mongoose.Schema(
     {
         appointmentId: {
-            type: mongoose.Schema.Types.ObjectId,
+            type:mongoose.Schema.Types.ObjectId,
             ref: "Appointment",
             required: true
         },

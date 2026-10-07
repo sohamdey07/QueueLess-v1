@@ -4,7 +4,7 @@ import config from "./src/config/env.js";
 import { connectDB } from "./src/config/db.js";
 import logger from "./src/utils/logger.js";
 import {connectRedis} from "./src/config/redis.js";
-import {initializeSocket} from "./sockets/socket.js";
+import {initializeSocket} from "./src/sockets/socket.js";
 import startCronJobs from "./src/services/cron.service.js";
 
 

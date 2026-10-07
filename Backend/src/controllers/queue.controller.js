@@ -7,173 +7,20 @@ import counterModel from "../models/counter.model.js";
 
 import { successResponse, errorResponse } from "../utils/apiResponse.js";
 
+import {
+    callNextCustomerService,
+    skipQueueEntryService,
+    startQueueEntryService,
+    completeQueueEntryService
+} from "../services/queue.service.js";
+
 
 // function to call the next customer in the queue
 export async function callNextCustomer(req, res, next) {
-    const session = await mongoose.startSession();
-
     try {
-        const { queueId } = req.params;
-        const staffId = req.user.id;
-
-        let result;
-
-        await session.withTransaction(async () => {
-
-            // --------------------------------------------------
-            // 1. Check queue
-            // --------------------------------------------------
-
-            const queue = await queueModel.findOne({
-                _id: queueId,
-                status: "ACTIVE"
-            }).session(session);
-
-            if (!queue) {
-                const error = new Error("Queue not found or is closed");
-                error.statusCode = 404;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 2. Find counter assigned to this staff member
-            // --------------------------------------------------
-
-            const counter = await counterModel.findOne({
-                assignedStaffId: staffId,
-                isActive: true
-            }).session(session);
-
-            if (!counter) {
-                const error = new Error(
-                    "No active counter is assigned to this staff member"
-                );
-                error.statusCode = 403;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 3. Check whether this counter is already occupied
-            // --------------------------------------------------
-
-            const activeEntry = await queueEntryModel.findOne({
-                counterId: counter._id,
-                status: {
-                    $in: ["CALLED", "SERVING"]
-                }
-            }).session(session);
-
-            if (activeEntry) {
-                const error = new Error(
-                    "This counter is currently serving another customer"
-                );
-                error.statusCode = 409;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 4. Get next waiting customer
-            // --------------------------------------------------
-
-            const nextEntry = await queueEntryModel
-                .findOne({
-                    queueId: queue._id,
-                    status: "WAITING"
-                })
-                .sort({ tokenNumber: 1 })
-                .session(session);
-
-            if (!nextEntry) {
-                const error = new Error(
-                    "No customers are currently waiting in the queue"
-                );
-                error.statusCode = 404;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 5. Atomically change WAITING → CALLED
-            // --------------------------------------------------
-
-            const calledAt = new Date();
-
-            const updatedEntry =
-                await queueEntryModel.findOneAndUpdate(
-                    {
-                        _id: nextEntry._id,
-                        queueId: queue._id,
-                        status: "WAITING"
-                    },
-                    {
-                        $set: {
-                            status: "CALLED",
-                            counterId: counter._id,
-                            calledAt
-                        }
-                    },
-                    {
-                        new: true,
-                        session
-                    }
-                );
-
-            if (!updatedEntry) {
-                const error = new Error(
-                    "Unable to call the next customer"
-                );
-                error.statusCode = 409;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 6. Update queue current token
-            // --------------------------------------------------
-
-            await queueModel.findOneAndUpdate(
-                {
-                    _id: queue._id,
-                    currentToken: {
-                        $lt: updatedEntry.tokenNumber
-                    }
-                },
-                {
-                    $set: {
-                        currentToken: updatedEntry.tokenNumber
-                    }
-                },
-                {
-                    session
-                }
-            );
-
-
-            // --------------------------------------------------
-            // 7. Prepare response
-            // --------------------------------------------------
-
-            const appointment = await appointmentModel
-                .findById(updatedEntry.appointmentId)
-                .select(
-                    "appointmentId customerName customerEmail customerPhone serviceId"
-                )
-                .session(session);
-
-            result = {
-                queueId: queue._id,
-                queueEntryId: updatedEntry._id,
-                tokenNumber: updatedEntry.tokenNumber,
-                counterId: counter._id,
-                counterName: counter.name,
-                counterCode: counter.code,
-                status: updatedEntry.status,
-                calledAt: updatedEntry.calledAt,
-                appointment
-            };
+        const result = await callNextCustomerService({
+            queueId: req.params.queueId,
+            staffId: req.user.id
         });
 
         return successResponse(res, {
@@ -183,132 +30,16 @@ export async function callNextCustomer(req, res, next) {
         });
 
     } catch (error) {
-
-        // Counter already has an active customer
-        if (error?.code === 11000) {
-            return errorResponse(res, {
-                statusCode: 409,
-                message: "This counter is already serving another customer"
-            });
-        }
-
         next(error);
-
-    } finally {
-        await session.endSession();
     }
 }
 
 // function to skip a queue entry
 export async function skipQueueEntry(req, res, next) {
-    const session = await mongoose.startSession();
-
-    try {
-        const { queueEntryId } = req.params;
-        const staffId = req.user.id;
-
-        let result;
-
-        await session.withTransaction(async () => {
-
-            // --------------------------------------------------
-            // 1. Find staff's active counter
-            // --------------------------------------------------
-
-            const counter = await counterModel.findOne({
-                assignedStaffId: staffId,
-                isActive: true
-            }).session(session);
-
-            if (!counter) {
-                const error = new Error(
-                    "No active counter is assigned to this staff member"
-                );
-                error.statusCode = 403;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 2. Find called queue entry assigned to this counter
-            // --------------------------------------------------
-
-            const queueEntry = await queueEntryModel.findOne({
-                _id: queueEntryId,
-                counterId: counter._id,
-                status: "CALLED"
-            }).session(session);
-
-            if (!queueEntry) {
-                const error = new Error(
-                    "Called queue entry not found for this counter"
-                );
-                error.statusCode = 404;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 3. Change CALLED → SKIPPED
-            // --------------------------------------------------
-
-            const updatedEntry =
-                await queueEntryModel.findOneAndUpdate(
-                    {
-                        _id: queueEntry._id,
-                        counterId: counter._id,
-                        status: "CALLED"
-                    },
-                    {
-                        $set: {
-                            status: "SKIPPED",
-                            counterId: null
-                        }
-                    },
-                    {
-                        new: true,
-                        session
-                    }
-                );
-
-            if (!updatedEntry) {
-                const error = new Error(
-                    "Unable to skip this queue entry"
-                );
-                error.statusCode = 409;
-                throw error;
-            }
-
-
-            // --------------------------------------------------
-            // 4. Update appointment
-            // --------------------------------------------------
-
-            const appointment =
-                await appointmentModel.findOneAndUpdate(
-                    {
-                        _id: updatedEntry.appointmentId,
-                        status: "CHECKED_IN"
-                    },
-                    {
-                        $set: {
-                            status: "NO_SHOW",
-                            noShowAt: new Date()
-                        }
-                    },
-                    {
-                        new: true,
-                        session
-                    }
-                );
-
-            result = {
-                queueEntryId: updatedEntry._id,
-                tokenNumber: updatedEntry.tokenNumber,
-                status: updatedEntry.status,
-                counterId: counter._id,
-                appointmentId: appointment?.appointmentId || null
-            };
+   try {
+        const result = await skipQueueEntryService({
+            queueEntryId: req.params.queueEntryId,
+            staffId: req.user.id
         });
 
         return successResponse(res, {
@@ -319,112 +50,15 @@ export async function skipQueueEntry(req, res, next) {
 
     } catch (error) {
         next(error);
-    } finally {
-        await session.endSession();
     }
 }
 
 // function to start the service for a queue entry
 export async function startQueueService(req, res, next) {
-    const session = await mongoose.startSession();
-
     try {
-        const { queueEntryId } = req.params;
-        const staffId = req.user.id;
-
-        let result;
-
-        await session.withTransaction(async () => {
-
-            const counter = await counterModel.findOne({
-                assignedStaffId: staffId,
-                isActive: true
-            }).session(session);
-
-            if (!counter) {
-                const error = new Error(
-                    "No active counter is assigned to this staff member"
-                );
-                error.statusCode = 403;
-                throw error;
-            }
-
-            const queueEntry = await queueEntryModel.findOne({
-                _id: queueEntryId,
-                counterId: counter._id,
-                status: "CALLED"
-            }).session(session);
-
-            if (!queueEntry) {
-                const error = new Error(
-                    "Called queue entry not found for this counter"
-                );
-                error.statusCode = 404;
-                throw error;
-            }
-
-            const servingAt = new Date();
-
-            const updatedEntry =
-                await queueEntryModel.findOneAndUpdate(
-                    {
-                        _id: queueEntry._id,
-                        counterId: counter._id,
-                        status: "CALLED"
-                    },
-                    {
-                        $set: {
-                            status: "SERVING",
-                            servingAt
-                        }
-                    },
-                    {
-                        new: true,
-                        session
-                    }
-                );
-
-            if (!updatedEntry) {
-                const error = new Error(
-                    "Unable to start service for this customer"
-                );
-                error.statusCode = 409;
-                throw error;
-            }
-
-            const appointment =
-                await appointmentModel.findOneAndUpdate(
-                    {
-                        _id: updatedEntry.appointmentId,
-                        status: "CHECKED_IN"
-                    },
-                    {
-                        $set: {
-                            status: "IN_SERVICE"
-                        }
-                    },
-                    {
-                        new: true,
-                        session
-                    }
-                );
-
-            if (!appointment) {
-                const error = new Error(
-                    "Appointment cannot be moved to IN_SERVICE"
-                );
-                error.statusCode = 409;
-                throw error;
-            }
-
-            result = {
-                queueEntryId: updatedEntry._id,
-                appointmentId: appointment.appointmentId,
-                tokenNumber: updatedEntry.tokenNumber,
-                counterId: counter._id,
-                status: updatedEntry.status,
-                servingAt: updatedEntry.servingAt
-            };
+        const result = await startQueueEntryService({
+            queueEntryId: req.params.queueEntryId,
+            staffId: req.user.id
         });
 
         return successResponse(res, {
@@ -435,114 +69,15 @@ export async function startQueueService(req, res, next) {
 
     } catch (error) {
         next(error);
-    } finally {
-        await session.endSession();
     }
 }
 
 // function to complete the service for a queue entry
 export async function completeQueueService(req, res, next) {
-    const session = await mongoose.startSession();
-
     try {
-        const { queueEntryId } = req.params;
-        const staffId = req.user.id;
-
-        let result;
-
-        await session.withTransaction(async () => {
-
-            const counter = await counterModel.findOne({
-                assignedStaffId: staffId,
-                isActive: true
-            }).session(session);
-
-            if (!counter) {
-                const error = new Error(
-                    "No active counter is assigned to this staff member"
-                );
-                error.statusCode = 403;
-                throw error;
-            }
-
-            const queueEntry = await queueEntryModel.findOne({
-                _id: queueEntryId,
-                counterId: counter._id,
-                status: "SERVING"
-            }).session(session);
-
-            if (!queueEntry) {
-                const error = new Error(
-                    "Serving queue entry not found for this counter"
-                );
-                error.statusCode = 404;
-                throw error;
-            }
-
-            const completedAt = new Date();
-
-            const updatedEntry =
-                await queueEntryModel.findOneAndUpdate(
-                    {
-                        _id: queueEntry._id,
-                        counterId: counter._id,
-                        status: "SERVING"
-                    },
-                    {
-                        $set: {
-                            status: "COMPLETED",
-                            completedAt,
-                            counterId: null
-                        }
-                    },
-                    {
-                        new: true,
-                        session
-                    }
-                );
-
-            if (!updatedEntry) {
-                const error = new Error(
-                    "Unable to complete this service"
-                );
-                error.statusCode = 409;
-                throw error;
-            }
-
-            const appointment =
-                await appointmentModel.findOneAndUpdate(
-                    {
-                        _id: updatedEntry.appointmentId,
-                        status: "IN_SERVICE"
-                    },
-                    {
-                        $set: {
-                            status: "COMPLETED",
-                            completedAt
-                        }
-                    },
-                    {
-                        new: true,
-                        session
-                    }
-                );
-
-            if (!appointment) {
-                const error = new Error(
-                    "Appointment cannot be marked as completed"
-                );
-                error.statusCode = 409;
-                throw error;
-            }
-
-            result = {
-                queueEntryId: updatedEntry._id,
-                appointmentId: appointment.appointmentId,
-                tokenNumber: updatedEntry.tokenNumber,
-                counterId: counter._id,
-                status: updatedEntry.status,
-                completedAt
-            };
+        const result = await completeQueueEntryService({
+            queueEntryId: req.params.queueEntryId,
+            staffId: req.user.id
         });
 
         return successResponse(res, {
@@ -553,7 +88,101 @@ export async function completeQueueService(req, res, next) {
 
     } catch (error) {
         next(error);
-    } finally {
-        await session.endSession();
+    }
+}
+
+
+//function to get current queue status
+export async function getQueueStatus(req, res, next) {
+    try {
+        const { queueId } = req.params;
+        const userId = req.user.id;
+
+        // 1. Find queue
+        const queue = await queueModel
+            .findById(queueId)
+            .select("serviceId date currentToken nextToken status");
+
+        if (!queue) {
+            return errorResponse(res, {
+                statusCode: 404,
+                message: "Queue not found"
+            });
+        }
+
+        // 2. Find customer's appointment for this queue
+        const appointment = await appointmentModel.findOne({
+            customerId: userId,
+            serviceId: queue.serviceId,
+            appointmentDate: queue.date
+        }).select("_id appointmentId");
+
+        if (!appointment) {
+            return errorResponse(res, {
+                statusCode: 404,
+                message: "Appointment not found for this queue"
+            });
+        }
+
+        // 3. Find customer's queue entry
+        const queueEntry = await queueEntryModel.findOne({
+            queueId: queue._id,
+            appointmentId: appointment._id,
+            serviceId: queue.serviceId
+        }).select(
+            "tokenNumber status counterId joinedAt calledAt servingAt completedAt"
+        );
+
+        if (!queueEntry) {
+            return errorResponse(res, {
+                statusCode: 404,
+                message: "You have not joined this queue"
+            });
+        }
+
+        // 4. Calculate people before customer
+        let peopleBeforeYou = 0;
+
+        if (queueEntry.status === "WAITING") {
+            peopleBeforeYou = await queueEntryModel.countDocuments({
+                queueId: queue._id,
+                status: "WAITING",
+                tokenNumber: {
+                    $lt: queueEntry.tokenNumber
+                }
+            });
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Queue status retrieved successfully",
+            data: {
+                queue: {
+                    id: queue._id,
+                    serviceId: queue.serviceId,
+                    date: queue.date,
+                    currentToken: queue.currentToken,
+                    nextToken: queue.nextToken,
+                    status: queue.status
+                },
+                appointment: {
+                    appointmentId: appointment.appointmentId
+                },
+                queueEntry: {
+                    queueEntryId: queueEntry._id,
+                    tokenNumber: queueEntry.tokenNumber,
+                    status: queueEntry.status,
+                    counterId: queueEntry.counterId,
+                    joinedAt: queueEntry.joinedAt,
+                    calledAt: queueEntry.calledAt,
+                    servingAt: queueEntry.servingAt,
+                    completedAt: queueEntry.completedAt
+                },
+                peopleBeforeYou
+            }
+        });
+
+    } catch (error) {
+        next(error);
     }
 }
