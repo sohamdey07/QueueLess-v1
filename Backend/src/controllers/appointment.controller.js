@@ -321,7 +321,7 @@ export async function checkInAppointment(req, res, next) {
                             }
                         },
                         {
-                            new: true,
+                            returnDocument: "after",
                             session
                         }
                     );
@@ -373,7 +373,7 @@ export async function checkInAppointment(req, res, next) {
                             }
                         },
                         {
-                            new: true,
+                            returnDocument: "after",
                             session
                         }
                     );
@@ -474,6 +474,3 @@ export async function checkInAppointment(req, res, next) {
         next(error);
     }
 }
-
-
-

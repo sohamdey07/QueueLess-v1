@@ -177,7 +177,7 @@ export async function updateCounter(req, res, next) {
             counterId,
             updateData,
             {
-                new: true,
+                returnDocument: "after",
                 runValidators: true
             }
         );

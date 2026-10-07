@@ -8,14 +8,14 @@ import { performance } from "perf_hooks";
 
 const BASE_URL = "http://localhost:3000";
 
-const ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhYmJlY2IzODZkZTEyNGI3MGRmNjFjYyIsInJvbGUiOiJDVVNUT01FUiIsInNlc3Npb25JZCI6IjZhYzU0YWJmYzJjYTgwZmEzMGJkZTJiOSIsImlhdCI6MTc5MTMxNzIwOCwiZXhwIjoxNzkxMzE4MTA4fQ.b_YkiK6CDqdBV-UhW07Ey3p_9MkVGohBTERCj9mTNMs"; // Replace with a valid access token from your authentication system
+const ACCESS_TOKEN = "your_access_token_here"; // Replace with a valid access token from your authentication system
 
-const SERVICE_ID = "6aba9a62580e7fb99ac84c99"; // Replace with a valid service ID from your database
+const SERVICE_ID = "your_service_id_here"; // Replace with a valid service ID from your database
 
-const AVAILABILITY_ID = "6ac54871a72cf7a7d6d4b943"; // Replace with a valid availability ID from your database
+const AVAILABILITY_ID = "your_availability_id_here"; // Replace with a valid availability ID from your database
 
 // Change this for different concurrency tests
-const TOTAL_REQUESTS = 20;
+const TOTAL_REQUESTS = 2;
 
 
 // ============================================================

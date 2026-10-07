@@ -1,8 +1,8 @@
 import { io } from "socket.io-client";
 
-const ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhYmJlY2IzODZkZTEyNGI3MGRmNjFjYyIsInJvbGUiOiJDVVNUT01FUiIsInNlc3Npb25JZCI6IjZhYzY1ZTZlNjY0ZDRjNjA0YWY4NDI1ZiIsImlhdCI6MTc5MTM4NTk4NSwiZXhwIjoxNzkxMzg2ODg1fQ.b_CmUM_-SepFXUjEwskADkid4Qw_PDBmVGAVAIjE52o";
+const ACCESS_TOKEN = "your_access_token_here"; // Replace with a valid access token from your authentication system
 
-const QUEUE_ID = "6ac54871a72cf7a7d6d4b944";
+const QUEUE_ID = "your_queue_id_here"; // Replace with a valid queue ID from your database
 
 const socket = io("http://localhost:3000", {
     auth: {

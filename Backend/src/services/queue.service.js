@@ -126,7 +126,7 @@ export async function callNextCustomerService({ queueId, staffId }) {
                         }
                     },
                     {
-                        new: true,
+                        returnDocument: "after",
                         session
                     }
                 );
@@ -293,7 +293,7 @@ export async function skipQueueEntryService({
                         }
                     },
                     {
-                        new: true,
+                        returnDocument: "after",
                         session
                     }
                 );
@@ -325,7 +325,7 @@ export async function skipQueueEntryService({
                         }
                     },
                     {
-                        new: true,
+                        returnDocument: "after",
                         session
                     }
                 );
@@ -444,7 +444,7 @@ export async function startQueueEntryService({
                         }
                     },
                     {
-                        new: true,
+                        returnDocument: "after",
                         session
                     }
                 );
@@ -475,7 +475,7 @@ export async function startQueueEntryService({
                         }
                     },
                     {
-                        new: true,
+                        returnDocument: "after",
                         session
                     }
                 );
@@ -605,7 +605,7 @@ export async function completeQueueEntryService({
                         }
                     },
                     {
-                        new: true,
+                        returnDocument: "after",
                         session
                     }
                 );
@@ -637,7 +637,7 @@ export async function completeQueueEntryService({
                         }
                     },
                     {
-                        new: true,
+                        returnDocument: "after",
                         session
                     }
                 );
