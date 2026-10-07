@@ -1,0 +1,22 @@
+.customer-layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg-page);
+  position: relative;
+}
+
+.customer-layout-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+  transition: margin-left var(--transition-normal);
+}
+
+.customer-layout-body {
+  flex: 1;
+  width: 100%;
+  padding-top: 24px;
+}

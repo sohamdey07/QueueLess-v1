@@ -1,0 +1,68 @@
+:root {
+  /* Brand Colors */
+  --color-primary: #1D68F2;
+  --color-primary-hover: #1555C9;
+  --color-primary-light: #EBF3FE;
+  --color-primary-subtle: #F0F6FF;
+  --color-primary-glow: rgba(29, 104, 242, 0.15);
+
+  /* Status Colors */
+  --color-success: #10B981;
+  --color-success-bg: #ECFDF5;
+  --color-danger: #EF4444;
+  --color-danger-bg: #FEF2F2;
+  --color-purple: #8B5CF6;
+  --color-purple-bg: #F5F3FF;
+  --color-amber: #D97706;
+  --color-amber-bg: #FFF7ED;
+  --color-help-bg: #FFFDF5;
+  --color-help-border: #FEF3C7;
+  --color-help-icon-bg: #FEF3C7;
+  --color-help-icon: #D97706;
+
+  /* Neutrals & Text */
+  --color-text-main: #0F172A;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748B;
+  --color-text-subtle: #94A3B8;
+  --color-text-light: #CBD5E1;
+
+  /* Surfaces & Backgrounds */
+  --color-bg-page: #F8FAFC;
+  --color-bg-card: #FFFFFF;
+  --color-bg-sidebar: #FFFFFF;
+  --color-bg-avatar: #E2E8F0;
+  --color-bg-pill: #F1F5F9;
+
+  /* Borders */
+  --color-border: #EEF2F6;
+  --color-border-card: #F1F5F9;
+  --color-border-hover: #E2E8F0;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* Border Radii */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-spring: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-card-hover: 0 12px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 8px -4px rgba(15, 23, 42, 0.03);
+  --shadow-pop: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+
+  /* Dimensions */
+  --sidebar-width: 260px;
+  --header-height: 80px;
+}

@@ -1,0 +1,198 @@
+/* Upcoming Booking Outer White Card */
+.upcoming-booking-outer-card {
+  background: #FFFFFF;
+  border: 1px solid #EEF2F6;
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Card Header */
+.upcoming-booking-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.upcoming-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upcoming-header-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.upcoming-header-title {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1.25;
+}
+
+.upcoming-view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-primary);
+  transition: opacity var(--transition-fast);
+}
+
+.upcoming-view-all-link:hover {
+  opacity: 0.85;
+}
+
+.upcoming-view-all-link:hover .upcoming-view-all-arrow {
+  transform: translateX(3px);
+}
+
+.upcoming-view-all-arrow {
+  transition: transform var(--transition-fast);
+}
+
+/* Inner Box Container with distinct border & padding */
+.upcoming-booking-inner-box {
+  background: #FFFFFF;
+  border: 1px solid #EEF2F6;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  flex: 1;
+  outline: none;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.upcoming-booking-inner-box:hover {
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  transform: translateY(-1px);
+}
+
+.upcoming-booking-inner-box:hover .upcoming-action-circle-btn {
+  transform: scale(1.06);
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* Thumbnail */
+.upcoming-booking-image-wrap {
+  flex-shrink: 0;
+  width: 104px;
+  height: 104px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+
+.upcoming-booking-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 65%;
+  transform: scale(1.08);
+  transition: transform var(--transition-normal);
+}
+
+.upcoming-booking-inner-box:hover .upcoming-booking-image {
+  transform: scale(1.14);
+}
+
+/* Details */
+.upcoming-booking-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.upcoming-status-badge {
+  align-self: flex-start;
+  margin-bottom: 6px;
+}
+
+.upcoming-booking-title {
+  font-family: var(--font-sans);
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin-bottom: 3px;
+}
+
+.upcoming-booking-clinic {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 14px;
+}
+
+/* Meta Row */
+.upcoming-booking-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.upcoming-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-icon {
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.meta-text-group {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.meta-highlight {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.meta-sub {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+/* Action Circle Button */
+.upcoming-booking-action {
+  flex-shrink: 0;
+}
+
+.upcoming-action-circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}

@@ -1,0 +1,76 @@
+/* Responsive Design System Breakpoints */
+
+/* Tablets & Smaller screens (<= 1024px) */
+@media (max-width: 1024px) {
+  .customer-layout-main {
+    margin-left: 0 !important;
+  }
+
+  .customer-sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 50;
+    transition: transform var(--transition-normal);
+  }
+
+  .customer-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .bookings-columns-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Mobile Screens (<= 768px) */
+@media (max-width: 768px) {
+  .customer-header {
+    padding: 16px 20px !important;
+  }
+
+  .customer-page-content {
+    padding: 0 16px 24px 16px !important;
+    gap: 18px !important;
+  }
+
+  .hero-banner-content {
+    padding: 24px 20px !important;
+  }
+
+  .hero-banner-title {
+    font-size: 22px !important;
+  }
+
+  .hero-floating-queue-badge {
+    display: none !important;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .upcoming-booking-card-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .upcoming-booking-image {
+    width: 100% !important;
+    height: 160px !important;
+  }
+
+  .need-help-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  .need-help-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
