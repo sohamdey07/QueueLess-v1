@@ -5,8 +5,7 @@ const queueEntrySchema = new mongoose.Schema(
         appointmentId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Appointment",
-            required: true,
-            unique: true
+            required: true
         },
 
         serviceId: {
@@ -73,9 +72,27 @@ const queueEntrySchema = new mongoose.Schema(
     }
 );
 
+// One appointment can enter the queue only once.
+queueEntrySchema.index(
+    { appointmentId: 1 },
+    { unique: true }
+);
+
+// Token numbers must be unique within a queue.
 queueEntrySchema.index(
     { queueId: 1, tokenNumber: 1 },
     { unique: true }
+);
+
+// A counter can have only one active customer.
+queueEntrySchema.index(
+    { counterId: 1 },
+    {
+        unique: true,
+        partialFilterExpression: {
+            status: { $in: ["CALLED", "SERVING"] }
+        }
+    }
 );
 
 const QueueEntry = mongoose.model("QueueEntry", queueEntrySchema);

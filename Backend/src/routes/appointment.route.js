@@ -16,7 +16,7 @@ router.post(
     "/:appointmentId/check-in",
     authenticate,
     authorizeRoles("CUSTOMER"),
-    // appointmentLimiter.checkInLimiter,
+    appointmentLimiter.checkInLimiter,
     validate(appointmentParamsSchema, "params"),
     appointmentFunction.checkInAppointment
 )
@@ -26,7 +26,7 @@ router.post(
     "/:serviceId/:availabilityId",
     authenticate,
     authorizeRoles("CUSTOMER"),
-    // appointmentLimiter.bookAppointmentLimiter,
+    appointmentLimiter.bookAppointmentLimiter,
     validate(createAppointmentSchema, "params"),
     appointmentFunction.createAppointment
 )

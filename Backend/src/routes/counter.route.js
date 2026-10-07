@@ -3,7 +3,7 @@ import {authorizeRoles} from "../middlewares/role.middleware.js";
 import authenticate from "../middlewares/auth.middleware.js";
 import * as counterFunction from "../controllers/counter.controller.js";
 import * as counterValidation from "../validations/counter.validation.js";
-import validate from "../middlewares/validate.middleware.js";
+import {validate} from "../middlewares/validate.middleware.js";
 
 import {
     counterCreateLimiter,

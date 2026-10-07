@@ -11,6 +11,7 @@ import serviceRoutes from "./routes/service.route.js";
 import availabilityRoutes from "./routes/availability.route.js";
 import appointmentRoutes from "./routes/appointment.route.js";
 import counterRoutes from "./routes/counter.route.js";
+import queueRoutes from "./routes/queue.route.js";
 
 
 
@@ -60,6 +61,7 @@ app.use("/api/v1/service", serviceRoutes);
 app.use("/api/v1/availability", availabilityRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/v1/counters", counterRoutes);
+app.use("/api/v1/queue", queueRoutes);
 
 // Error handling middleware
 app.use(errorMiddleware);

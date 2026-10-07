@@ -48,7 +48,11 @@ const config = {
     googleClientId: process.env.GOOGLE_CLIENT_ID,
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     googleRefreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-    googleUser: process.env.GOOGLE_USER
+    googleUser: process.env.GOOGLE_USER,
+    
+    testQueueId: process.env.TEST_QUEUE_ID,
+    testStaff1AccessToken: process.env.TEST_STAFF_1_ACCESS_TOKEN,
+    testStaff2AccessToken: process.env.TEST_STAFF_2_ACCESS_TOKEN
 };
 
 export default config;

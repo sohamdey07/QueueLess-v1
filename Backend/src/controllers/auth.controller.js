@@ -42,7 +42,12 @@ export async function registerUser(req,res,next){
         const otp = generateOTP();
 
         //send email to user with otp
-        await sendEmail(newUser.email, "Verify your email", getOtpHtml(otp));
+        await sendEmail(
+            newUser.email,
+            "Verify your email",
+            `Your OTP code is ${otp}. It is valid for a limited time. Please do not share it with anyone.`,
+            getOtpHtml(otp)
+        );
 
         //store otp in redis
         await storeOTP(newUser.email, otp);
