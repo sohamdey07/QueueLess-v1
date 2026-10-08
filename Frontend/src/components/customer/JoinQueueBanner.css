@@ -1,0 +1,121 @@
+.join-queue-banner-card {
+  position: relative;
+  width: 100%;
+  min-height: 180px;
+  border-radius: var(--radius-xl, 20px);
+  overflow: hidden;
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  background: linear-gradient(135deg, #e8f0fe 0%, #f0f6ff 50%, #e0eafd 100%);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.join-queue-banner-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.join-queue-banner-content {
+  position: relative;
+  z-index: 2;
+  padding: var(--banner-padding, 36px 44px);
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+}
+
+.join-queue-banner-eyebrow {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--color-primary, #1D68F2);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.join-queue-banner-title {
+  font-family: var(--font-sans);
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px 0;
+}
+
+.join-queue-banner-description {
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  color: var(--color-text-muted, #64748B);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 440px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .join-queue-banner-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .join-queue-banner-card {
+    min-height: 220px;
+  }
+
+  .join-queue-banner-content {
+    padding: var(--banner-padding-tablet, 28px 24px);
+    max-width: 100%;
+    background: linear-gradient(90deg, rgba(235, 243, 254, 0.94) 0%, rgba(235, 243, 254, 0.85) 65%, rgba(235, 243, 254, 0.3) 100%);
+    border-radius: var(--radius-xl, 20px);
+  }
+
+  .join-queue-banner-title {
+    font-size: 24px;
+  }
+
+  .join-queue-banner-description {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 600px) {
+  .join-queue-banner-card {
+    min-height: 200px;
+  }
+
+  .join-queue-banner-content {
+    padding: var(--banner-padding-mobile, 22px 18px);
+    background: rgba(235, 243, 254, 0.94);
+  }
+
+  .join-queue-banner-eyebrow {
+    font-size: 10.5px;
+    margin-bottom: 6px;
+  }
+
+  .join-queue-banner-title {
+    font-size: 20px;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+
+  .join-queue-banner-description {
+    font-size: 13px;
+  }
+
+  .banner-br {
+    display: none;
+  }
+}

@@ -1,0 +1,501 @@
+.ql-service-card {
+  background: var(--color-bg-card, #FFFFFF);
+  border-radius: 20px;
+  border: 1px solid var(--color-border, #EEF2F6);
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  padding: 10px 10px 15px 10px;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-normal, 0.25s ease),
+    box-shadow var(--transition-normal, 0.25s ease),
+    border-color var(--transition-normal, 0.25s ease);
+  box-sizing: border-box;
+}
+
+.ql-service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 38px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+  border-color: #E2E8F0;
+}
+
+/* Inset Poster Area with distinct border radius */
+.ql-service-card-media {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  border-radius: 14px;
+  overflow: hidden;
+  background-color: #F1F5F9;
+  flex-shrink: 0;
+}
+
+.ql-service-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 14px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ql-service-card:hover .ql-service-card-img {
+  transform: scale(1.03);
+}
+
+.ql-service-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #E2E8F0 0%, #CBD5E1 100%);
+}
+
+/* Floating Frosted Duration Pill on Poster Top Right */
+.ql-service-duration-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5.5px;
+  padding: 5.5px 12px;
+  border-radius: var(--radius-full, 9999px);
+  background: rgba(46, 56, 79, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ql-service-card:hover .ql-service-duration-badge {
+  background: rgba(15, 23, 42, 0.85);
+  transform: translateY(-1px);
+}
+
+.ql-duration-icon {
+  color: #60A5FA;
+  flex-shrink: 0;
+}
+
+/* Card Body Content with Reduced Gaps */
+.ql-service-card-body {
+  padding: 16px 10px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ql-service-card-title {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  letter-spacing: -0.015em;
+  margin: 0 0 6px 0;
+  line-height: 1.25;
+}
+
+.ql-service-card-desc {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: var(--color-text-muted, #64748B);
+  line-height: 1.45;
+  margin: 0 0 14px 0;
+  /* Reduced gap between description and timing */
+  min-height: 38px;
+}
+
+/* Schedule Pill */
+.ql-service-schedule-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  /* Reduced gap between timing and appointment booking button */
+}
+
+.ql-schedule-icon {
+  flex-shrink: 0;
+}
+
+/* Green Schedule Theme */
+.ql-service-schedule-pill.schedule-green {
+  background-color: #E8F8F0;
+  color: #059669;
+}
+
+.ql-service-schedule-pill.schedule-green .ql-schedule-icon {
+  color: #059669;
+}
+
+/* Blue Schedule Theme */
+.ql-service-schedule-pill.schedule-blue {
+  background-color: #EBF3FE;
+  color: #2563EB;
+}
+
+.ql-service-schedule-pill.schedule-blue .ql-schedule-icon {
+  color: #2563EB;
+}
+
+/* Action Buttons Row: Details & Book */
+.ql-service-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ql-service-btn {
+  border-radius: 9px;
+  padding: 11px 14px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 0.15s ease),
+    border-color var(--transition-fast, 0.15s ease),
+    color var(--transition-fast, 0.15s ease),
+    transform var(--transition-fast, 0.15s ease);
+  box-sizing: border-box;
+}
+
+/* Light color tone for Details button */
+.ql-btn-details {
+  background-color: var(--color-primary-light, #EBF3FE);
+  color: var(--color-primary, #1D68F2);
+  border: 1px solid rgba(29, 104, 242, 0.18);
+}
+
+.ql-btn-details:hover {
+  background-color: #DFECFE;
+  border-color: rgba(29, 104, 242, 0.3);
+  color: var(--color-primary-hover, #1555C9);
+}
+
+.ql-btn-details:active {
+  transform: scale(0.98);
+}
+
+/* Primary blue current color for Book button */
+.ql-btn-book {
+  background-color: var(--color-primary, #1D68F2);
+  color: #FFFFFF;
+  border: 1px solid var(--color-primary, #1D68F2);
+}
+
+.ql-service-btn-arrow {
+  transition: transform var(--transition-fast, 0.15s ease);
+}
+
+.ql-btn-book:hover {
+  background-color: var(--color-primary-hover, #1555C9);
+  border-color: var(--color-primary-hover, #1555C9);
+}
+
+.ql-btn-book:hover .ql-service-btn-arrow {
+  transform: translateX(3px);
+}
+
+.ql-btn-book:active {
+  transform: scale(0.98);
+}
+
+/* Backward-compatibility fallback for single button */
+.ql-service-card-btn {
+  width: 100%;
+  background-color: var(--color-primary, #1D68F2);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 9px;
+  padding: 11.5px 16px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 0.15s ease),
+    transform var(--transition-fast, 0.15s ease);
+  margin-top: auto;
+}
+
+.ql-service-card-btn:hover {
+  background-color: var(--color-primary-hover, #1555C9);
+}
+
+.ql-service-card-btn:active {
+  transform: scale(0.985);
+}
+
+/* Floating Relative Time Pill on Poster (e.g. In 2 days) */
+.ql-service-relative-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  padding: 4.5px 12px;
+  border-radius: var(--radius-full, 9999px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-primary, #1D68F2);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.ql-service-card:hover .ql-service-relative-badge {
+  transform: translateY(-1px);
+}
+
+/* Appointment Metadata Rows */
+.ql-service-appointment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ql-appointment-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 11px;
+  background-color: #F8FAFC;
+  border: 1px solid #EEF2F6;
+  border-radius: 10px;
+}
+
+.ql-appointment-meta-icon {
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ql-appointment-meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ql-appointment-meta-label {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748B;
+  letter-spacing: 0.02em;
+}
+
+.ql-appointment-meta-val {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-main, #0F172A);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ql-appointment-meta-val.mono {
+  font-family: monospace, var(--font-sans);
+  font-size: 12px;
+}
+
+.ql-copy-id-btn {
+  background: #EBF3FE;
+  border: 1px solid rgba(29, 104, 242, 0.15);
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-primary, #1D68F2);
+  box-shadow: none;
+  transition: all var(--transition-fast, 0.15s ease);
+  flex-shrink: 0;
+}
+
+.ql-copy-id-btn:hover {
+  background: #DBEAFE;
+  color: var(--color-primary-hover, #1555C9);
+  box-shadow: none;
+}
+
+.ql-copy-id-btn .copied-check {
+  color: #10B981;
+}
+
+/* Booking Actions: Cancel & Join Queue in one row */
+.ql-booking-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 10px;
+}
+
+.ql-btn-cancel {
+  background-color: #F8FAFC;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+  box-shadow: none;
+}
+
+.ql-btn-cancel:hover {
+  background-color: #FEE2E2;
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #EF4444;
+  box-shadow: none;
+}
+
+.ql-btn-join-queue {
+  background-color: var(--color-primary, #1D68F2);
+  color: #FFFFFF;
+  border: 1px solid var(--color-primary, #1D68F2);
+  box-shadow: none;
+}
+
+.ql-btn-join-queue:hover {
+  background-color: var(--color-primary-hover, #1555C9);
+  border-color: var(--color-primary-hover, #1555C9);
+  box-shadow: none;
+}
+
+.ql-btn-join-queue:hover .ql-service-btn-arrow {
+  transform: translateX(3px);
+}
+
+/* Floating Status Badge on Poster Top Right */
+.ql-service-status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5.5px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full, 9999px);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  transition: transform 0.2s ease;
+}
+
+.ql-service-card:hover .ql-service-status-badge {
+  transform: translateY(-1px);
+}
+
+.ql-service-status-badge.status-completed {
+  background: rgba(16, 185, 129, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.ql-service-status-badge.status-cancelled {
+  background: rgba(239, 68, 68, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.ql-status-badge-icon {
+  flex-shrink: 0;
+}
+
+/* Status Meta Text and Icon Colors */
+.status-val-completed {
+  color: #059669;
+  font-weight: 700;
+}
+
+.status-val-cancelled {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+.meta-icon-completed {
+  color: #10B981;
+}
+
+.meta-icon-cancelled {
+  color: #EF4444;
+}
+
+/* History Card Action Button (Single Full-Width Details Button) */
+.ql-history-actions {
+  display: flex;
+  width: 100%;
+}
+
+.ql-btn-view-details {
+  width: 100%;
+  background-color: #EBF3FE;
+  color: var(--color-primary, #1D68F2);
+  border: 1px solid rgba(29, 104, 242, 0.22);
+  border-radius: 9px;
+  padding: 10px 16px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color var(--transition-fast, 0.15s ease),
+    color var(--transition-fast, 0.15s ease),
+    border-color var(--transition-fast, 0.15s ease),
+    transform var(--transition-fast, 0.15s ease);
+}
+
+.ql-btn-view-details:hover {
+  background-color: var(--color-primary, #1D68F2);
+  color: #FFFFFF;
+  border-color: var(--color-primary, #1D68F2);
+  box-shadow: none;
+}
+
+.ql-btn-view-details:active {
+  transform: scale(0.985);
+  box-shadow: none;
+}

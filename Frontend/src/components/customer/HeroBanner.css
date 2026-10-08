@@ -7,7 +7,7 @@
   background: linear-gradient(135deg, #e8f0fe 0%, #f0f6ff 50%, #e0eafd 100%);
   display: flex;
   align-items: center;
-  min-height: 250px;
+  min-height: 180px;
 }
 
 .hero-banner-bg-img {
@@ -25,7 +25,7 @@
 .hero-banner-content {
   position: relative;
   z-index: 2;
-  padding: 36px 44px;
+  padding: var(--banner-padding, 36px 44px);
   max-width: 580px;
 }
 
@@ -81,9 +81,12 @@
 }
 
 @keyframes gentleFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-3px);
   }
@@ -121,6 +124,7 @@
   .hero-banner-title {
     font-size: 28px;
   }
+
   .hero-floating-queue-badge {
     right: 8%;
   }
@@ -131,6 +135,7 @@
     padding: 28px 24px;
     max-width: 480px;
   }
+
   .hero-banner-title {
     font-size: 24px;
   }

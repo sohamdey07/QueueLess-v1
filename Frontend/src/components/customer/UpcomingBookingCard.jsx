@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ChevronRight, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import Badge from '../common/Badge';
 import generalConsultImg from '../../assets/images/bookings/general_consultation.jpg';
 import './UpcomingBookingCard.css';
@@ -8,9 +8,7 @@ import './UpcomingBookingCard.css';
 export const UpcomingBookingCard = ({
   booking = {
     title: 'General Consultation',
-    clinic: 'City Health Clinic',
     date: '26 Sep 2026',
-    time: '10:00 AM',
     duration: '15 minutes',
     status: 'UPCOMING',
     image: generalConsultImg,
@@ -39,8 +37,8 @@ export const UpcomingBookingCard = ({
           <Calendar size={18} className="upcoming-header-icon" />
           <h2 className="upcoming-header-title">Upcoming Booking</h2>
         </div>
-        <a 
-          href="#/my-bookings" 
+        <a
+          href="#/my-bookings"
           className="upcoming-view-all-link"
           onClick={handleViewAll}
         >
@@ -50,7 +48,7 @@ export const UpcomingBookingCard = ({
       </div>
 
       {/* Inner Card Box with clean border & padding */}
-      <div 
+      <div
         className="upcoming-booking-inner-box"
         onClick={handleCardClick}
         role="button"
@@ -58,10 +56,10 @@ export const UpcomingBookingCard = ({
       >
         {/* Left Thumbnail (Stethoscope) */}
         <div className="upcoming-booking-image-wrap">
-          <img 
-            src={booking.image || generalConsultImg} 
-            alt={booking.title} 
-            className="upcoming-booking-image" 
+          <img
+            src={booking.image || generalConsultImg}
+            alt={booking.title}
+            className="upcoming-booking-image"
           />
         </div>
 
@@ -72,7 +70,6 @@ export const UpcomingBookingCard = ({
           </Badge>
 
           <h3 className="upcoming-booking-title">{booking.title}</h3>
-          <p className="upcoming-booking-clinic">{booking.clinic}</p>
 
           {/* Meta Row: Date/Time & Duration */}
           <div className="upcoming-booking-meta-row">
@@ -80,7 +77,6 @@ export const UpcomingBookingCard = ({
               <Calendar size={16} className="meta-icon" />
               <div className="meta-text-group">
                 <span className="meta-highlight">{booking.date}</span>
-                <span className="meta-sub">{booking.time}</span>
               </div>
             </div>
 
@@ -88,22 +84,11 @@ export const UpcomingBookingCard = ({
               <Clock size={16} className="meta-icon" />
               <div className="meta-text-group">
                 <span className="meta-highlight">{booking.duration}</span>
-                <span className="meta-sub">Duration</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Circular Action Button */}
-        <div className="upcoming-booking-action">
-          <button 
-            type="button" 
-            className="upcoming-action-circle-btn"
-            aria-label="View booking details"
-          >
-            <ChevronRight size={17} />
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 import React from 'react';
-import UnderDevelopment from './UnderDevelopment';
+import MyBookings from './MyBookings';
 
 export const AppointmentHistory = () => {
-  return <UnderDevelopment />;
+  return <MyBookings defaultTab="history" />;
 };
 
 export default AppointmentHistory;

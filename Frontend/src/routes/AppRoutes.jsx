@@ -4,6 +4,7 @@ import CustomerLayout from '../layouts/CustomerLayout';
 import CustomerHome from '../pages/customer/CustomerHome';
 import BookAppointment from '../pages/customer/BookAppointment';
 import JoinQueue from '../pages/customer/JoinQueue';
+import VirtualQueue from '../pages/customer/VirtualQueue';
 import MyBookings from '../pages/customer/MyBookings';
 import AppointmentHistory from '../pages/customer/AppointmentHistory';
 
@@ -20,6 +21,7 @@ export const AppRoutes = () => {
         <Route path="home" element={<CustomerHome />} />
         <Route path="book-appointment" element={<BookAppointment />} />
         <Route path="join-queue" element={<JoinQueue />} />
+        <Route path="virtual-queue" element={<VirtualQueue />} />
         <Route path="my-bookings" element={<MyBookings />} />
         <Route path="appointment-history" element={<AppointmentHistory />} />
         {/* Pages which are not available show Under Development */}

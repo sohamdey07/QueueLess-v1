@@ -1,0 +1,108 @@
+.book-appointment-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 0 36px 36px 36px;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Available Services Count Header Bar */
+.available-services-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px 0 2px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.available-services-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.available-services-title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.available-services-subtitle {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: var(--color-text-muted, #64748B);
+  margin: 0;
+}
+
+.available-services-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background-color: var(--color-primary-light, #EBF3FE);
+  color: var(--color-primary, #1D68F2);
+  border: 1px solid rgba(29, 104, 242, 0.15);
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 9999px);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #1D68F2);
+  display: inline-block;
+}
+
+/* Services Grid - 3 Columns per row with increased width */
+.appointment-services-section {
+  width: 100%;
+}
+
+.appointment-services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive Grid Breakpoints */
+@media (max-width: 1024px) {
+  .book-appointment-page {
+    padding: 0 24px 28px 24px;
+    gap: 18px;
+  }
+
+  .appointment-services-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 680px) {
+  .book-appointment-page {
+    padding: 0 16px 20px 16px;
+    gap: 16px;
+  }
+
+  .available-services-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .appointment-services-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

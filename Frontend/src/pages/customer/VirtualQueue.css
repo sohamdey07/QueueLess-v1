@@ -1,0 +1,675 @@
+.virtual-queue-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 0 36px 36px 36px;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Main Grid Layout */
+.virtual-queue-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Common Section Outer Card with Pure White Padding & Elevated Box Shadow */
+.vq-card {
+  background: #FFFFFF;
+  border-radius: 10px;
+  border: 1px solid var(--color-border, #EEF2F6);
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  padding: 10px;
+  /* White padding framing the inner colored box */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: transform var(--transition-normal, 0.2s ease),
+    box-shadow var(--transition-normal, 0.2s ease);
+}
+
+.vq-card:hover {
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.1), 0 6px 14px -3px rgba(15, 23, 42, 0.05);
+}
+
+/* Inner Pastel Box Container */
+.vq-card-inner {
+  border-radius: 8px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.vq-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.vq-header-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vq-header-icon {
+  flex-shrink: 0;
+}
+
+.vq-card-title {
+  font-family: var(--font-sans);
+  font-size: 17.5px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+/* =========================================================
+   1. Currently Serving Card (Theme: Light Blue)
+   ========================================================= */
+.vq-serving-inner {
+  background-color: #EAF3FE;
+  border: 1px solid rgba(219, 234, 254, 0.85);
+}
+
+.vq-serving-icon {
+  color: #1D68F2;
+}
+
+/* Live Badge with Blinking Animation */
+.vq-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #FEE2E2;
+  color: #EF4444;
+  padding: 4px 11px;
+  border-radius: var(--radius-full, 9999px);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  animation: liveBadgeGlow 2s infinite ease-in-out;
+}
+
+.vq-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  animation: liveDotBlink 1.2s infinite ease-in-out;
+}
+
+@keyframes liveDotBlink {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.2;
+    transform: scale(0.75);
+  }
+}
+
+@keyframes liveBadgeGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.25);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  }
+}
+
+.vq-serving-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0 6px 0;
+  text-align: center;
+  height: 100%;
+}
+
+.vq-huge-number {
+  font-family: var(--font-sans);
+  font-size: 46px;
+  font-weight: 900;
+  color: #1D68F2;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.vq-counter-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-main, #0F172A);
+}
+
+.vq-counter-icon {
+  color: #1D68F2;
+}
+
+/* =========================================================
+   2. Your Token Card (Theme: Light Green)
+   ========================================================= */
+.vq-token-inner {
+  background-color: #E7F9F0;
+  border: 1px solid rgba(209, 250, 229, 0.85);
+}
+
+.vq-token-icon {
+  color: #059669;
+}
+
+.vq-token-card .vq-status-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: #D0F6E3;
+  color: #059669;
+  padding: 4px 11px;
+  border-radius: var(--radius-full, 9999px);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.vq-token-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vq-huge-token-number {
+  font-family: var(--font-sans);
+  font-size: 48px;
+  font-weight: 900;
+  color: #36a26c;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.vq-token-meta-split {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 4px 20px;
+}
+
+.vq-token-position-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vq-meta-label {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--color-text-muted, #64748B);
+  font-weight: 600;
+}
+
+.vq-position-big-number {
+  font-family: var(--font-sans);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  line-height: 1.15;
+}
+
+.vq-meta-subtext {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--color-text-muted, #64748B);
+  margin-top: 2px;
+}
+
+.vq-token-divider {
+  width: 1px;
+  height: 52px;
+  background-color: rgba(5, 150, 105, 0.2);
+  margin-right: 20px;
+}
+
+.vq-token-wait-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vq-wait-header-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vq-token-card .vq-meta-clock-icon {
+  color: #059669;
+}
+
+.vq-wait-big-time {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  line-height: 1.2;
+}
+
+.vq-wait-clock-bold {
+  color: var(--color-text-main, #0F172A);
+}
+
+/* =========================================================
+   3. Service Card (Theme: Light Violet)
+   ========================================================= */
+.vq-service-inner {
+  background-color: #F3EEFE;
+  border: 1px solid rgba(237, 233, 254, 0.85);
+}
+
+.vq-service-icon {
+  color: #7C3AED;
+}
+
+.vq-service-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.vq-service-poster {
+  width: 92px;
+  height: 68px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.vq-service-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vq-service-name {
+  font-family: var(--font-sans);
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.vq-service-description {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text-muted, #64748B);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* =========================================================
+   4. Appointment ID Card (Theme: Light Orange)
+   ========================================================= */
+.vq-appointment-inner {
+  background-color: #FFF7EF;
+  border: 1px solid rgba(254, 237, 213, 0.85);
+}
+
+.vq-appointment-icon {
+  color: #D97706;
+}
+
+.vq-appointment-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+}
+
+.vq-ticket-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background-color: #FEEDD9;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D97706;
+  flex-shrink: 0;
+}
+
+.vq-appointment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vq-appointment-code {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  letter-spacing: -0.01em;
+}
+
+.vq-appointment-schedule {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text-muted, #64748B);
+}
+
+/* =========================================================
+   5. Your Queue Progress Card
+   ========================================================= */
+.vq-progress-card {
+  grid-column: 1 / -1;
+}
+
+.vq-progress-inner {
+  background-color: #F8FAFC;
+  border: 1px solid #EEF2F6;
+  padding: 24px 28px 28px 28px;
+}
+
+.vq-progress-inner .vq-card-title {
+  color: var(--color-text-main, #0F172A);
+}
+
+.vq-progress-inner .vq-header-icon {
+  color: var(--color-primary, #1D68F2);
+}
+
+.vq-tracker-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 0 16px 0;
+  box-sizing: border-box;
+}
+
+.vq-tracker-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+/* Horizontal line running between circle centers */
+.vq-step-line {
+  position: absolute;
+  top: 45px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  z-index: 1;
+}
+
+.vq-step-line.completed {
+  background-color: #10B981;
+}
+
+.vq-step-line.pending {
+  background-color: #E2E8F0;
+}
+
+.vq-step-top-timestamp {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-main, #0F172A);
+  margin-bottom: 12px;
+  height: 18px;
+  line-height: 18px;
+}
+
+.vq-step-top-timestamp.spacer {
+  visibility: hidden;
+}
+
+.vq-node-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+/* Step 1: Completed Node */
+.vq-node-circle.completed {
+  background-color: #10B981;
+  color: #FFFFFF;
+}
+
+.vq-check-icon {
+  stroke-width: 3;
+}
+
+/* Step 2: Active Node with Animated Radar Pulse & Blinking Inner Dot */
+.vq-node-circle.active {
+  background-color: #FFFFFF;
+  border: 3px solid var(--color-primary, #1D68F2);
+  box-shadow: 0 0 0 0 rgba(29, 104, 242, 0.45);
+  animation: radarPulse 1.8s infinite ease-out;
+}
+
+.vq-active-pulse-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(29, 104, 242, 0.35);
+  animation: activeRingExpand 1.8s infinite ease-out;
+  pointer-events: none;
+}
+
+.vq-active-inner-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #1D68F2);
+  animation: currentDotBlink 1.2s infinite ease-in-out;
+}
+
+@keyframes radarPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(29, 104, 242, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(29, 104, 242, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(29, 104, 242, 0);
+  }
+}
+
+@keyframes activeRingExpand {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+
+  60% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+@keyframes currentDotBlink {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(0.75);
+  }
+}
+
+/* Step 3 & 4: Inactive / Pending Node */
+.vq-node-circle.pending {
+  background-color: #FFFFFF;
+  border: 2px solid #CBD5E1;
+}
+
+/* Step Labels Below Nodes */
+.vq-step-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-top: 14px;
+  padding: 0 8px;
+}
+
+.vq-step-title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.vq-step-title.completed,
+.vq-step-title.active {
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+}
+
+.vq-step-title.pending {
+  font-weight: 600;
+  color: var(--color-text-muted, #64748B);
+}
+
+.vq-step-desc {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--color-text-muted, #64748B);
+  line-height: 1.4;
+}
+
+.vq-tracker-step.pending .vq-step-desc {
+  color: #94A3B8;
+}
+
+/* =========================================================
+   Responsive Breakpoints
+   ========================================================= */
+@media (max-width: 992px) {
+  .virtual-queue-page {
+    padding: 0 24px 28px 24px;
+    gap: 18px;
+  }
+
+  .virtual-queue-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .vq-tracker-container {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding-left: 10px;
+  }
+
+  .vq-tracker-step {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 16px;
+  }
+
+  .vq-step-line {
+    top: 32px;
+    left: 15px;
+    width: 3px;
+    height: calc(100% + 22px);
+  }
+
+  .vq-step-top-timestamp {
+    display: none;
+  }
+
+  .vq-step-text-wrap {
+    margin-top: 0;
+    align-items: flex-start;
+    padding: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .virtual-queue-page {
+    padding: 0 16px 20px 16px;
+    gap: 16px;
+  }
+
+  .vq-card {
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .vq-card-inner {
+    padding: 18px 16px;
+    border-radius: 12px;
+  }
+
+  .vq-huge-number,
+  .vq-huge-token-number {
+    font-size: 38px;
+  }
+
+  .vq-token-meta-split {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .vq-token-divider {
+    display: none;
+  }
+}

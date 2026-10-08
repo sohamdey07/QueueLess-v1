@@ -1,0 +1,871 @@
+/* ==========================================================================
+   QueueLess Appointment Booking Modal
+   Adheres to QueueLess UI Design Tokens & AGENTS.md rules
+   ========================================================================== */
+
+/* 1. Backdrop Overlay */
+.booking-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* 2. Main Modal Container (Increased width for comfortable spacious layout) */
+.booking-modal-card {
+  background: var(--color-bg-card, #FFFFFF);
+  border-radius: 20px;
+  max-width: 780px;
+  width: 100%;
+  max-height: 90vh;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  border: 1px solid var(--color-border, #EEF2F6);
+  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 3. Modal Header */
+.booking-modal-header {
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border, #EEF2F6);
+  flex-shrink: 0;
+  background: #FFFFFF;
+}
+
+.booking-modal-title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.booking-modal-close-btn {
+  background: #F1F5F9;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748B;
+  transition: all var(--transition-fast, 0.15s ease);
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+.booking-modal-close-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+  box-shadow: none;
+}
+
+/* 4. Scrollable Body */
+.booking-modal-body {
+  padding: 22px 28px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.booking-modal-body::-webkit-scrollbar-track {
+  background: #F8FAFC;
+}
+
+.booking-modal-body::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.booking-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+.booking-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 5. Service Overview Card */
+.booking-service-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #F8FAFC;
+  border: 1px solid var(--color-border, #EEF2F6);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.booking-service-card-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.booking-service-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.booking-service-card-title {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.booking-service-card-desc {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.booking-service-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.booking-service-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.booking-service-badge.duration-badge {
+  background: #EBF3FE;
+  color: var(--color-primary, #1D68F2);
+  border: 1px solid rgba(29, 104, 242, 0.15);
+}
+
+.booking-service-badge.schedule-badge {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* 6. Customer Auto-Fetch Reassurance Note */
+.booking-auto-account-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 12px;
+  padding: 11px 16px;
+}
+
+.auto-account-icon {
+  color: #16A34A;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.auto-account-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auto-account-title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: #15803D;
+}
+
+.auto-account-desc {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  color: #166534;
+  line-height: 1.4;
+}
+
+/* 7. Section Generic */
+.booking-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.booking-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.section-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-header-icon {
+  color: var(--color-primary, #1D68F2);
+}
+
+.section-title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.slots-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-blue {
+  color: var(--color-primary, #1D68F2);
+}
+
+.legend-grey {
+  color: #94A3B8;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot.dot-blue {
+  background-color: var(--color-primary, #1D68F2);
+}
+
+.legend-dot.dot-grey {
+  background-color: #94A3B8;
+}
+
+/* 8. Available Dates Grid (Horizontal Scrollable Carousel) */
+.booking-dates-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(110px, 1fr);
+  gap: 11px;
+  overflow-x: auto;
+  padding: 4px 2px 10px 2px;
+  scrollbar-width: thin;
+}
+
+.booking-dates-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.booking-dates-grid::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+/* Date Card Styles */
+.date-slot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 13px 10px;
+  border-radius: 13px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all var(--transition-fast, 0.15s ease);
+  user-select: none;
+  min-height: 96px;
+  justify-content: space-between;
+}
+
+/* When Slots Are Available -> BLUE Theme */
+.date-slot-card.slots-available {
+  background: #FFFFFF;
+  border: 1.5px solid #BFDBFE;
+  color: #0F172A;
+}
+
+.date-slot-card.slots-available:hover {
+  border-color: var(--color-primary, #1D68F2);
+  background: var(--color-primary-subtle, #F0F6FF);
+  box-shadow: none;
+}
+
+/* Active / Selected Date Card */
+.date-slot-card.slots-available.selected {
+  background: var(--color-primary, #1D68F2);
+  border-color: var(--color-primary, #1D68F2);
+  color: #FFFFFF;
+}
+
+.date-slot-card.slots-available.selected .date-card-day {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.date-slot-card.slots-available.selected .date-card-number,
+.date-slot-card.slots-available.selected .date-card-month {
+  color: #FFFFFF;
+}
+
+.date-slot-card.slots-available.selected .date-card-slots-pill {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.date-slot-card.slots-available.selected .slot-indicator-dot {
+  background-color: #FFFFFF;
+}
+
+/* When Slots Are NOT Available (Full / 0 Slots) -> GREY Theme */
+.date-slot-card.slots-empty {
+  background: #F8FAFC;
+  border: 1.5px dashed #CBD5E1;
+  color: #94A3B8;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.date-slot-card.slots-empty:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  box-shadow: none;
+}
+
+/* Date Card Internal Elements */
+.date-card-day {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748B;
+}
+
+.date-card-main {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin: 4px 0;
+}
+
+.date-card-number {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.date-card-month {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Slot Pill within Date Card */
+.date-card-slots-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+/* Blue Slot Pill (Slots Available) */
+.date-card-slots-pill.pill-blue {
+  background-color: #EBF3FE;
+  color: var(--color-primary, #1D68F2);
+  border: 1px solid rgba(29, 104, 242, 0.2);
+}
+
+.slot-indicator-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #1D68F2);
+}
+
+/* Grey Slot Pill (Full / 0 Slots) */
+.date-card-slots-pill.pill-grey {
+  background-color: #E2E8F0;
+  color: #64748B;
+  border: 1px solid #CBD5E1;
+}
+
+.slot-ban-icon {
+  color: #94A3B8;
+}
+
+/* 9. Live Booking Summary Strip */
+.booking-selection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F8FAFC;
+  border: 1px solid var(--color-border, #EEF2F6);
+  border-radius: 12px;
+  padding: 13px 20px;
+  gap: 14px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.summary-label {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.summary-value.highlight {
+  color: var(--color-primary, #1D68F2);
+}
+
+.summary-divider {
+  width: 1px;
+  height: 30px;
+  background: #E2E8F0;
+  flex-shrink: 0;
+}
+
+/* 10. Modal Footer Controls */
+.booking-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.booking-footer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  box-shadow: none;
+}
+
+.booking-cancel-btn {
+  background: #F1F5F9;
+  color: #334155;
+  border: 1px solid #E2E8F0;
+}
+
+.booking-cancel-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+  box-shadow: none;
+}
+
+.booking-submit-btn {
+  background: var(--color-primary, #1D68F2);
+  color: #FFFFFF;
+  border: none;
+}
+
+.booking-submit-btn:hover {
+  background: var(--color-primary-hover, #1555C9);
+  box-shadow: none;
+  /* strictly no box-shadow per AGENTS.md */
+}
+
+.booking-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #94A3B8;
+}
+
+/* 11. Confirmation Success View & Poppers */
+.booking-success-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 8px 8px 8px;
+  animation: modalFadeIn 0.25s ease;
+  position: relative;
+}
+
+/* Poppers Celebration Badge & Animated Icons */
+.booking-popper-celebration {
+  margin-bottom: 14px;
+  animation: popperBadgeDrop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popperBadgeDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+.booking-success-animation-wrap {
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.booking-success-icon-ring {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: #ECFDF5;
+  border: 3.5px solid #10B981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  position: relative;
+  box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.15), 0 0 0 16px rgba(16, 185, 129, 0.08);
+  animation: popperRingPulse 2s ease-in-out infinite;
+}
+
+@keyframes popperRingPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.15), 0 0 0 16px rgba(16, 185, 129, 0.08);
+  }
+
+  50% {
+    box-shadow: 0 0 0 12px rgba(16, 185, 129, 0.22), 0 0 0 24px rgba(16, 185, 129, 0.05);
+  }
+}
+
+.booking-success-check-icon {
+  animation: checkPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.booking-success-heading {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.015em;
+}
+
+.booking-success-subtext {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: #64748B;
+  max-width: 460px;
+  margin: 0 0 22px 0;
+  line-height: 1.5;
+}
+
+/* Ticket Card */
+.booking-ticket-card {
+  width: 100%;
+  background: #F8FAFC;
+  border: 1px solid var(--color-border, #EEF2F6);
+  border-radius: 14px;
+  padding: 18px 22px;
+  box-sizing: border-box;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.ticket-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ticket-id-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ticket-id-label {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ticket-id-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-primary, #1D68F2);
+  letter-spacing: 0.02em;
+}
+
+.ticket-id-value.mono {
+  font-family: monospace, var(--font-sans);
+}
+
+.ticket-copy-btn {
+  background: #EBF3FE;
+  border: 1px solid rgba(29, 104, 242, 0.2);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-primary, #1D68F2);
+  box-shadow: none;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.ticket-copy-btn:hover {
+  background: #DBEAFE;
+  box-shadow: none;
+}
+
+.ticket-copy-btn .copied-check {
+  color: #10B981;
+}
+
+.ticket-dashed-line {
+  border-top: 1px dashed #CBD5E1;
+  margin: 16px 0;
+}
+
+.ticket-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.ticket-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ticket-cell-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+}
+
+.ticket-cell-value {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.ticket-footer-status {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #EEF2F6;
+}
+
+.ticket-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ECFDF5;
+  color: #059669;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3.5px 11px;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Post-booking action buttons */
+.booking-success-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.booking-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  box-shadow: none;
+}
+
+.view-bookings-btn {
+  background: var(--color-primary, #1D68F2);
+  color: #FFFFFF;
+  border: none;
+}
+
+.view-bookings-btn:hover {
+  background: var(--color-primary-hover, #1555C9);
+  box-shadow: none;
+}
+
+.done-btn {
+  background: #F1F5F9;
+  color: #334155;
+  border: 1px solid #E2E8F0;
+}
+
+.done-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+  box-shadow: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .booking-modal-card {
+    max-height: 94vh;
+    border-radius: 16px;
+  }
+
+  .booking-modal-header {
+    padding: 16px 18px;
+  }
+
+  .booking-modal-body {
+    padding: 16px 18px;
+  }
+
+  .ticket-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-selection-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .summary-divider {
+    display: none;
+  }
+
+  .booking-success-actions {
+    flex-direction: column;
+  }
+}

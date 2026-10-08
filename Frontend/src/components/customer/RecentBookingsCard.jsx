@@ -11,7 +11,6 @@ const recentBookingsData = [
   {
     id: 'b1',
     title: 'Blood Test',
-    clinic: 'City Health Clinic',
     date: '12 Sep 2026',
     status: 'Completed',
     statusVariant: 'completed',
@@ -20,7 +19,6 @@ const recentBookingsData = [
   {
     id: 'b2',
     title: 'Dental Checkup',
-    clinic: 'Smile Care Center',
     date: '05 Sep 2026',
     status: 'Cancelled',
     statusVariant: 'cancelled',
@@ -29,7 +27,6 @@ const recentBookingsData = [
   {
     id: 'b3',
     title: 'Vaccination',
-    clinic: 'HealthPlus Clinic',
     date: '20 Aug 2026',
     status: 'Completed',
     statusVariant: 'completed',
@@ -63,8 +60,8 @@ export const RecentBookingsCard = ({
           <RotateCcw size={18} className="recent-header-icon" />
           <h2 className="recent-header-title">Recent Bookings</h2>
         </div>
-        <a 
-          href="#/appointment-history" 
+        <a
+          href="#/appointment-history"
           className="recent-view-all-link"
           onClick={handleViewAll}
         >
@@ -77,17 +74,17 @@ export const RecentBookingsCard = ({
       <div className="recent-bookings-body">
         <ul className="recent-bookings-list">
           {bookings.map((item) => (
-            <li 
-              key={item.id} 
+            <li
+              key={item.id}
               className="recent-booking-item"
               onClick={() => handleItemClick(item.id)}
             >
               {/* Wide Landscape Thumbnail */}
               <div className="recent-booking-image-wrap">
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="recent-booking-image" 
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="recent-booking-image"
                 />
               </div>
 
@@ -95,8 +92,6 @@ export const RecentBookingsCard = ({
               <div className="recent-booking-info">
                 <h4 className="recent-booking-title">{item.title}</h4>
                 <p className="recent-booking-sub">
-                  <span className="recent-booking-clinic">{item.clinic}</span>
-                  <span className="recent-booking-bullet">•</span>
                   <span className="recent-booking-date">{item.date}</span>
                 </p>
               </div>

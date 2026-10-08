@@ -1,0 +1,105 @@
+.my-booking-banner-card {
+  position: relative;
+  width: 100%;
+  min-height: 180px;
+  border-radius: var(--radius-xl, 20px);
+  overflow: hidden;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  background: linear-gradient(135deg, #eaf2fd 0%, #f1f7ff 50%, #e2eeff 100%);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.my-booking-banner-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.my-booking-banner-content {
+  position: relative;
+  z-index: 2;
+  padding: var(--banner-padding, 36px 44px);
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+}
+
+.my-booking-banner-title {
+  font-family: var(--font-sans);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--color-text-main, #0F172A);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px 0;
+}
+
+.my-booking-banner-description {
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  color: var(--color-text-muted, #64748B);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 440px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .my-booking-banner-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .my-booking-banner-card {
+    min-height: 180px;
+  }
+
+  .my-booking-banner-content {
+    padding: var(--banner-padding-tablet, 28px 24px);
+    max-width: 100%;
+    background: linear-gradient(90deg, rgba(235, 243, 254, 0.94) 0%, rgba(235, 243, 254, 0.85) 65%, rgba(235, 243, 254, 0.3) 100%);
+    border-radius: var(--radius-xl, 20px);
+  }
+
+  .my-booking-banner-title {
+    font-size: 24px;
+  }
+
+  .my-booking-banner-description {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 600px) {
+  .my-booking-banner-card {
+    min-height: 160px;
+  }
+
+  .my-booking-banner-content {
+    padding: var(--banner-padding-mobile, 22px 18px);
+    background: rgba(235, 243, 254, 0.94);
+  }
+
+  .my-booking-banner-title {
+    font-size: 20px;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+
+  .my-booking-banner-description {
+    font-size: 13px;
+  }
+
+  .banner-br {
+    display: none;
+  }
+}

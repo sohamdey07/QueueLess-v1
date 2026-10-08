@@ -65,4 +65,10 @@
   /* Dimensions */
   --sidebar-width: 260px;
   --header-height: 80px;
+
+  /* Banner Standards (Consistent across all pages) */
+  --banner-min-height: 250px;
+  --banner-padding: 36px 44px;
+  --banner-padding-tablet: 28px 24px;
+  --banner-padding-mobile: 22px 18px;
 }

@@ -69,8 +69,11 @@ export const CustomerSidebar = ({
           <ul className="sidebar-nav-list">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path || 
-                (item.path === '/home' && (location.pathname === '/' || location.pathname === ''));
+              const isActive = 
+                location.pathname === item.path || 
+                (item.path === '/home' && (location.pathname === '/' || location.pathname === '')) ||
+                (item.id === 'join-queue' && location.pathname === '/virtual-queue') ||
+                (item.id === 'my-bookings' && location.pathname === '/appointment-history');
 
               return (
                 <li key={item.id} className="sidebar-nav-item">

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Bell, ChevronDown, Menu, User, Settings, LogOut } from 'lucide-react';
-import Avatar from '../common/Avatar';
 import './CustomerHeader.css';
 
 export const CustomerHeader = ({ 

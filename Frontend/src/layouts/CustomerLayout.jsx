@@ -17,6 +17,10 @@ const routeHeaders = {
     title: 'Join Queue',
     subtitle: 'Already at the venue? Join the virtual queue and skip the line.',
   },
+  '/virtual-queue': {
+    title: 'Virtual Queue',
+    subtitle: 'Track your real-time position and estimated wait time.',
+  },
   '/my-bookings': {
     title: 'My Bookings',
     subtitle: 'View and manage your upcoming appointments and queue status.',
