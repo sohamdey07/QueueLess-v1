@@ -47,6 +47,7 @@ export const ServiceCard = ({
   const displaySchedule = schedule || availability;
   const displayDuration = typeof duration === 'number' ? `${duration} minutes` : duration;
   const isBookingMode = Boolean(appointmentDate || appointmentId || onJoinQueue || onCancel);
+  const effectiveStatus = status || (isBookingMode ? 'Booked' : null);
 
   const handleBook = () => {
     if (onBook) {
@@ -98,15 +99,15 @@ export const ServiceCard = ({
           <div className="ql-service-card-img-placeholder" />
         )}
 
-        {/* Floating Status Pill, Relative Badge, or Duration Badge */}
-        {status ? (
-          <div className={`ql-service-status-badge status-${status.toLowerCase()}`} aria-label={`Status: ${status}`}>
-            {status.toLowerCase() === 'completed' ? (
-              <CheckCircle2 size={13.5} strokeWidth={2.5} className="ql-status-badge-icon" />
-            ) : (
+        {/* Floating Status Pill (with Green Background for Booked), Relative Badge, or Duration Badge */}
+        {effectiveStatus ? (
+          <div className={`ql-service-status-badge status-${effectiveStatus.toLowerCase()}`} aria-label={`Status: ${effectiveStatus}`}>
+            {effectiveStatus.toLowerCase() === 'cancelled' ? (
               <XCircle size={13.5} strokeWidth={2.5} className="ql-status-badge-icon" />
+            ) : (
+              <CheckCircle2 size={13.5} strokeWidth={2.5} className="ql-status-badge-icon" />
             )}
-            <span>{statusLabel || (status.charAt(0).toUpperCase() + status.slice(1).toLowerCase())}</span>
+            <span>{statusLabel || (effectiveStatus.charAt(0).toUpperCase() + effectiveStatus.slice(1).toLowerCase())}</span>
           </div>
         ) : relativeBadge ? (
           <div className="ql-service-relative-badge" aria-label={`Due: ${relativeBadge}`}>
@@ -128,7 +129,7 @@ export const ServiceCard = ({
           <p className="ql-service-card-desc">{description}</p>
         )}
 
-        {/* If in booking / history mode: Appointment Date, ID & Status Rows */}
+        {/* If in booking mode: Appointment Date & ID Rows (No status section in main content area) */}
         {isBookingMode ? (
           <div className="ql-service-appointment-meta">
             {appointmentDate && (
@@ -163,24 +164,6 @@ export const ServiceCard = ({
                 </button>
               </div>
             )}
-
-            {status && (
-              <div className="ql-appointment-meta-row">
-                <div className="ql-appointment-meta-icon">
-                  {status.toLowerCase() === 'completed' ? (
-                    <CheckCircle2 size={17} strokeWidth={2} className="meta-icon-completed" />
-                  ) : (
-                    <XCircle size={17} strokeWidth={2} className="meta-icon-cancelled" />
-                  )}
-                </div>
-                <div className="ql-appointment-meta-info">
-                  <span className="ql-appointment-meta-label">Status</span>
-                  <span className={`ql-appointment-meta-val status-val-${status.toLowerCase()}`}>
-                    {statusLabel || (status.charAt(0).toUpperCase() + status.slice(1).toLowerCase())}
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           /* Schedule Availability Pill (Green / Blue) */
@@ -192,21 +175,9 @@ export const ServiceCard = ({
           )
         )}
 
-        {/* Action Buttons Row */}
+        {/* Action Buttons Row: Cancel & Join Queue for booking cards */}
         {showAction && (
-          status ? (
-            <div className="ql-service-card-actions ql-history-actions">
-              <button
-                type="button"
-                className="ql-service-btn ql-btn-view-details"
-                onClick={handleDetails}
-                aria-label={`${detailsText} for ${displayTitle}`}
-              >
-                <Clock size={15} strokeWidth={2.2} />
-                <span>{detailsText}</span>
-              </button>
-            </div>
-          ) : isBookingMode ? (
+          (onCancel || onJoinQueue || isBookingMode) && !onBook ? (
             <div className="ql-service-card-actions ql-booking-actions">
               <button
                 type="button"
@@ -224,6 +195,18 @@ export const ServiceCard = ({
               >
                 <span>{joinQueueText}</span>
                 <ArrowRight size={15} strokeWidth={2.2} className="ql-service-btn-arrow" />
+              </button>
+            </div>
+          ) : (status && (status.toLowerCase() === 'completed' || status.toLowerCase() === 'cancelled')) || (onDetails && !onBook) ? (
+            <div className="ql-service-card-actions ql-history-actions">
+              <button
+                type="button"
+                className="ql-service-btn ql-btn-view-details"
+                onClick={handleDetails}
+                aria-label={`${detailsText} for ${displayTitle}`}
+              >
+                <Clock size={15} strokeWidth={2.2} />
+                <span>{detailsText}</span>
               </button>
             </div>
           ) : (

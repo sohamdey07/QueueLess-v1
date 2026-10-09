@@ -756,3 +756,30 @@
     border-radius: 16px;
   }
 }
+
+@media (max-width: 480px) {
+  .join-queue-page {
+    padding: 0 10px 18px 10px;
+    gap: 12px;
+  }
+
+  .join-queue-form-card,
+  .joined-queue-status-card,
+  .join-queue-steps-card {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+
+  .join-queue-icon-circle {
+    width: 44px;
+    height: 44px;
+  }
+
+  .join-queue-card-title {
+    font-size: 16.5px;
+  }
+
+  .join-queue-input-wrapper {
+    padding: 10px 12px;
+  }
+}

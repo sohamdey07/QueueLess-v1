@@ -1,0 +1,365 @@
+/* TV Display Screen Styles - Standardized for Waiting Area Display Monitors */
+.tv-display-container {
+  height: 100vh;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #F8FAFC;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  color: var(--color-text-main, #0F172A);
+  box-sizing: border-box;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* 1. Header Bar */
+.tv-header {
+  height: 84px;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #EEF2F6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 44px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.tv-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.tv-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tv-brand-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.tv-brand-text {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  display: flex;
+  align-items: center;
+}
+
+.tv-brand-queue {
+  color: #0F172A;
+}
+
+.tv-brand-less {
+  color: var(--color-primary, #1D68F2);
+}
+
+.tv-header-divider {
+  width: 1.5px;
+  height: 26px;
+  background-color: #CBD5E1;
+  margin: 0 22px;
+}
+
+.tv-header-tagline {
+  font-size: 15.5px;
+  font-weight: 500;
+  color: #64748B;
+  letter-spacing: -0.01em;
+}
+
+.tv-header-right {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.tv-header-date {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: #1E293B;
+  letter-spacing: -0.01em;
+}
+
+.tv-header-time {
+  font-size: 16.5px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-fullscreen-btn {
+  background: transparent;
+  border: 1px solid #E2E8F0;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 7px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 6px;
+}
+
+.tv-fullscreen-btn:hover {
+  color: #0F172A;
+  background-color: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+/* 2. Main 4-Column Grid */
+.tv-grid-container {
+  flex: 1;
+  padding: 24px 44px 34px 44px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+  box-sizing: border-box;
+  align-items: stretch;
+}
+
+.tv-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+}
+
+/* 3. Top Card: Now Serving */
+.tv-now-serving-card {
+  border-radius: 20px;
+  padding: 30px 18px 40px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 18px -4px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Top Card Color Themes */
+.tv-now-serving-card.theme-blue {
+  background-color: #EDF5FE;
+  border: 1px solid rgba(219, 234, 254, 0.85);
+}
+
+.tv-now-serving-card.theme-green {
+  background-color: #EDF9F2;
+  border: 1px solid rgba(209, 250, 229, 0.85);
+}
+
+.tv-now-serving-card.theme-purple {
+  background-color: #F6F2FF;
+  border: 1px solid rgba(237, 233, 254, 0.85);
+}
+
+.tv-now-serving-card.theme-orange {
+  background-color: #FFF5EC;
+  border: 1px solid rgba(255, 237, 213, 0.85);
+}
+
+.tv-service-title {
+  font-size: 25px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.tv-title-accent {
+  width: 46px;
+  height: 3px;
+  border-radius: 9999px;
+  margin-bottom: 16px;
+}
+
+.tv-title-accent.accent-blue {
+  background-color: #2563EB;
+}
+
+.tv-title-accent.accent-green {
+  background-color: #059669;
+}
+
+.tv-title-accent.accent-purple {
+  background-color: #7C3AED;
+}
+
+.tv-title-accent.accent-orange {
+  background-color: #EA580C;
+}
+
+.tv-now-serving-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 20px;
+  letter-spacing: 0.01em;
+}
+
+.tv-now-serving-token {
+  font-size: 58px;
+  font-weight: 900;
+  color: #0A192F;
+  margin: 0 0 30px 0;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-counter-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 68%;
+  min-width: 140px;
+  padding: 7.5px 20px;
+  border-radius: 9999px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-sizing: border-box;
+}
+
+
+.tv-counter-pill.pill-blue {
+  background-color: #DCEAFE;
+  color: #1D68F2;
+}
+
+.tv-counter-pill.pill-green {
+  background-color: #D1FAE5;
+  color: #059669;
+}
+
+.tv-counter-pill.pill-purple {
+  background-color: #EDE9FE;
+  color: #7C3AED;
+}
+
+.tv-counter-pill.pill-orange {
+  background-color: #FFEDD5;
+  color: #EA580C;
+}
+
+/* 4. Bottom Card: Upcoming Tokens */
+.tv-upcoming-card {
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid #EEF2F6;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+  padding: 20px 18px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.tv-upcoming-header {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 14px 4px;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+.tv-upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tv-upcoming-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 45px;
+  max-height: 55px;
+  padding: 0 22px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #0F172A;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+  transition: transform 0.15s ease;
+}
+
+.tv-upcoming-item:hover {
+  transform: translateX(2px);
+}
+
+.tv-upcoming-item.item-blue {
+  background-color: #EDF5FE;
+}
+
+.tv-upcoming-item.item-green {
+  background-color: #EDF9F2;
+}
+
+.tv-upcoming-item.item-purple {
+  background-color: #F6F2FF;
+}
+
+.tv-upcoming-item.item-orange {
+  background-color: #FFF5EC;
+}
+
+/* 5. Responsive Adaptations */
+@media (max-width: 1200px) {
+  .tv-display-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  .tv-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 20px 24px;
+    gap: 18px;
+  }
+  .tv-header {
+    padding: 0 24px;
+  }
+  .tv-upcoming-item {
+    min-height: 44px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 680px) {
+  .tv-header {
+    height: auto;
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .tv-header-divider,
+  .tv-header-tagline {
+    display: none;
+  }
+  .tv-grid-container {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+  .tv-now-serving-token {
+    font-size: 46px;
+  }
+}

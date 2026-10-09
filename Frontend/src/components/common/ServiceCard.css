@@ -421,6 +421,15 @@
   transform: translateY(-1px);
 }
 
+.ql-service-status-badge.status-booked {
+  background: #10B981;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
 .ql-service-status-badge.status-completed {
   background: rgba(16, 185, 129, 0.95);
   backdrop-filter: blur(8px);
@@ -498,4 +507,42 @@
 .ql-btn-view-details:active {
   transform: scale(0.985);
   box-shadow: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .ql-service-card {
+    padding: 10px 10px 14px 10px;
+    border-radius: 18px;
+  }
+
+  .ql-service-card-title {
+    font-size: 16.5px;
+  }
+
+  .ql-service-card-desc {
+    font-size: 13px;
+    min-height: unset;
+  }
+
+  .ql-service-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ql-service-card-actions {
+    gap: 6px;
+  }
+
+  .ql-service-btn {
+    padding: 9px 8px;
+    font-size: 12px;
+  }
+
+  .ql-service-duration-badge {
+    font-size: 10.5px;
+    padding: 4px 9px;
+  }
 }

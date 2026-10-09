@@ -171,3 +171,50 @@
   color: var(--color-primary);
   transition: all var(--transition-fast);
 }
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .recent-bookings-outer-card {
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .recent-booking-item {
+    gap: 12px;
+    padding: 11px 0;
+  }
+
+  .recent-booking-image-wrap {
+    width: 52px;
+    height: 34px;
+  }
+
+  .recent-booking-title {
+    font-size: 13.5px;
+  }
+
+  .recent-booking-sub {
+    font-size: 11.5px;
+  }
+}
+
+@media (max-width: 440px) {
+  .recent-bookings-outer-card {
+    padding: 14px 12px;
+  }
+
+  .recent-booking-item {
+    gap: 9px;
+  }
+
+  .recent-booking-image-wrap {
+    width: 44px;
+    height: 30px;
+    border-radius: 6px;
+  }
+
+  .recent-chevron-circle {
+    width: 28px;
+    height: 28px;
+  }
+}

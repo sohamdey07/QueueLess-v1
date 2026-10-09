@@ -196,7 +196,7 @@ export const BookingModal = ({
         appointmentDate: currentSelectedDate.fullDateText,
         duration: service.duration,
         schedule: service.schedule,
-        status: 'BOOKED',
+        status: 'Booked',
         createdAt: new Date().toISOString(),
       };
 

@@ -1,0 +1,11 @@
+.staff-layout-wrapper {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-layout-content {
+  flex: 1;
+  width: 100%;
+}

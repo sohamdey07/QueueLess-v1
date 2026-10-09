@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bell, ChevronDown, Menu, User, Settings, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, Menu, User, Settings, LogOut } from 'lucide-react';
 import './CustomerHeader.css';
 
 export const CustomerHeader = ({ 
@@ -11,6 +11,25 @@ export const CustomerHeader = ({
 }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  const profileRef = useRef(null);
+  const notificationRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="customer-header">
@@ -35,7 +54,7 @@ export const CustomerHeader = ({
       {/* Right: Notifications & Profile */}
       <div className="header-right">
         {/* Notification Bell (naked outline icon with red dot) */}
-        <div className="header-notification-wrap">
+        <div className="header-notification-wrap" ref={notificationRef}>
           <button 
             type="button" 
             className="header-bell-btn"
@@ -61,27 +80,31 @@ export const CustomerHeader = ({
           )}
         </div>
 
-        {/* User Profile (Avatar circle, Name, Chevron - clean naked layout) */}
-        <div className="header-profile-wrap">
+        {/* User Profile (Avatar circle only in header, name and details inside dropdown) */}
+        <div className="header-profile-wrap" ref={profileRef}>
           <button 
             type="button" 
             className="header-profile-btn"
             onClick={() => setProfileOpen(!profileOpen)}
             aria-expanded={profileOpen}
+            aria-label={`User menu for ${userName}`}
           >
             <div className="profile-avatar-circle">
               <span>{userInitials}</span>
             </div>
-            <span className="profile-user-name">{userName}</span>
-            <ChevronDown size={15} className={`profile-chevron-icon ${profileOpen ? 'open' : ''}`} />
           </button>
 
           {/* Profile Dropdown */}
           {profileOpen && (
             <div className="header-dropdown-menu profile-dropdown">
               <div className="profile-dropdown-user-info">
-                <span className="profile-dropdown-name">{userName}</span>
-                <span className="profile-dropdown-role">Customer Account</span>
+                {/* <div className="profile-dropdown-avatar">
+                  <span>{userInitials}</span>
+                </div> */}
+                <div className="profile-dropdown-text">
+                  <span className="profile-dropdown-name">{userName}</span>
+                  <span className="profile-dropdown-role">Customer Account</span>
+                </div>
               </div>
               <div className="dropdown-divider" />
               <button type="button" className="dropdown-item">

@@ -841,14 +841,55 @@
   .booking-modal-card {
     max-height: 94vh;
     border-radius: 16px;
+    width: 100%;
   }
 
   .booking-modal-header {
-    padding: 16px 18px;
+    padding: 14px 16px;
+  }
+
+  .booking-modal-title {
+    font-size: 17.5px;
   }
 
   .booking-modal-body {
-    padding: 16px 18px;
+    padding: 14px 16px;
+    gap: 16px;
+  }
+
+  .booking-service-card {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .booking-service-card-img {
+    width: 52px;
+    height: 52px;
+  }
+
+  .booking-dates-grid {
+    grid-auto-columns: minmax(92px, 1fr);
+    gap: 8px;
+  }
+
+  .date-slot-card {
+    padding: 10px 7px;
+    min-height: 84px;
+  }
+
+  .date-card-number {
+    font-size: 17px;
+  }
+
+  .booking-modal-footer {
+    flex-direction: column-reverse;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .booking-footer-btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .ticket-details-grid {
@@ -867,5 +908,19 @@
 
   .booking-success-actions {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 440px) {
+  .booking-dates-grid {
+    grid-auto-columns: minmax(84px, 1fr);
+  }
+
+  .date-card-number {
+    font-size: 16px;
+  }
+
+  .date-card-day {
+    font-size: 10px;
   }
 }

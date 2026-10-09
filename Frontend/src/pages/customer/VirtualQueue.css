@@ -673,3 +673,19 @@
     display: none;
   }
 }
+
+@media (max-width: 480px) {
+  .virtual-queue-page {
+    padding: 0 10px 18px 10px;
+    gap: 12px;
+  }
+
+  .vq-card-inner {
+    padding: 14px 12px;
+  }
+
+  .vq-huge-number,
+  .vq-huge-token-number {
+    font-size: 32px;
+  }
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, CalendarPlus, Users, CalendarCheck } from 'lucide-react';
+import { Home, CalendarPlus, Users, CalendarCheck, X } from 'lucide-react';
 import logoImg from '../../assets/images/logo/logo.png';
 import './CustomerSidebar.css';
 
@@ -62,6 +62,14 @@ export const CustomerSidebar = ({
               <span className="brand-less">Less</span>
             </div>
           </Link>
+          <button 
+            type="button" 
+            className="sidebar-close-btn" 
+            onClick={onClose}
+            aria-label="Close sidebar"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Navigation Links */}

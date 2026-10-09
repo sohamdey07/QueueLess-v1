@@ -20,3 +20,19 @@
   width: 100%;
   padding-top: 24px;
 }
+
+@media (max-width: 1024px) {
+  .customer-layout-main {
+    margin-left: 0;
+  }
+
+  .customer-layout-body {
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .customer-layout-body {
+    padding-top: 12px;
+  }
+}

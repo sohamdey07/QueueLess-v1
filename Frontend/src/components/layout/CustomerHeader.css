@@ -104,7 +104,7 @@
   border-radius: var(--radius-full);
 }
 
-/* Profile Pill - Clean naked avatar + name + chevron */
+/* Profile Avatar Circle - Only Circle displayed in header */
 .header-profile-wrap {
   position: relative;
 }
@@ -112,49 +112,39 @@
 .header-profile-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: var(--radius-sm);
-  transition: opacity var(--transition-fast);
+  padding: 2px;
+  border-radius: var(--radius-full);
+  transition: transform var(--transition-fast);
 }
 
 .header-profile-btn:hover {
-  opacity: 0.85;
+  transform: scale(1.05);
 }
 
 .profile-avatar-circle {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-full);
-  background-color: #EBF1FA;
-  color: #1E293B;
+  background: linear-gradient(135deg, #EBF3FE 0%, #DBEAFE 100%);
+  color: var(--color-primary, #1D68F2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.profile-user-name {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-main);
   letter-spacing: -0.01em;
+  border: 1.5px solid #E2E8F0;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.profile-chevron-icon {
-  color: #64748B;
-  transition: transform var(--transition-fast);
-}
-
-.profile-chevron-icon.open {
-  transform: rotate(180deg);
+.header-profile-btn:hover .profile-avatar-circle {
+  border-color: var(--color-primary, #1D68F2);
+  box-shadow: 0 0 0 3px rgba(29, 104, 242, 0.12);
 }
 
 /* Dropdown Menus */
@@ -226,17 +216,50 @@
 }
 
 .profile-dropdown-user-info {
-  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: #F8FAFC;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.profile-dropdown-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #EBF3FE 0%, #DBEAFE 100%);
+  color: var(--color-primary, #1D68F2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid rgba(29, 104, 242, 0.15);
+}
+
+.profile-dropdown-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .profile-dropdown-name {
+  font-family: var(--font-sans);
   font-size: 13.5px;
   font-weight: 700;
   color: var(--color-text-main);
-  display: block;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-dropdown-role {
+  font-family: var(--font-sans);
   font-size: 11.5px;
   color: var(--color-text-muted);
 }
@@ -270,4 +293,49 @@
 
 .dropdown-item.text-danger:hover {
   background-color: var(--color-danger-bg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .customer-header {
+    height: 62px;
+    padding: 0 16px;
+  }
+
+  .header-left {
+    gap: 10px;
+  }
+
+  .header-page-title {
+    font-size: 17px;
+  }
+
+  .header-page-subtitle {
+    display: none;
+  }
+
+  .header-right {
+    gap: 12px;
+  }
+
+  .notification-popover {
+    width: calc(100vw - 32px);
+    max-width: 300px;
+    right: -42px;
+  }
+
+  .profile-dropdown {
+    right: 0;
+    width: 200px;
+  }
+}
+
+@media (max-width: 380px) {
+  .customer-header {
+    padding: 0 12px;
+  }
+
+  .header-page-title {
+    font-size: 15.5px;
+  }
 }

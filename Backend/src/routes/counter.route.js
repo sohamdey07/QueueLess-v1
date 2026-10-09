@@ -42,7 +42,7 @@ router.patch(
     "/:counterId",
     counterUpdateLimiter,
     authenticate,
-    authorizeRoles("ADMIN"),
+    authorizeRoles("ADMIN","STAFF"),
     validate(counterValidation.counterParamsSchema, "params"),
     validate(counterValidation.updateCounterSchema, "body"),
     counterFunction.updateCounter

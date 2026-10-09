@@ -75,7 +75,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
         title: 'General Consultation',
         description: 'Consult with our experienced doctors for general health issues.',
         image: generalConsultImg,
-        relativeBadge: 'In 2 days',
+        status: 'Booked',
         appointmentDate: '28 Sep 2026, 10:00 AM',
         appointmentId: 'QL-20260926-8F42K1',
       },
@@ -84,7 +84,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
         title: 'Document Verification',
         description: 'Submit and verify your documents with our team.',
         image: documentVerifImg,
-        relativeBadge: 'In 5 days',
+        status: 'Booked',
         appointmentDate: '01 Oct 2026, 11:30 AM',
         appointmentId: 'QL-20261001-5D21P9',
       },
@@ -93,7 +93,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
         title: 'Account Assistance',
         description: 'Get help with account related services and updates.',
         image: accountAssistImg,
-        relativeBadge: 'In 7 days',
+        status: 'Booked',
         appointmentDate: '03 Oct 2026, 03:00 PM',
         appointmentId: 'QL-20261003-9K77L2',
       },
@@ -214,8 +214,8 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
     }
   };
 
-  const handleJoinQueue = () => {
-    navigate('/virtual-queue');
+  const handleJoinQueue = (booking) => {
+    navigate('/virtual-queue', { state: { booking } });
   };
 
   const handleOpenCancelModal = (booking) => {
@@ -224,7 +224,15 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
 
   const handleConfirmCancel = () => {
     if (cancelModalBooking) {
-      setBookings(prev => prev.filter(b => b.id !== cancelModalBooking.id));
+      setBookings((prev) => {
+        const updated = prev.filter((b) => b.id !== cancelModalBooking.id);
+        try {
+          localStorage.setItem('queueless_upcoming_bookings', JSON.stringify(updated));
+        } catch (err) {
+          console.warn('Could not update localStorage on cancellation:', err);
+        }
+        return updated;
+      });
       setCancelModalBooking(null);
     }
   };
@@ -509,7 +517,10 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
               {bookings.map((booking) => (
                 <ServiceCard
                   key={booking.id}
-                  service={booking}
+                  service={{
+                    ...booking,
+                    status: booking.status || 'Booked',
+                  }}
                   onJoinQueue={handleJoinQueue}
                   onCancel={handleOpenCancelModal}
                   cancelText="Cancel"

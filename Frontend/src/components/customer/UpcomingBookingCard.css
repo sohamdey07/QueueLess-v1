@@ -197,3 +197,61 @@
   cursor: pointer;
   transition: all var(--transition-fast);
 }
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .upcoming-booking-outer-card {
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .upcoming-booking-inner-box {
+    padding: 14px 14px;
+    gap: 14px;
+  }
+
+  .upcoming-booking-image-wrap {
+    width: 90px;
+    height: 90px;
+  }
+
+  .upcoming-booking-title {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .upcoming-booking-clinic {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .upcoming-booking-meta-row {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 440px) {
+  .upcoming-booking-outer-card {
+    padding: 14px 12px;
+  }
+
+  .upcoming-booking-inner-box {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .upcoming-booking-image-wrap {
+    width: 76px;
+    height: 76px;
+  }
+
+  .upcoming-booking-title {
+    font-size: 14px;
+  }
+
+  .upcoming-booking-meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

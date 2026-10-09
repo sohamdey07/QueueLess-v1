@@ -106,3 +106,10 @@
     gap: 16px;
   }
 }
+
+@media (max-width: 480px) {
+  .book-appointment-page {
+    padding: 0 10px 18px 10px;
+    gap: 12px;
+  }
+}
