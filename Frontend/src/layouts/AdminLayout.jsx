@@ -42,14 +42,22 @@ const adminRouteHeaders = {
     subtitle: 'Configure service desks, booths, and live counter assignments.',
   },
   '/admin/staff': {
-    title: 'Staff',
+    title: 'Manage Users',
     subtitle: 'Manage staff accounts, assign counters, and monitor attendance.',
   },
   '/admin/staff-management': {
-    title: 'Staff',
+    title: 'Manage Users',
+    subtitle: 'Manage staff accounts, assign counters, and monitor attendance.',
+  },
+  '/admin/manage-users': {
+    title: 'Manage Users',
     subtitle: 'Manage staff accounts, assign counters, and monitor attendance.',
   },
   '/admin/queue-logs': {
+    title: 'Queue Logs',
+    subtitle: 'Inspect detailed queue transitions, wait times, and audit logs.',
+  },
+  '/admin/queue-log': {
     title: 'Queue Logs',
     subtitle: 'Inspect detailed queue transitions, wait times, and audit logs.',
   },

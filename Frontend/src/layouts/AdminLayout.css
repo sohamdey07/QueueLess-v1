@@ -18,7 +18,7 @@
 .admin-layout-body {
   flex: 1;
   width: 100%;
-  padding-top: 24px;
+  padding-top: calc(72px + 24px);
 }
 
 @media (max-width: 1024px) {
@@ -27,12 +27,18 @@
   }
 
   .admin-layout-body {
-    padding-top: 16px;
+    padding-top: calc(72px + 16px);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-layout-body {
+    padding-top: calc(62px + 14px);
   }
 }
 
 @media (max-width: 640px) {
   .admin-layout-body {
-    padding-top: 12px;
+    padding-top: calc(62px + 12px);
   }
 }

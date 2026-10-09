@@ -96,68 +96,70 @@ export const AdminDashboard = () => {
       {/* 2. Top Metric Cards (4 Cards Row) */}
       <div className="admin-stat-cards-grid">
         {/* Card 1: Total Services */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-icon-box purple-box">
-            <LayoutGrid size={24} className="stat-purple-icon" />
-          </div>
-          <div className="admin-stat-content">
-            <span className="admin-stat-label">Total Services</span>
-            <span className="admin-stat-value">8</span>
-            <span className="admin-stat-badge">
-              <ArrowUp size={13} />
-              <span>2 new</span>
+        <div className="admin-stat-card card-purple-soft">
+          <div className="metric-card-header-line">
+            <div className="metric-icon-square icon-purple">
+              <LayoutGrid size={20} strokeWidth={2.4} />
+            </div>
+            <span className="metric-card-pill pill-purple">
+              <ArrowUp size={11} strokeWidth={2.8} /> 2 new
             </span>
+          </div>
+          <div className="metric-info-block">
+            <span className="metric-info-label">Total Services</span>
+            <span className="metric-info-value">8</span>
+            <span className="metric-info-subtext">Active department offerings</span>
           </div>
         </div>
 
         {/* Card 2: Total Staffs */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-icon-box orange-box">
-            <Users size={24} className="stat-orange-icon" />
-          </div>
-          <div className="admin-stat-content">
-            <span className="admin-stat-label">Total Staffs</span>
-            <span className="admin-stat-value">12</span>
-            <span className="admin-stat-badge">
-              <ArrowUp size={13} />
-              <span>1 new</span>
+        <div className="admin-stat-card card-orange-soft">
+          <div className="metric-card-header-line">
+            <div className="metric-icon-square icon-orange">
+              <Users size={20} strokeWidth={2.4} />
+            </div>
+            <span className="metric-card-pill pill-orange">
+              <ArrowUp size={11} strokeWidth={2.8} /> 1 new
             </span>
           </div>
-        </div>
-
-        {/* Card 3: Total Appointments (Today) */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-icon-box blue-box">
-            <Calendar size={24} className="stat-blue-icon" />
-          </div>
-          <div className="admin-stat-content">
-            <span className="admin-stat-label">
-              Total Appointments<br />
-              <span className="label-sub">(Today)</span>
-            </span>
-            <span className="admin-stat-value">120</span>
-            <span className="admin-stat-badge">
-              <ArrowUp size={13} />
-              <span>12%</span>
-            </span>
+          <div className="metric-info-block">
+            <span className="metric-info-label">Total Staffs</span>
+            <span className="metric-info-value">12</span>
+            <span className="metric-info-subtext">Operational team members</span>
           </div>
         </div>
 
-        {/* Card 4: Total Served (Today) */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-icon-box green-box">
-            <CheckCircle2 size={24} className="stat-green-icon" />
+        {/* Card 3: Total Appointments */}
+        <div className="admin-stat-card card-blue-soft">
+          <div className="metric-card-header-line">
+            <div className="metric-icon-square icon-blue">
+              <Calendar size={20} strokeWidth={2.4} />
+            </div>
+            <span className="metric-card-pill pill-blue">
+              <ArrowUp size={11} strokeWidth={2.8} /> 12% today
+            </span>
           </div>
-          <div className="admin-stat-content">
-            <span className="admin-stat-label">
-              Total Served<br />
-              <span className="label-sub">(Today)</span>
+          <div className="metric-info-block">
+            <span className="metric-info-label">Total Appointments</span>
+            <span className="metric-info-value">120</span>
+            <span className="metric-info-subtext">Bookings scheduled today</span>
+          </div>
+        </div>
+
+        {/* Card 4: Total Served */}
+        <div className="admin-stat-card card-green-soft">
+          <div className="metric-card-header-line">
+            <div className="metric-icon-square icon-green">
+              <CheckCircle2 size={20} strokeWidth={2.4} />
+            </div>
+            <span className="metric-card-pill pill-green">
+              <ArrowUp size={11} strokeWidth={2.8} /> 8% today
             </span>
-            <span className="admin-stat-value">68</span>
-            <span className="admin-stat-badge">
-              <ArrowUp size={13} />
-              <span>8%</span>
-            </span>
+          </div>
+          <div className="metric-info-block">
+            <span className="metric-info-label">Total Served</span>
+            <span className="metric-info-value">68</span>
+            <span className="metric-info-subtext">Successfully resolved today</span>
           </div>
         </div>
       </div>

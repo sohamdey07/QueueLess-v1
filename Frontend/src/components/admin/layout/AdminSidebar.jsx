@@ -39,7 +39,7 @@ const adminNavItems = [
   },
   {
     id: 'staff',
-    label: 'Staff',
+    label: 'Manage users',
     icon: Users,
     path: '/admin/staff',
   },
@@ -103,7 +103,7 @@ export const AdminSidebar = ({
                 (item.id === 'service' && location.pathname === '/admin/service-management') ||
                 (item.id === 'availability' && location.pathname === '/admin/availability-management') ||
                 (item.id === 'counter' && location.pathname === '/admin/counter-management') ||
-                (item.id === 'staff' && location.pathname === '/admin/staff-management');
+                (item.id === 'staff' && (location.pathname === '/admin/staff-management' || location.pathname === '/admin/manage-users'));
 
               return (
                 <li key={item.id} className="admin-sidebar-nav-item">

@@ -12,6 +12,10 @@ import StaffLayout from '../layouts/StaffLayout';
 import StaffDashboard from '../pages/staff/StaffDashboard';
 import AdminLayout from '../layouts/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminServices from '../pages/admin/AdminServices';
+import AdminAvailability from '../pages/admin/AdminAvailability';
+import AdminManageUsers from '../pages/admin/AdminManageUsers';
+import AdminQueueLogs from '../pages/admin/AdminQueueLogs';
 
 import UnderDevelopment from '../pages/customer/UnderDevelopment';
 
@@ -36,15 +40,18 @@ export const AppRoutes = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="options" element={<AdminDashboard />} />
-        <Route path="service" element={<UnderDevelopment />} />
-        <Route path="service-management" element={<UnderDevelopment />} />
-        <Route path="availability" element={<UnderDevelopment />} />
-        <Route path="availability-management" element={<UnderDevelopment />} />
+        <Route path="service" element={<AdminServices />} />
+        <Route path="service-management" element={<AdminServices />} />
+        <Route path="availability" element={<AdminAvailability />} />
+        <Route path="availability-management" element={<AdminAvailability />} />
         <Route path="counter" element={<UnderDevelopment />} />
         <Route path="counter-management" element={<UnderDevelopment />} />
-        <Route path="staff" element={<UnderDevelopment />} />
-        <Route path="staff-management" element={<UnderDevelopment />} />
-        <Route path="queue-logs" element={<UnderDevelopment />} />
+        <Route path="staff" element={<AdminManageUsers />} />
+        <Route path="staff-management" element={<AdminManageUsers />} />
+        <Route path="manage-users" element={<AdminManageUsers />} />
+        <Route path="users" element={<AdminManageUsers />} />
+        <Route path="queue-logs" element={<AdminQueueLogs />} />
+        <Route path="queue-log" element={<AdminQueueLogs />} />
         <Route path="*" element={<UnderDevelopment />} />
       </Route>
       <Route path="/admin-portal" element={<Navigate to="/admin/dashboard" replace />} />

@@ -26,15 +26,26 @@
 .admin-banner-content {
   position: relative;
   z-index: 2;
-  padding: var(--banner-padding, 36px 44px);
-  max-width: 580px;
+  padding: var(--banner-padding, 30px 44px);
+  max-width: 620px;
   display: flex;
   flex-direction: column;
 }
 
+.admin-banner-tag {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
 .admin-banner-title {
   font-family: var(--font-sans);
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--color-text-main, #0F172A);
   line-height: 1.22;

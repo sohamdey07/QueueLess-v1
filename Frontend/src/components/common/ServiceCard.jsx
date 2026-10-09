@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
-import { Clock, Calendar, Ticket, Copy, Check, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Clock, 
+  Calendar, 
+  Ticket, 
+  Copy, 
+  Check, 
+  ArrowRight, 
+  CheckCircle2, 
+  XCircle,
+  MoreVertical,
+  Pencil,
+  Trash2
+} from 'lucide-react';
 import './ServiceCard.css';
 
 /**
  * Common reusable ServiceCard component
  * Designed to represent service items across customer, staff, and admin dashboards.
- * Supports both service browsing, booked appointments, and appointment history modes.
+ * Supports service browsing, booked appointments, appointment history, and admin service management modes.
  */
 export const ServiceCard = ({
   service,
@@ -19,9 +31,45 @@ export const ServiceCard = ({
   cancelText = 'Cancel',
   joinQueueText = 'Join Queue',
   showAction = true,
-  className = ''
+  className = '',
+  // Admin Management Mode Props
+  isAdmin = false,
+  onEdit,
+  onDelete,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
+  const handleToggleMenu = (e) => {
+    e.stopPropagation();
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    if (onEdit) onEdit(service);
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    if (onDelete) onDelete(service);
+  };
 
   if (!service) return null;
 
@@ -45,7 +93,8 @@ export const ServiceCard = ({
   const displayTitle = title || name || 'Service';
   const displayImage = image || imageUrl;
   const displaySchedule = schedule || availability;
-  const displayDuration = typeof duration === 'number' ? `${duration} minutes` : duration;
+  const displayDuration = typeof duration === 'number' ? `${duration} mins` : duration;
+  const isInactive = status === 'inactive' || service.status === 'inactive';
   const isBookingMode = Boolean(appointmentDate || appointmentId || onJoinQueue || onCancel);
   const effectiveStatus = status || (isBookingMode ? 'Booked' : null);
 
@@ -85,7 +134,7 @@ export const ServiceCard = ({
   };
 
   return (
-    <div className={`ql-service-card ${className}`}>
+    <div className={`ql-service-card ${isAdmin ? 'admin-card-mode' : ''} ${className}`}>
       {/* Top Poster Image Area */}
       <div className="ql-service-card-media">
         {displayImage ? (
@@ -99,8 +148,51 @@ export const ServiceCard = ({
           <div className="ql-service-card-img-placeholder" />
         )}
 
-        {/* Floating Status Pill (with Green Background for Booked), Relative Badge, or Duration Badge */}
-        {effectiveStatus ? (
+        {/* Floating Badges */}
+        {isAdmin ? (
+          <>
+            <div className="admin-badges-left">
+              <div
+                className={`admin-status-badge ${isInactive ? 'status-inactive' : 'status-active'}`}
+                aria-label={`Status: ${isInactive ? 'Inactive' : 'Active'}`}
+              >
+                <span className={`status-dot ${isInactive ? 'red-dot' : 'green-dot'}`} />
+                <span>{isInactive ? 'Inactive' : 'Active'}</span>
+              </div>
+            </div>
+            <div className="admin-card-menu-container" ref={menuRef}>
+              <button
+                type="button"
+                className="admin-card-more-btn"
+                onClick={handleToggleMenu}
+                aria-label="Service options"
+                aria-expanded={isMenuOpen}
+              >
+                <MoreVertical size={16} />
+              </button>
+              {isMenuOpen && (
+                <div className="admin-card-dropdown-menu">
+                  <button
+                    type="button"
+                    className="admin-dropdown-item item-edit"
+                    onClick={handleEditClick}
+                  >
+                    <Pencil size={14} className="dropdown-item-icon" />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-dropdown-item item-delete"
+                    onClick={handleDeleteClick}
+                  >
+                    <Trash2 size={14} className="dropdown-item-icon" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        ) : effectiveStatus ? (
           <div className={`ql-service-status-badge status-${effectiveStatus.toLowerCase()}`} aria-label={`Status: ${effectiveStatus}`}>
             {effectiveStatus.toLowerCase() === 'cancelled' ? (
               <XCircle size={13.5} strokeWidth={2.5} className="ql-status-badge-icon" />
@@ -130,7 +222,7 @@ export const ServiceCard = ({
         )}
 
         {/* If in booking mode: Appointment Date & ID Rows (No status section in main content area) */}
-        {isBookingMode ? (
+        {!isAdmin && isBookingMode ? (
           <div className="ql-service-appointment-meta">
             {appointmentDate && (
               <div className="ql-appointment-meta-row">
@@ -166,17 +258,27 @@ export const ServiceCard = ({
             )}
           </div>
         ) : (
-          /* Schedule Availability Pill (Green / Blue) */
-          displaySchedule && (
-            <div className={`ql-service-schedule-pill schedule-${scheduleType}`}>
-              <Calendar size={15} strokeWidth={2} className="ql-schedule-icon" />
-              <span>{displaySchedule}</span>
-            </div>
-          )
+          <>
+            {/* Duration between description and service timing */}
+            {(isAdmin || status === 'active' || status === 'inactive') && displayDuration && (
+              <div className="ql-service-duration-pill" aria-label={`Duration: ${displayDuration}`}>
+                <Clock size={13.5} strokeWidth={2.2} className="ql-duration-pill-icon" />
+                <span>Duration: {String(displayDuration).replace(/^duration:\s*/i, '')}</span>
+              </div>
+            )}
+
+            {/* Schedule Availability Pill (Green / Blue) */}
+            {displaySchedule && (
+              <div className={`ql-service-schedule-pill schedule-${scheduleType}`}>
+                <Calendar size={15} strokeWidth={2} className="ql-schedule-icon" />
+                <span>{displaySchedule}</span>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Action Buttons Row: Cancel & Join Queue for booking cards */}
-        {showAction && (
+        {/* Action Buttons Row: Cancel & Join Queue for booking cards (Hidden in Admin Mode) */}
+        {!isAdmin && showAction && (
           (onCancel || onJoinQueue || isBookingMode) && !onBook ? (
             <div className="ql-service-card-actions ql-booking-actions">
               <button

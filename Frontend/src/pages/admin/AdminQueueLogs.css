@@ -1,0 +1,759 @@
+/* ==========================================================================
+   AdminQueueLogs.css
+   Pixel-perfect styling matching the QueueLess design system & Manage Users page
+   ========================================================================== */
+
+.admin-queue-logs-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 0 36px 36px 36px;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* ==========================================================================
+   1. Filters Card (Select Service & Select Date)
+   ========================================================================== */
+
+.queue-logs-filters-card {
+  background: #FFFFFF;
+  border: 1px solid #EEF2F6;
+  border-radius: 16px;
+  padding: 18px 24px;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.filter-item-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.filter-item-label {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+}
+
+.filter-dropdown-relative {
+  position: relative;
+}
+
+.filter-dropdown-button {
+  height: 42px;
+  min-width: 250px;
+  max-width: 320px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.filter-dropdown-button:hover {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+}
+
+.filter-dropdown-button:focus-visible {
+  border-color: #1D68F2;
+  box-shadow: 0 0 0 3px rgba(29, 104, 242, 0.12);
+}
+
+.filter-button-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.filter-service-icon-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #EFF6FF;
+  color: #1D68F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.filter-coffee-icon {
+  color: #1D68F2;
+}
+
+.filter-calendar-icon {
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.filter-button-text {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0F172A;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.filter-chevron-icon {
+  color: #64748B;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filter-chevron-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Floating Popovers */
+.filter-popover-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 260px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  padding: 6px;
+  z-index: 60;
+  box-sizing: border-box;
+  animation: filterPopoverFade 0.15s ease-out;
+}
+
+@keyframes filterPopoverFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-popover-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.filter-popover-item:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+.filter-popover-item.selected {
+  background: #EFF6FF;
+  color: #1D68F2;
+  font-weight: 600;
+}
+
+.popover-item-icon {
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.filter-popover-item.selected .popover-item-icon {
+  color: #1D68F2;
+}
+
+.popover-item-label {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.popover-date-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #E2E8F0;
+  color: #475569;
+}
+
+.filter-popover-item.selected .popover-date-tag {
+  background: #DBEAFE;
+  color: #1D68F2;
+}
+
+.date-popover-header {
+  padding: 6px 10px;
+  border-bottom: 1px solid #F1F5F9;
+  margin-bottom: 4px;
+}
+
+.date-popover-title {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94A3B8;
+}
+
+/* ==========================================================================
+   2. Metrics Cards Grid (4 Cards Row) - Matching Manage Users standards
+   ========================================================================== */
+
+.queue-logs-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  width: 100%;
+}
+
+.queue-metric-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.queue-metric-card::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  filter: blur(28px);
+  pointer-events: none;
+  opacity: 0.65;
+  transition: opacity 0.3s ease;
+}
+
+.queue-metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.1), 0 6px 12px -2px rgba(15, 23, 42, 0.04);
+}
+
+.queue-metric-card:hover::before {
+  opacity: 0.9;
+}
+
+/* Card Themes with Rich Gradient & Border */
+.card-total-tokens {
+  background: linear-gradient(145deg, #FFFFFF 0%, #F0F7FF 100%);
+  border: 1px solid #DBEAFE;
+}
+.card-total-tokens::before {
+  background: rgba(29, 104, 242, 0.2);
+}
+
+.card-completed {
+  background: linear-gradient(145deg, #FFFFFF 0%, #ECFDF5 100%);
+  border: 1px solid #D1FAE5;
+}
+.card-completed::before {
+  background: rgba(16, 185, 129, 0.22);
+}
+
+.card-waiting {
+  background: linear-gradient(145deg, #FFFFFF 0%, #FFFBEB 100%);
+  border: 1px solid #FEF3C7;
+}
+.card-waiting::before {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.card-noshow {
+  background: linear-gradient(145deg, #FFFFFF 0%, #FFF1F2 100%);
+  border: 1px solid #FEE2E2;
+}
+.card-noshow::before {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Top Header Line inside Card */
+.metric-card-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Icons */
+.metric-icon-square,
+.metric-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.queue-metric-card:hover .metric-icon-square,
+.queue-metric-card:hover .metric-icon-circle {
+  transform: scale(1.06);
+}
+
+.metric-icon-square.icon-blue {
+  background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+  color: #1D68F2;
+  box-shadow: 0 4px 12px rgba(29, 104, 242, 0.15);
+}
+
+.metric-icon-circle.icon-green {
+  background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+  color: #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.metric-icon-circle.icon-amber {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  color: #D97706;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.metric-icon-circle.icon-red {
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  color: #EF4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+/* Micro Status Pill */
+.metric-card-pill {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+}
+
+.metric-card-pill.pill-blue {
+  background: #EBF3FE;
+  color: #1D68F2;
+}
+
+.metric-card-pill.pill-green {
+  background: #DCFCE7;
+  color: #059669;
+}
+
+.metric-card-pill.pill-amber {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.metric-card-pill.pill-red {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+/* Metric Info Block */
+.metric-content-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+  letter-spacing: 0.01em;
+  margin-bottom: 0;
+}
+
+.metric-value {
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  margin: 2px 0;
+}
+
+.metric-subtext {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: #94A3B8;
+  letter-spacing: 0.01em;
+}
+
+/* ==========================================================================
+   3. Queue Logs Data Table Card - Matching Manage Users Main Card standards
+   ========================================================================== */
+
+.queue-logs-table-card {
+  background: #FFFFFF;
+  border: 1px solid #EEF2F6;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.queue-logs-table-responsive-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.queue-logs-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-family: var(--font-sans);
+}
+
+.queue-logs-data-table thead tr {
+  background: #F8FAFC;
+  border-bottom: 1px solid #EEF2F6;
+}
+
+.queue-logs-data-table th {
+  padding: 13px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: #475569;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.queue-logs-data-table th.th-col-num {
+  width: 44px;
+  text-align: center;
+}
+
+.queue-logs-data-table th.th-col-token {
+  width: 95px;
+  text-align: center;
+}
+
+.queue-logs-data-table th.th-col-name,
+.queue-logs-data-table th.th-col-email,
+.queue-logs-data-table th.th-col-phone,
+.queue-logs-data-table th.th-col-time,
+.queue-logs-data-table th.th-col-counter,
+.queue-logs-data-table th.th-col-status {
+  text-align: center;
+}
+
+.queue-logs-table-row {
+  border-bottom: 1px solid #F1F5F9;
+  transition: background-color 0.15s ease;
+}
+
+.queue-logs-table-row:hover {
+  background: #F8FAFC;
+}
+
+.queue-logs-data-table td {
+  padding: 14px 18px;
+  font-size: 13px;
+  color: #1E293B;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.cell-col-num,
+.cell-col-token,
+.cell-col-name,
+.cell-col-email,
+.cell-col-phone,
+.cell-col-time,
+.cell-col-counter,
+.cell-col-status {
+  text-align: center;
+}
+
+.cell-col-num {
+  font-weight: 600;
+  color: #64748B;
+  font-size: 12.5px;
+}
+
+.cell-col-token .token-number-text {
+  font-weight: 700;
+  color: #0F172A;
+  font-size: 13px;
+}
+
+.cell-col-name .customer-name-text {
+  font-weight: 700;
+  color: #0F172A;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+.cell-col-email .customer-email-text {
+  color: #475569;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.cell-col-phone .customer-phone-text {
+  color: #475569;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.cell-col-time .time-text {
+  color: #475569;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.cell-col-time .dash-text,
+.cell-col-counter .dash-text {
+  color: #94A3B8;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.cell-col-counter .counter-text {
+  color: #475569;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Status Badges */
+.log-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.log-status-badge.status-completed {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #D1FAE5;
+}
+
+.log-status-badge.status-noshow {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FEE2E2;
+}
+
+.log-status-badge.status-waiting {
+  background: #FEF9C3;
+  color: #D97706;
+  border: 1px solid #FEF08A;
+}
+
+.status-badge-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.status-badge-circle.circle-green {
+  background: #10B981;
+}
+
+.status-badge-circle.circle-red {
+  background: #EF4444;
+}
+
+.status-badge-circle.circle-amber {
+  background: #F59E0B;
+}
+
+/* Empty Cell */
+.no-logs-empty-cell {
+  padding: 44px 20px;
+  text-align: center;
+}
+
+.no-logs-text {
+  font-size: 14px;
+  color: #64748B;
+  margin: 0;
+}
+
+/* ==========================================================================
+   4. Table Footer & Pagination
+   ========================================================================== */
+
+.queue-logs-table-footer {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-top: 1px solid #F1F5F9;
+  background: #FFFFFF;
+}
+
+.footer-count-text {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.footer-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.queue-log-step-btn,
+.queue-log-page-btn {
+  height: 34px;
+  min-width: 34px;
+  padding: 0 10px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.queue-log-step-btn:hover:not(:disabled),
+.queue-log-page-btn:hover:not(.active) {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.queue-log-page-btn.active {
+  background: #1D68F2;
+  border-color: #1D68F2;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(29, 104, 242, 0.25);
+}
+
+.queue-log-step-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #E2E8F0;
+}
+
+.queue-log-page-ellipsis {
+  padding: 0 4px;
+  color: #94A3B8;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   5. Responsive Media Queries - Matching Manage Users standards
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .queue-logs-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .queue-logs-filters-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-item-wrapper {
+    justify-content: space-between;
+  }
+
+  .filter-dropdown-button {
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-queue-logs-page {
+    padding: 0 16px 24px 16px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .queue-logs-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-item-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .filter-dropdown-button {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .queue-logs-table-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

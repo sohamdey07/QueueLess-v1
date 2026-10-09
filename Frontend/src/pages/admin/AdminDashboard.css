@@ -16,96 +16,192 @@
 .admin-stat-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
+  gap: 18px;
   width: 100%;
 }
 
 .admin-stat-card {
-  background: #FFFFFF;
-  border: 1px solid #EEF2F6;
-  border-radius: 16px;
-  padding: 18px 20px;
-  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 20px 22px;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
-  transition: transform var(--transition-fast, 0.15s ease), box-shadow var(--transition-fast, 0.15s ease);
+}
+
+.admin-stat-card::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  filter: blur(28px);
+  pointer-events: none;
+  opacity: 0.65;
+  transition: opacity 0.3s ease;
 }
 
 .admin-stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 38px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.1), 0 6px 12px -2px rgba(15, 23, 42, 0.04);
 }
 
-.admin-stat-icon-box {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+.admin-stat-card:hover::before {
+  opacity: 0.9;
+}
+
+/* Card Themes with Rich Gradient & Border */
+.admin-stat-card.card-purple-soft {
+  background: linear-gradient(145deg, #FFFFFF 0%, #FAF5FF 100%);
+  border: 1px solid #EDE9FE;
+}
+.admin-stat-card.card-purple-soft::before {
+  background: rgba(124, 58, 237, 0.2);
+}
+
+.admin-stat-card.card-orange-soft {
+  background: linear-gradient(145deg, #FFFFFF 0%, #FFF7ED 100%);
+  border: 1px solid #FED7AA;
+}
+.admin-stat-card.card-orange-soft::before {
+  background: rgba(234, 88, 12, 0.2);
+}
+
+.admin-stat-card.card-blue-soft {
+  background: linear-gradient(145deg, #FFFFFF 0%, #F0F7FF 100%);
+  border: 1px solid #DBEAFE;
+}
+.admin-stat-card.card-blue-soft::before {
+  background: rgba(29, 104, 242, 0.2);
+}
+
+.admin-stat-card.card-green-soft {
+  background: linear-gradient(145deg, #FFFFFF 0%, #ECFDF5 100%);
+  border: 1px solid #D1FAE5;
+}
+.admin-stat-card.card-green-soft::before {
+  background: rgba(16, 185, 129, 0.22);
+}
+
+/* Top Header Line inside Card */
+.metric-card-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Icon Square */
+.metric-icon-square {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.admin-stat-icon-box.purple-box {
-  background-color: #EDE9FE;
+.admin-stat-card:hover .metric-icon-square {
+  transform: scale(1.06);
+}
+
+.metric-icon-square.icon-purple {
+  background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+  color: #7C3AED;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+}
+
+.metric-icon-square.icon-orange {
+  background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%);
+  color: #EA580C;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+}
+
+.metric-icon-square.icon-blue {
+  background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+  color: #1D68F2;
+  box-shadow: 0 4px 12px rgba(29, 104, 242, 0.15);
+}
+
+.metric-icon-square.icon-green {
+  background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+  color: #10B981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+/* Micro Status / Trend Pill */
+.metric-card-pill {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3.5px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+}
+
+.metric-card-pill.pill-purple {
+  background: #F3E8FF;
   color: #7C3AED;
 }
 
-.admin-stat-icon-box.orange-box {
-  background-color: #FFEDD5;
-  color: #EA580C;
+.metric-card-pill.pill-orange {
+  background: #FFEDD5;
+  color: #C2410C;
 }
 
-.admin-stat-icon-box.blue-box {
-  background-color: #E0F2FE;
-  color: #0284C7;
+.metric-card-pill.pill-blue {
+  background: #EBF3FE;
+  color: #1D68F2;
 }
 
-.admin-stat-icon-box.green-box {
-  background-color: #DCFCE7;
-  color: #16A34A;
+.metric-card-pill.pill-green {
+  background: #DCFCE7;
+  color: #059669;
 }
 
-.admin-stat-content {
+/* Label, Value & Context Subtitle */
+.metric-info-block {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: 2px;
 }
 
-.admin-stat-label {
+.metric-info-label {
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   color: #64748B;
-  line-height: 1.25;
+  letter-spacing: 0.01em;
 }
 
-.admin-stat-label .label-sub {
-  font-size: 11.5px;
-  color: #94A3B8;
-  font-weight: 500;
-}
-
-.admin-stat-value {
+.metric-info-value {
   font-family: var(--font-sans);
-  font-size: 27px;
+  font-size: 30px;
   font-weight: 800;
   color: #0F172A;
   line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin: 3px 0 2px 0;
+  letter-spacing: -0.03em;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  margin: 2px 0;
 }
 
-.admin-stat-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+.metric-info-subtext {
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 700;
-  color: #10B981;
+  font-weight: 500;
+  color: #94A3B8;
+  letter-spacing: 0.01em;
 }
 
 /* ==========================================================================
@@ -764,7 +860,8 @@
     padding: 14px 16px;
   }
 
-  .admin-stat-value {
+  .admin-stat-value,
+  .metric-info-value {
     font-size: 24px;
   }
 }

@@ -36,9 +36,9 @@ const updateAvailabilitySchema = z.object({
 
     status: z
         .enum(
-            ["OPEN", "CLOSED"],
+            ["OPEN", "CLOSED", "FULL"],
             {
-                error: "Status must be either OPEN or CLOSED"
+                error: "Status must be OPEN, CLOSED, or FULL"
             }
         )
         .optional()
