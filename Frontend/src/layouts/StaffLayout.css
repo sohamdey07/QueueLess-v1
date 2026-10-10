@@ -8,4 +8,11 @@
 .staff-layout-content {
   flex: 1;
   width: 100%;
+  padding-top: 72px;
+}
+
+@media (max-width: 768px) {
+  .staff-layout-content {
+    padding-top: 60px;
+  }
 }

@@ -1,16 +1,21 @@
 .customer-header {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
   height: 72px;
   padding: 0 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid #EEF2F6;
-  position: sticky;
-  top: 0;
-  z-index: 30;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  z-index: 40;
   box-sizing: border-box;
-  width: 100%;
+  transition: left var(--transition-normal);
 }
 
 /* Header Left */
@@ -33,6 +38,11 @@
 }
 
 @media (max-width: 1024px) {
+  .customer-header {
+    left: 0;
+    padding: 0 24px;
+  }
+
   .mobile-menu-btn {
     display: flex;
   }

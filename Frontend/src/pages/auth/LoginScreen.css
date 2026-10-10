@@ -1,0 +1,510 @@
+/* Auth Login / Register Screen Styles */
+
+.auth-page-container {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #FFFFFF;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Toast Floating Notification */
+.auth-toast-notification {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  animation: authToastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes authToastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-toast-success {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.auth-toast-warning {
+  background: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.auth-toast-info {
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
+}
+
+/* ==========================================================================
+   Full Screen Two-Column Layout (Entire Screen)
+   ========================================================================== */
+.auth-layout-container {
+  display: grid;
+  grid-template-columns: minmax(460px, 1.05fr) minmax(460px, 0.95fr);
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   1. Left Panel: Authentication Form & Brand Header
+   ========================================================================== */
+.auth-form-panel {
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 36px 64px 32px 64px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background-color: #FFFFFF;
+}
+
+/* Header Row: System Logo and Name */
+.auth-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.auth-brand-logo-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  user-select: none;
+}
+
+.auth-brand-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.auth-brand-title {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.auth-brand-title .brand-queue {
+  color: #0F172A;
+}
+
+.auth-brand-title .brand-less {
+  color: #1D68F2;
+}
+
+/* Form Content Area */
+.auth-form-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 440px;
+  width: 100%;
+  margin: auto;
+  padding: 16px 0;
+  box-sizing: border-box;
+}
+
+/* Headings Group */
+.auth-headings-group {
+  margin-bottom: 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-main-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  margin: 0 0 6px 0;
+  line-height: 1.15;
+}
+
+.auth-sub-title {
+  font-size: 14.5px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   Smooth Animated Toggle Pill Slider (Login & Register)
+   ========================================================================== */
+.auth-tabs-pill-container {
+  position: relative;
+  display: flex;
+  background: #F1F5F9;
+  border-radius: 9999px;
+  padding: 4px;
+  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Sliding active pill indicator */
+.auth-tab-slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: #1D68F2;
+  border-radius: 9999px;
+  box-shadow: 0 2px 10px rgba(29, 104, 242, 0.28);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.auth-tab-slider.slide-left {
+  transform: translateX(0%);
+}
+
+.auth-tab-slider.slide-right {
+  transform: translateX(100%);
+}
+
+.auth-tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10.5px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748B;
+  border-radius: 9999px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition: color 0.22s ease;
+  user-select: none;
+}
+
+.auth-tab-btn.active {
+  color: #FFFFFF;
+}
+
+.auth-tab-btn:hover:not(.active) {
+  color: #0F172A;
+}
+
+/* Animated Field Appearance */
+.auth-field-animated {
+  animation: authFieldSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes authFieldSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Actual Form */
+.auth-actual-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-input-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.auth-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 48px;
+  transition: border-color var(--transition-fast, 0.15s ease),
+              box-shadow var(--transition-fast, 0.15s ease),
+              background-color var(--transition-fast, 0.15s ease);
+  box-sizing: border-box;
+}
+
+.auth-input-wrapper:focus-within {
+  background: #FFFFFF;
+  border-color: #1D68F2;
+  box-shadow: 0 0 0 3px rgba(29, 104, 242, 0.12);
+}
+
+.auth-field-icon {
+  color: #94A3B8;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.auth-input-field {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: #0F172A;
+  padding: 0;
+  height: 100%;
+}
+
+.auth-input-field::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.auth-password-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.auth-password-toggle-btn:hover {
+  color: #1E293B;
+}
+
+/* Forgot Password Link Row */
+.auth-forgot-password-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+.auth-forgot-password-link {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1D68F2;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.auth-forgot-password-link:hover {
+  color: #1557D0;
+  text-decoration: underline;
+}
+
+/* Submit Button */
+.auth-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  background: #1D68F2;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background-color var(--transition-fast, 0.15s ease),
+              transform var(--transition-fast, 0.15s ease);
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  background-color: #1557D0;
+  transform: translateY(-1px);
+  box-shadow: none; /* Adhering strictly to AGENTS.md */
+}
+
+.auth-submit-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Bottom Switch Row */
+.auth-bottom-switch-row {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auth-bottom-switch-text {
+  color: #64748B;
+}
+
+.auth-bottom-switch-btn {
+  background: transparent;
+  border: none;
+  color: #1D68F2;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.auth-bottom-switch-btn:hover {
+  color: #1557D0;
+  text-decoration: underline;
+}
+
+.auth-panel-footer {
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   2. Right Panel: Stationary Hero Image
+   Pinned at 100vh height and locked in position so it NEVER moves on resizing
+   or toggling between Login and Register tabs
+   ========================================================================== */
+.auth-image-panel {
+  height: 100vh;
+  max-height: 100vh;
+  position: relative;
+  padding: 20px 20px 20px 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  background-color: #FFFFFF;
+}
+
+.auth-image-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 16px 45px -8px rgba(15, 23, 42, 0.12), 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+  background-color: #F8FAFC;
+}
+
+.auth-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 1060px) {
+  .auth-layout-container {
+    grid-template-columns: minmax(400px, 1fr) minmax(380px, 1fr);
+  }
+
+  .auth-form-panel {
+    padding: 32px 40px 28px 40px;
+  }
+}
+
+@media (max-width: 900px) {
+  .auth-layout-container {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .auth-form-panel {
+    min-height: 100vh;
+    height: auto;
+    max-height: none;
+    padding: 32px 24px;
+  }
+
+  .auth-image-panel {
+    display: none; /* Focus completely on the full-screen authentication form on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form-panel {
+    padding: 24px 18px;
+  }
+
+  .auth-main-title {
+    font-size: 26px;
+  }
+
+  .auth-tab-btn {
+    padding: 9.5px 12px;
+    font-size: 13.5px;
+  }
+
+  .auth-input-wrapper {
+    height: 44px;
+  }
+
+  .auth-submit-btn {
+    height: 44px;
+    font-size: 14.5px;
+  }
+}

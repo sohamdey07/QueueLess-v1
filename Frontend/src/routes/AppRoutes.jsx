@@ -17,14 +17,44 @@ import AdminAvailability from '../pages/admin/AdminAvailability';
 import AdminCounter from '../pages/admin/AdminCounter';
 import AdminManageUsers from '../pages/admin/AdminManageUsers';
 import AdminQueueLogs from '../pages/admin/AdminQueueLogs';
+import OnboardingScreen from '../pages/onboarding/OnboardingScreen';
+import LoginScreen from '../pages/auth/LoginScreen';
+import OtpVerificationScreen from '../pages/auth/OtpVerificationScreen';
 
 import UnderDevelopment from '../pages/customer/UnderDevelopment';
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Default redirect to /home */}
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      {/* Auth Routes */}
+      <Route path="/login" element={<LoginScreen initialTab="login" />} />
+      <Route path="/register" element={<LoginScreen initialTab="register" />} />
+      <Route path="/verify-otp" element={<OtpVerificationScreen />} />
+      <Route path="/verify-account" element={<Navigate to="/verify-otp" replace />} />
+      <Route path="/auth" element={<Navigate to="/login" replace />} />
+
+      {/* Onboarding Screen Route (on mobile screen, onboarding screens will not appear, direct login screen will appear) */}
+      <Route
+        path="/onboarding"
+        element={
+          typeof window !== 'undefined' && window.innerWidth <= 768 ? (
+            <Navigate to="/login" replace />
+          ) : (
+            <OnboardingScreen />
+          )
+        }
+      />
+
+      {/* Default entry point: Mobile goes directly to Login, Desktop goes to Onboarding */}
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={typeof window !== 'undefined' && window.innerWidth <= 768 ? '/login' : '/onboarding'}
+            replace
+          />
+        }
+      />
 
       {/* Standalone Fullscreen TV Display Screen */}
       <Route path="tv-display" element={<TvDisplay />} />

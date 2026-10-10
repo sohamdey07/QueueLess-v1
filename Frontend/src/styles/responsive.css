@@ -24,12 +24,18 @@
   .bookings-columns-grid {
     grid-template-columns: 1fr !important;
   }
+
+  .customer-header {
+    left: 0 !important;
+  }
 }
 
 /* Mobile Screens (<= 768px) */
 @media (max-width: 768px) {
   .customer-header {
-    padding: 16px 20px !important;
+    left: 0 !important;
+    height: 62px !important;
+    padding: 0 16px !important;
   }
 
   .customer-page-content {
