@@ -719,45 +719,48 @@ export const AdminServices = () => {
         </button>
       </div>
 
-      {/* 3. Section Title Row */}
-      <div className="admin-service-header-row">
-        <h2 className="admin-service-section-title">
-          <Layers size={20} className="section-title-icon" />
-          <span>Available Services ({filteredServices.length})</span>
-        </h2>
-      </div>
+      {/* 3. Available Services White Box Container */}
+      <div className="admin-services-content-box">
+        {/* Section Title Row */}
+        <div className="admin-service-header-row">
+          <h2 className="admin-service-section-title">
+            <Layers size={20} className="section-title-icon" />
+            <span>Available Services ({filteredServices.length})</span>
+          </h2>
+        </div>
 
-      {/* 4. Services 4-Column Grid */}
-      {filteredServices.length > 0 ? (
-        <div className="admin-services-grid">
-          {filteredServices.map((service) => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              isAdmin={true}
-              onEdit={handleOpenEditModal}
-              onDelete={(srv) => setServiceToDelete(srv)}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="admin-services-empty">
-          <div className="admin-empty-icon-box">
-            <Search size={28} />
+        {/* Services Grid */}
+        {filteredServices.length > 0 ? (
+          <div className="admin-services-grid">
+            {filteredServices.map((service) => (
+              <ServiceCard
+                key={service.id}
+                service={service}
+                isAdmin={true}
+                onEdit={handleOpenEditModal}
+                onDelete={(srv) => setServiceToDelete(srv)}
+              />
+            ))}
           </div>
-          <h3 className="admin-empty-title">No services found</h3>
-          <p className="admin-empty-desc">
-            No services matched "{searchQuery}". Try searching with a different term or reset your search.
-          </p>
-          <button
-            type="button"
-            className="admin-empty-reset-btn"
-            onClick={() => setSearchQuery('')}
-          >
-            Clear Search Filter
-          </button>
-        </div>
-      )}
+        ) : (
+          <div className="admin-services-empty">
+            <div className="admin-empty-icon-box">
+              <Search size={28} />
+            </div>
+            <h3 className="admin-empty-title">No services found</h3>
+            <p className="admin-empty-desc">
+              No services matched "{searchQuery}". Try searching with a different term or reset your search.
+            </p>
+            <button
+              type="button"
+              className="admin-empty-reset-btn"
+              onClick={() => setSearchQuery('')}
+            >
+              Clear Search Filter
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* 5. Add / Edit Service Modal */}
       {isModalOpen && (

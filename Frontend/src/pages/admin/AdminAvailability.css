@@ -133,7 +133,7 @@
    ========================================================================== */
 
 .admin-avail-card-body {
-  padding: 24px 28px 28px 28px;
+  padding: 20px 28px 28px 28px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -953,13 +953,38 @@
 .avail-table-responsive-wrapper {
   width: 100%;
   overflow-x: auto;
-  border-radius: 14px;
-  border: 1px solid #E2E8F0;
+  overflow-y: auto;
+  max-height: 410px;
+  height: 410px;
+  border-radius: 16px;
+  border: 1px solid #EEF2F6;
+  background: #FFFFFF;
+  box-sizing: border-box;
+}
+
+.avail-table-responsive-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.avail-table-responsive-wrapper::-webkit-scrollbar-track {
+  background: #F8FAFC;
+  border-radius: 8px;
+}
+
+.avail-table-responsive-wrapper::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 8px;
+}
+
+.avail-table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
 .avail-data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-family: var(--font-sans);
 }
 
@@ -969,12 +994,17 @@
 }
 
 .avail-data-table th {
-  padding: 12px 18px;
+  padding: 14px 18px;
   font-size: 11.5px;
   font-weight: 700;
   color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #F8FAFC;
+  box-shadow: 0 1px 0 #EEF2F6;
 }
 
 /* Column Alignments - Headers directly centered over column data */
@@ -1048,8 +1078,7 @@
   font-size: 11px;
   font-weight: 600;
   color: #64748B;
-  background: #F1F5F9;
-  padding: 1px 6px;
+  padding: 1px 0;
   border-radius: 4px;
   margin-top: 2px;
   display: inline-block;
@@ -1198,6 +1227,69 @@
   background: #FEE2E2;
   border-color: #FCA5A5;
   color: #DC2626;
+}
+
+/* Table Footer & Pagination */
+.avail-table-footer {
+  padding: 12px 6px 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.avail-table-footer .footer-count-text {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.avail-table-footer .table-footer-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avail-table-footer .pagination-step-btn,
+.avail-table-footer .pagination-num-btn {
+  height: 34px;
+  min-width: 34px;
+  padding: 0 10px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.avail-table-footer .pagination-step-btn:hover:not(:disabled),
+.avail-table-footer .pagination-num-btn:hover:not(.active) {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.avail-table-footer .pagination-num-btn.active {
+  background: #1D68F2;
+  border-color: #1D68F2;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(29, 104, 242, 0.25);
+}
+
+.avail-table-footer .pagination-step-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #E2E8F0;
 }
 
 /* Empty State Card */

@@ -9,6 +9,8 @@ import {
   Users, 
   ChevronDown, 
   ChevronUp, 
+  ChevronLeft,
+  ChevronRight,
   Settings, 
   Sparkles, 
   RotateCcw, 
@@ -59,7 +61,7 @@ const formatDateDisplay = (dateStr) => {
   return `${dayFormatted} ${monthName} ${dateObj.getFullYear()} (${dayName})`;
 };
 
-// Initial Mock Availability Records
+// Initial Mock Availability Records (15 Dummy Records)
 const initialAvailabilities = [
   {
     id: 'avail-1',
@@ -127,6 +129,105 @@ const initialAvailabilities = [
     status: 'OPEN',
     createdAt: '2026-10-04T11:30:00Z',
   },
+  {
+    id: 'avail-7',
+    serviceId: 'srv-8',
+    serviceTitle: 'Follow-up Consultation',
+    serviceCode: 'FOL-01',
+    date: '2026-10-12',
+    capacity: 12,
+    bookedCount: 12,
+    status: 'FULL',
+    createdAt: '2026-10-05T08:30:00Z',
+  },
+  {
+    id: 'avail-8',
+    serviceId: 'srv-7',
+    serviceTitle: 'Dermatology & Skin Care',
+    serviceCode: 'DERM-01',
+    date: '2026-10-13',
+    capacity: 22,
+    bookedCount: 15,
+    status: 'OPEN',
+    createdAt: '2026-10-05T09:00:00Z',
+  },
+  {
+    id: 'avail-9',
+    serviceId: 'srv-1',
+    serviceTitle: 'General Consultation',
+    serviceCode: 'GEN-01',
+    date: '2026-10-14',
+    capacity: 25,
+    bookedCount: 19,
+    status: 'OPEN',
+    createdAt: '2026-10-06T09:30:00Z',
+  },
+  {
+    id: 'avail-10',
+    serviceId: 'srv-2',
+    serviceTitle: 'Blood Test & Diagnostics',
+    serviceCode: 'DIAG-01',
+    date: '2026-10-14',
+    capacity: 20,
+    bookedCount: 20,
+    status: 'FULL',
+    createdAt: '2026-10-06T10:00:00Z',
+  },
+  {
+    id: 'avail-11',
+    serviceId: 'srv-3',
+    serviceTitle: 'Vaccination & Immunization',
+    serviceCode: 'VAC-01',
+    date: '2026-10-15',
+    capacity: 15,
+    bookedCount: 3,
+    status: 'OPEN',
+    createdAt: '2026-10-07T10:15:00Z',
+  },
+  {
+    id: 'avail-12',
+    serviceId: 'srv-5',
+    serviceTitle: 'Dental Checkup & Cleaning',
+    serviceCode: 'DEN-01',
+    date: '2026-10-15',
+    capacity: 12,
+    bookedCount: 0,
+    status: 'CLOSED',
+    createdAt: '2026-10-07T10:45:00Z',
+  },
+  {
+    id: 'avail-13',
+    serviceId: 'srv-6',
+    serviceTitle: 'Eye & Vision Checkup',
+    serviceCode: 'EYE-01',
+    date: '2026-10-16',
+    capacity: 16,
+    bookedCount: 10,
+    status: 'OPEN',
+    createdAt: '2026-10-08T08:15:00Z',
+  },
+  {
+    id: 'avail-14',
+    serviceId: 'srv-7',
+    serviceTitle: 'Physiotherapy & Rehab',
+    serviceCode: 'PHY-01',
+    date: '2026-10-17',
+    capacity: 14,
+    bookedCount: 8,
+    status: 'OPEN',
+    createdAt: '2026-10-08T09:00:00Z',
+  },
+  {
+    id: 'avail-15',
+    serviceId: 'srv-4',
+    serviceTitle: 'Follow-up Consultation',
+    serviceCode: 'FOL-01',
+    date: '2026-10-18',
+    capacity: 20,
+    bookedCount: 20,
+    status: 'FULL',
+    createdAt: '2026-10-08T11:00:00Z',
+  },
 ];
 
 export const AdminAvailability = () => {
@@ -179,10 +280,12 @@ export const AdminAvailability = () => {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
 
-  // Existing Availabilities List State
+  // Existing Availabilities List & Pagination State
+  const ITEMS_PER_PAGE = 10;
   const [availabilities, setAvailabilities] = useState(initialAvailabilities);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'open' | 'full' | 'closed'
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState(null);
 
   // Toast feedback state
@@ -359,6 +462,11 @@ export const AdminAvailability = () => {
     );
   };
 
+  // Reset page when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
   // Filtered availabilities for the list tab
   const filteredAvailabilities = useMemo(() => {
     return availabilities.filter((item) => {
@@ -376,6 +484,12 @@ export const AdminAvailability = () => {
       return matchesSearch && matchesStatus;
     });
   }, [availabilities, searchQuery, statusFilter]);
+
+  const totalPages = Math.ceil(filteredAvailabilities.length / ITEMS_PER_PAGE) || 1;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedAvailabilities = useMemo(() => {
+    return filteredAvailabilities.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredAvailabilities, startIndex]);
 
   return (
     <div className="admin-availability-page">
@@ -832,7 +946,7 @@ export const AdminAvailability = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAvailabilities.map((item) => {
+                  {paginatedAvailabilities.map((item) => {
                     const booked = item.bookedCount || 0;
                     const percent = Math.min(100, Math.round((booked / item.capacity) * 100));
                     return (
@@ -934,6 +1048,50 @@ export const AdminAvailability = () => {
                 <Plus size={16} />
                 <span>Create New Availability</span>
               </button>
+            </div>
+          )}
+
+          {/* Table Footer Count & Pagination */}
+          {filteredAvailabilities.length > 0 && (
+            <div className="avail-table-footer">
+              <span className="footer-count-text">
+                Showing {startIndex + 1} to{' '}
+                {Math.min(startIndex + ITEMS_PER_PAGE, filteredAvailabilities.length)} of{' '}
+                {filteredAvailabilities.length} availability records
+              </span>
+
+              <div className="table-footer-pagination">
+                <button
+                  type="button"
+                  className="pagination-step-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    className={`pagination-num-btn ${currentPage === pageNum ? 'active' : ''}`}
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  className="pagination-step-btn"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
           )}
         </div>

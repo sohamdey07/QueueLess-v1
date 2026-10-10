@@ -613,12 +613,23 @@ export const AdminQueueLogs = () => {
                   const rowNumber = startIndex + idx + 1;
                   return (
                     <tr key={log.id} className="queue-logs-table-row">
-                      <td className="cell-col-num">{rowNumber}</td>
+                      <td className="cell-col-num">
+                        <span className="row-num-badge">{rowNumber}</span>
+                      </td>
                       <td className="cell-col-token">
-                        <span className="token-number-text">{log.tokenNo}</span>
+                        <span className="token-number-badge">{log.tokenNo}</span>
                       </td>
                       <td className="cell-col-name">
-                        <span className="customer-name-text">{log.customerName}</span>
+                        <div className="queue-customer-name-wrapper">
+                          <div className={`queue-avatar-circle avatar-tone-${idx % 5}`}>
+                            {log.customerName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .slice(0, 2)
+                              .join('')}
+                          </div>
+                          <span className="customer-name-text">{log.customerName}</span>
+                        </div>
                       </td>
                       <td className="cell-col-email">
                         <span className="customer-email-text">{log.email}</span>
@@ -627,27 +638,35 @@ export const AdminQueueLogs = () => {
                         <span className="customer-phone-text">{log.phoneNumber}</span>
                       </td>
                       <td className="cell-col-time">
-                        <span className="time-text">{log.joinedAt}</span>
+                        <span className="time-pill-text">{log.joinedAt}</span>
                       </td>
                       <td className="cell-col-time">
-                        <span className={log.servedAt === '-' ? 'dash-text' : 'time-text'}>
-                          {log.servedAt}
-                        </span>
+                        {log.servedAt === '-' ? (
+                          <span className="null-dash-pill">—</span>
+                        ) : (
+                          <span className="time-pill-text">{log.servedAt}</span>
+                        )}
                       </td>
                       <td className="cell-col-time">
-                        <span className={log.noShowAt === '-' ? 'dash-text' : 'time-text'}>
-                          {log.noShowAt}
-                        </span>
+                        {log.noShowAt === '-' ? (
+                          <span className="null-dash-pill">—</span>
+                        ) : (
+                          <span className="time-pill-text">{log.noShowAt}</span>
+                        )}
                       </td>
                       <td className="cell-col-time">
-                        <span className={log.completedAt === '-' ? 'dash-text' : 'time-text'}>
-                          {log.completedAt}
-                        </span>
+                        {log.completedAt === '-' ? (
+                          <span className="null-dash-pill">—</span>
+                        ) : (
+                          <span className="time-pill-text">{log.completedAt}</span>
+                        )}
                       </td>
                       <td className="cell-col-counter">
-                        <span className={log.counter === '-' ? 'dash-text' : 'counter-text'}>
-                          {log.counter}
-                        </span>
+                        {log.counter === '-' ? (
+                          <span className="null-dash-pill">—</span>
+                        ) : (
+                          <span className="counter-pill-text">{log.counter}</span>
+                        )}
                       </td>
                       <td className="cell-col-status">
                         {log.status === 'Completed' && (

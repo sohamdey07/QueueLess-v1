@@ -14,6 +14,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminServices from '../pages/admin/AdminServices';
 import AdminAvailability from '../pages/admin/AdminAvailability';
+import AdminCounter from '../pages/admin/AdminCounter';
 import AdminManageUsers from '../pages/admin/AdminManageUsers';
 import AdminQueueLogs from '../pages/admin/AdminQueueLogs';
 
@@ -44,8 +45,8 @@ export const AppRoutes = () => {
         <Route path="service-management" element={<AdminServices />} />
         <Route path="availability" element={<AdminAvailability />} />
         <Route path="availability-management" element={<AdminAvailability />} />
-        <Route path="counter" element={<UnderDevelopment />} />
-        <Route path="counter-management" element={<UnderDevelopment />} />
+        <Route path="counter" element={<AdminCounter />} />
+        <Route path="counter-management" element={<AdminCounter />} />
         <Route path="staff" element={<AdminManageUsers />} />
         <Route path="staff-management" element={<AdminManageUsers />} />
         <Route path="manage-users" element={<AdminManageUsers />} />

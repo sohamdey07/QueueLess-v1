@@ -6,6 +6,7 @@ import {
   Calendar,
   CheckCircle2,
   ArrowUp,
+  Layers,
   Stethoscope,
   Activity,
   FlaskConical,
@@ -200,7 +201,7 @@ export const AdminDashboard = () => {
                   <td className="col-index">1</td>
                   <td className="col-service">
                     <div className="service-icon-circle blue-service-bg">
-                      <Stethoscope size={16} className="blue-service-icon" />
+                      <Layers size={16} className="blue-service-icon" />
                     </div>
                     <span className="service-name-text">General Consultation</span>
                   </td>
@@ -221,7 +222,7 @@ export const AdminDashboard = () => {
                   <td className="col-index">2</td>
                   <td className="col-service">
                     <div className="service-icon-circle orange-service-bg">
-                      <Activity size={16} className="orange-service-icon" />
+                      <Layers size={16} className="orange-service-icon" />
                     </div>
                     <span className="service-name-text">Follow-up Consultation</span>
                   </td>
@@ -242,7 +243,7 @@ export const AdminDashboard = () => {
                   <td className="col-index">3</td>
                   <td className="col-service">
                     <div className="service-icon-circle amber-service-bg">
-                      <FlaskConical size={16} className="amber-service-icon" />
+                      <Layers size={16} className="amber-service-icon" />
                     </div>
                     <span className="service-name-text">Diagnostics</span>
                   </td>
@@ -263,7 +264,7 @@ export const AdminDashboard = () => {
                   <td className="col-index">4</td>
                   <td className="col-service">
                     <div className="service-icon-circle lightblue-service-bg">
-                      <ShieldCheck size={16} className="lightblue-service-icon" />
+                      <Layers size={16} className="lightblue-service-icon" />
                     </div>
                     <span className="service-name-text">Vaccination</span>
                   </td>

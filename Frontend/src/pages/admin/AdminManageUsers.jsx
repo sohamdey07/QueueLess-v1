@@ -690,7 +690,7 @@ export const AdminManageUsers = () => {
                   <th className="th-col-email">Email Address</th>
                   <th className="th-col-date">Joined On</th>
                   <th className="th-col-status">Status</th>
-                  <th className="th-col-toggle">Active / Inactive</th>
+                  <th className="th-col-toggle">Activeness</th>
                   <th className="th-col-action">Action</th>
                 </tr>
               </thead>
@@ -702,20 +702,40 @@ export const AdminManageUsers = () => {
 
                     return (
                       <tr key={user.id} className="admin-users-table-row">
-                        <td className="cell-col-num">{rowNumber}</td>
+                        <td className="cell-col-num">
+                          <span className="row-num-badge">{rowNumber}</span>
+                        </td>
                         <td className="cell-col-name">
-                          <span className="user-name-text">{user.name}</span>
+                          <div className="user-name-cell-wrapper">
+                            <div className={`user-avatar-circle avatar-tone-${idx % 5}`}>
+                              {user.name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .slice(0, 2)
+                                .join('')}
+                            </div>
+                            <div className="user-name-meta">
+                              <span className="user-name-text">{user.name}</span>
+                              <span className="user-role-badge-sub">
+                                {activeTab === 'staff' ? 'Staff' : 'Customer'}
+                              </span>
+                            </div>
+                          </div>
                         </td>
                         <td className="cell-col-phone">
                           <div className="contact-item-inner">
-                            <Phone size={14} className="contact-blue-icon" />
-                            <span>{user.phoneNumber}</span>
+                            <span className="contact-icon-pill">
+                              <Phone size={13} className="contact-blue-icon" />
+                            </span>
+                            <span className="contact-val-text">{user.phoneNumber}</span>
                           </div>
                         </td>
                         <td className="cell-col-email">
                           <div className="contact-item-inner">
-                            <Mail size={14} className="contact-blue-icon" />
-                            <span>{user.email}</span>
+                            <span className="contact-icon-pill">
+                              <Mail size={13} className="contact-blue-icon" />
+                            </span>
+                            <span className="contact-val-text">{user.email}</span>
                           </div>
                         </td>
                         <td className="cell-col-date">
