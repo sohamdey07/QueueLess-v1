@@ -53,6 +53,28 @@ router.post(
     queueFunction.completeQueueService
 );
 
+//GET /api/v1/queue/tv-display
+router.get(
+    "/tv-display",
+    queueFunction.getTvDisplayOverview
+);
+
+//GET /api/v1/queue/staff-overview
+router.get(
+    "/staff-overview",
+    authenticate,
+    authorizeRoles("ADMIN", "STAFF"),
+    queueFunction.getStaffQueueOverview
+);
+
+//GET /api/v1/queue/logs
+router.get(
+    "/logs",
+    authenticate,
+    authorizeRoles("ADMIN"),
+    queueFunction.getQueueLogs
+);
+
 //GET /api/v1/queue/:queueId
 router.get(
     "/:queueId",

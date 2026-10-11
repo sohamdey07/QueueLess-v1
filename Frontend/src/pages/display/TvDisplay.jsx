@@ -1,63 +1,90 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Maximize, Minimize } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Maximize, Minimize, Radio } from 'lucide-react';
 import logoImg from '../../assets/images/logo/logo.png';
+import queueApi from '../../services/api/queue.api';
+import { joinTvDisplay, leaveTvDisplay, onTvUpdated } from '../../services/socket/socketClient';
 import './TvDisplay.css';
 
-const countersConfig = [
-  {
-    id: 'counter-1',
-    serviceName: 'General Service',
-    counterName: 'Counter 1',
-    nowServing: 'A-042',
-    colorTheme: 'blue',
-    tokenPrefix: 'A',
-    startTokenNum: 43,
-  },
-  {
-    id: 'counter-2',
-    serviceName: 'Document Verification',
-    counterName: 'Counter 2',
-    nowServing: 'B-018',
-    colorTheme: 'green',
-    tokenPrefix: 'B',
-    startTokenNum: 19,
-  },
-  {
-    id: 'counter-3',
-    serviceName: 'Payments',
-    counterName: 'Counter 3',
-    nowServing: 'C-007',
-    colorTheme: 'purple',
-    tokenPrefix: 'C',
-    startTokenNum: 8,
-  },
-  {
-    id: 'counter-4',
-    serviceName: 'Information & Support',
-    counterName: 'Counter 4',
-    nowServing: 'D-013',
-    colorTheme: 'orange',
-    tokenPrefix: 'D',
-    startTokenNum: 14,
-  },
-];
-
-// Generates an array of formatted tokens dynamically with no fixed limit
-const generateTokens = (prefix, startNum, count) => {
-  return Array.from({ length: count }, (_, i) => {
-    const num = startNum + i;
-    return `${prefix}-${String(num).padStart(3, '0')}`;
-  });
-};
-
 export const TvDisplay = () => {
-  const [counters] = useState(countersConfig);
+  const [counters, setCounters] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSocketLive, setIsSocketLive] = useState(false);
 
   // Dynamic token capacity state (auto-adjusts to viewport height)
   const [dynamicTokenCount, setDynamicTokenCount] = useState(5);
   const listMeasureRef = useRef(null);
+
+  // Web Audio announcement chime for token calling
+  const playCallChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      const playTone = (freq, time, duration, waveType = 'sine', volume = 0.12) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = waveType;
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(volume, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + duration);
+      };
+
+      // Bright clinic announcement chime (C#5 -> E5 -> G#5)
+      playTone(554.37, now, 0.35, 'sine', 0.12);
+      playTone(659.25, now + 0.12, 0.35, 'sine', 0.12);
+      playTone(830.61, now + 0.24, 0.65, 'sine', 0.14);
+    } catch {
+      // AudioContext fallback handled silently
+    }
+  };
+
+  // Fetch real-time TV display data from Backend
+  const loadTvOverview = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLoading(true);
+    try {
+      const res = await queueApi.getTvDisplayOverview();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      setCounters(list);
+    } catch (err) {
+      console.error('[TvDisplay] Failed to fetch live TV overview:', err);
+    } finally {
+      if (!isSilent) setIsLoading(false);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    loadTvOverview(false);
+  }, [loadTvOverview]);
+
+  // Socket.IO real-time channel subscription
+  useEffect(() => {
+    joinTvDisplay();
+    setIsSocketLive(true);
+
+    const unsubTv = onTvUpdated((payload) => {
+      console.log('[TvDisplay] Real-time TV update received:', payload);
+      // Play announcement sound if next customer called
+      if (payload?.type === 'CUSTOMER_CALLED') {
+        playCallChime();
+      }
+      // Silently refresh counters and upcoming tokens in real-time
+      loadTvOverview(true);
+    });
+
+    return () => {
+      unsubTv();
+      leaveTvDisplay();
+    };
+  }, [loadTvOverview]);
 
   // Live real-time clock ticker
   useEffect(() => {
@@ -93,7 +120,6 @@ export const TvDisplay = () => {
       }
     };
 
-    // Calculate immediately and whenever container size changes
     calculateCapacity();
 
     const resizeObserver = new ResizeObserver(() => {
@@ -110,7 +136,7 @@ export const TvDisplay = () => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', calculateCapacity);
     };
-  }, []);
+  }, [counters.length]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -162,6 +188,31 @@ export const TvDisplay = () => {
         </div>
 
         <div className="tv-header-right">
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#EFF6FF',
+              padding: '5px 12px',
+              borderRadius: '9999px',
+              fontSize: '12px',
+              fontWeight: 700,
+              color: '#1D68F2'
+            }}
+            title="Real-time live queue socket connected"
+          >
+            <span 
+              style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                backgroundColor: '#10B981',
+                display: 'inline-block'
+              }} 
+            />
+            <span>LIVE</span>
+          </div>
           <span className="tv-header-date">{formatDate(currentTime)}</span>
           <span className="tv-header-time">{formatTime(currentTime)}</span>
           <button 
@@ -176,44 +227,88 @@ export const TvDisplay = () => {
         </div>
       </header>
 
-      {/* 2. Main 4-Column Grid */}
+      {/* 2. Main Multi-Column Grid */}
       <main className="tv-grid-container" aria-label="Live Queue Status Display">
-        {counters.map((counter, idx) => (
-          <section 
-            key={counter.id} 
-            className={`tv-column theme-${counter.colorTheme}`}
-            aria-label={`${counter.serviceName} - ${counter.counterName}`}
-          >
-            {/* Top Card: Now Serving */}
-            <div className={`tv-now-serving-card theme-${counter.colorTheme}`}>
-              <h2 className="tv-service-title">{counter.serviceName}</h2>
-              <div className={`tv-title-accent accent-${counter.colorTheme}`} />
-              <span className="tv-now-serving-label">Now Serving</span>
-              <div className="tv-now-serving-token">{counter.nowServing}</div>
-              <div className={`tv-counter-pill pill-${counter.colorTheme}`}>
-                {counter.counterName}
-              </div>
-            </div>
+        {counters.length > 0 ? (
+          counters.map((counter, idx) => {
+            const theme = counter.colorTheme || 'blue';
+            const upcomingList = Array.isArray(counter.upcomingTokens) ? counter.upcomingTokens : [];
+            const displayTokens = upcomingList.slice(0, dynamicTokenCount);
 
-            {/* Bottom Card: Upcoming Tokens (Dynamically sized with no fixed max limit) */}
-            <div className="tv-upcoming-card">
-              <h3 className="tv-upcoming-header">Upcoming Tokens</h3>
-              <div 
-                className="tv-upcoming-list"
-                ref={idx === 0 ? listMeasureRef : null}
+            return (
+              <section 
+                key={counter.id || counter.counterId || idx} 
+                className={`tv-column theme-${theme}`}
+                aria-label={`${counter.serviceName} - ${counter.counterName}`}
               >
-                {generateTokens(counter.tokenPrefix, counter.startTokenNum, dynamicTokenCount).map((token) => (
-                  <div 
-                    key={token} 
-                    className={`tv-upcoming-item item-${counter.colorTheme}`}
-                  >
-                    {token}
+                {/* Top Card: Now Serving */}
+                <div className={`tv-now-serving-card theme-${theme}`}>
+                  <h2 className="tv-service-title">{counter.serviceName}</h2>
+                  <div className={`tv-title-accent accent-${theme}`} />
+                  <span className="tv-now-serving-label">Now Serving</span>
+                  <div className="tv-now-serving-token">{counter.nowServing || '—'}</div>
+                  <div className={`tv-counter-pill pill-${theme}`}>
+                    {counter.counterName}
                   </div>
-                ))}
+                </div>
+
+                {/* Bottom Card: Upcoming Tokens (Dynamically sized with no fixed max limit) */}
+                <div className="tv-upcoming-card">
+                  <h3 className="tv-upcoming-header">Upcoming Tokens</h3>
+                  <div 
+                    className="tv-upcoming-list"
+                    ref={idx === 0 ? listMeasureRef : null}
+                  >
+                    {displayTokens.length > 0 ? (
+                      displayTokens.map((token) => (
+                        <div 
+                          key={token} 
+                          className={`tv-upcoming-item item-${theme}`}
+                        >
+                          {token}
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: '#94A3B8',
+                        fontSize: '14.5px',
+                        fontWeight: 600
+                      }}>
+                        No waiting tokens
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            );
+          })
+        ) : (
+          <div style={{
+            gridColumn: '1 / -1',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '60vh',
+            color: '#64748B',
+            textAlign: 'center'
+          }}>
+            {isLoading ? (
+              <p style={{ fontSize: '18px', fontWeight: 600 }}>Loading live counter display...</p>
+            ) : (
+              <div>
+                <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                  No Active Counters Open
+                </h2>
+                <p style={{ fontSize: '15px' }}>Counters will appear here once activated by staff.</p>
               </div>
-            </div>
-          </section>
-        ))}
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

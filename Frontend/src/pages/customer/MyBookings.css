@@ -205,6 +205,80 @@
   /* box-shadow: 0 2px 8px rgba(29, 104, 242, 0.28); */
 }
 
+/* Filter Dropdown Filter */
+.section-filter-wrapper {
+  position: relative;
+}
+
+.filter-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-main, #0F172A);
+  cursor: pointer;
+  box-shadow: none;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.filter-dropdown-btn:hover {
+  border-color: var(--color-primary, #1D68F2);
+  box-shadow: none;
+}
+
+.filter-dropdown-icon {
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.filter-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 155px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #EEF2F6);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12);
+  padding: 6px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filter-menu-item {
+  background: transparent;
+  border: none;
+  padding: 9px 12px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #334155);
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color var(--transition-fast, 0.15s ease);
+}
+
+.filter-menu-item:hover {
+  background-color: #F1F5F9;
+  box-shadow: none;
+}
+
+.filter-menu-item.selected {
+  background-color: #EBF3FE;
+  color: var(--color-primary, #1D68F2);
+  font-weight: 700;
+}
+
 /* Sort Dropdown Filter */
 .section-sort-wrapper {
   position: relative;
@@ -700,6 +774,36 @@
   border: 1px solid #FECACA;
 }
 
+.table-status-pill.status-booked {
+  background-color: #EBF3FE;
+  color: var(--color-primary, #1D68F2);
+  border: 1px solid rgba(29, 104, 242, 0.22);
+}
+
+.table-status-pill.status-checked_in {
+  background-color: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.table-status-pill.status-in_service {
+  background-color: #F5F3FF;
+  color: #7C3AED;
+  border: 1px solid #DDD6FE;
+}
+
+.table-status-pill.status-no_show {
+  background-color: #FFF7ED;
+  color: #C2410C;
+  border: 1px solid #FFEDD5;
+}
+
+.table-status-pill.status-default {
+  background-color: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #CBD5E1;
+}
+
 /* Action Button */
 .table-details-btn {
   display: inline-flex;
@@ -877,6 +981,36 @@
   border: 1px solid #FECACA;
 }
 
+.history-status-pill.status-booked {
+  background-color: #EBF3FE;
+  color: var(--color-primary, #1D68F2);
+  border: 1px solid rgba(29, 104, 242, 0.22);
+}
+
+.history-status-pill.status-checked_in {
+  background-color: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.history-status-pill.status-in_service {
+  background-color: #F5F3FF;
+  color: #7C3AED;
+  border: 1px solid #DDD6FE;
+}
+
+.history-status-pill.status-no_show {
+  background-color: #FFF7ED;
+  color: #C2410C;
+  border: 1px solid #FFEDD5;
+}
+
+.history-status-pill.status-default {
+  background-color: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #CBD5E1;
+}
+
 .history-modal-desc {
   font-family: var(--font-sans);
   font-size: 12px;
@@ -1000,6 +1134,22 @@
   flex-shrink: 0;
 }
 
+.history-meta-item.no-show-meta-item {
+  background-color: #FFF7ED;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #FFEDD5;
+}
+
+.history-meta-item.no-show-meta-item .history-meta-icon.no-show-icon {
+  color: #EA580C;
+}
+
+.history-meta-item.no-show-meta-item .no-show-value {
+  color: #C2410C;
+  font-weight: 700;
+}
+
 /* Vertical Progress Track Timeline Section */
 .history-modal-timeline-section {
   display: flex;
@@ -1084,6 +1234,20 @@
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
+.timeline-node-circle.node-no_show {
+  background-color: #FFF7ED;
+  color: #EA580C;
+  border: 2px solid #F97316;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+}
+
+.timeline-node-circle.node-pending {
+  background-color: #F8FAFC;
+  color: #94A3B8;
+  border: 2px dashed #CBD5E1;
+  box-shadow: none;
+}
+
 .timeline-connector-line {
   position: absolute;
   top: 50%;
@@ -1100,6 +1264,14 @@
 
 .timeline-connector-line.line-cancelled {
   background: repeating-linear-gradient(to bottom, #EF4444 0px, #EF4444 4px, transparent 4px, transparent 8px);
+}
+
+.timeline-connector-line.line-no_show {
+  background: repeating-linear-gradient(to bottom, #F97316 0px, #F97316 4px, transparent 4px, transparent 8px);
+}
+
+.timeline-connector-line.line-pending {
+  background: #E2E8F0;
 }
 
 /* Timeline content card */
@@ -1157,6 +1329,18 @@
   background-color: #FEE2E2;
   color: #DC2626;
   border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.timeline-timestamp-pill.pill-no_show {
+  background-color: #FFF7ED;
+  color: #C2410C;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.timeline-timestamp-pill.pill-pending {
+  background-color: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
 }
 
 .timeline-step-desc {

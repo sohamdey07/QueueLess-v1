@@ -19,11 +19,8 @@ import {
   X,
   CheckCircle2
 } from 'lucide-react';
+import userApi from '../../services/api/user.api';
 import './AdminManageUsers.css';
-
-const initialStaffMembers = [];
-
-const initialCustomers = [];
 
 const ITEMS_PER_PAGE = 8;
 
@@ -74,8 +71,71 @@ export const AdminManageUsers = () => {
   }, [activeTab]);
 
   // Main State for Members
-  const [staffList, setStaffList] = useState(initialStaffMembers);
-  const [customerList, setCustomerList] = useState(initialCustomers);
+  const [staffList, setStaffList] = useState([]);
+  const [customerList, setCustomerList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch users from backend
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const [staffRes, customerRes] = await Promise.allSettled([
+        userApi.getStaffUsers(),
+        userApi.getCustomerUsers(),
+      ]);
+
+      if (staffRes.status === 'fulfilled' && Array.isArray(staffRes.value?.data)) {
+        setStaffList(
+          staffRes.value.data.map((u) => ({
+            id: u._id || u.id,
+            _id: u._id || u.id,
+            name: u.name || 'Unnamed',
+            email: u.email || '',
+            phoneNumber: u.phone || u.phoneNumber || 'Not provided',
+            role: u.role || 'STAFF',
+            status: u.isActive !== false ? 'Active' : 'Inactive',
+            joinedOn: u.createdAt
+              ? new Intl.DateTimeFormat('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                }).format(new Date(u.createdAt))
+              : 'N/A',
+          }))
+        );
+      }
+
+      if (customerRes.status === 'fulfilled' && Array.isArray(customerRes.value?.data)) {
+        setCustomerList(
+          customerRes.value.data.map((u) => ({
+            id: u._id || u.id,
+            _id: u._id || u.id,
+            name: u.name || 'Unnamed',
+            email: u.email || '',
+            phoneNumber: u.phone || u.phoneNumber || 'Not provided',
+            role: u.role || 'CUSTOMER',
+            status: u.isActive !== false ? 'Active' : 'Inactive',
+            joinedOn: u.createdAt
+              ? new Intl.DateTimeFormat('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                }).format(new Date(u.createdAt))
+              : 'N/A',
+          }))
+        );
+      }
+    } catch (err) {
+      console.error('Failed to load user directory:', err);
+      showToast('Failed to load user directory');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -251,32 +311,32 @@ export const AdminManageUsers = () => {
   };
 
   // Confirm Action Execution
-  const handleConfirmAction = () => {
+  const handleConfirmAction = async () => {
     if (!confirmDialog.user) return;
     const { type, user } = confirmDialog;
 
     if (type === 'toggle_status') {
       const nextStatus = user.status === 'Active' ? 'Inactive' : 'Active';
-      const updater = (prev) =>
-        prev.map((item) => (item.id === user.id ? { ...item, status: nextStatus } : item));
-
-      if (activeTab === 'staff') {
-        setStaffList(updater);
-      } else {
-        setCustomerList(updater);
+      const isActivating = nextStatus === 'Active';
+      try {
+        await userApi.toggleUserStatus(user.id || user._id, isActivating);
+        showToast(
+          `${user.name} has been ${isActivating ? 'activated' : 'deactivated'} successfully`
+        );
+        await fetchUsers();
+      } catch (err) {
+        console.error('Toggle status error:', err);
+        showToast(err.message || 'Failed to update user status');
       }
-
-      showToast(
-        `${user.name} has been ${nextStatus === 'Active' ? 'activated' : 'deactivated'} successfully`
-      );
     } else if (type === 'delete') {
-      if (activeTab === 'staff') {
-        setStaffList((prev) => prev.filter((u) => u.id !== user.id));
-      } else {
-        setCustomerList((prev) => prev.filter((u) => u.id !== user.id));
+      try {
+        await userApi.deleteUser(user.id || user._id);
+        showToast(`${user.name} has been removed successfully`);
+        await fetchUsers();
+      } catch (err) {
+        console.error('Delete user error:', err);
+        showToast(err.message || 'Failed to delete user');
       }
-
-      showToast(`${user.name} has been removed successfully`);
     }
 
     handleCancelConfirm();
@@ -286,7 +346,7 @@ export const AdminManageUsers = () => {
   const handleOpenEdit = (user) => {
     setCurrentEditingUser(user);
     setFormName(user.name);
-    setFormPhone(user.phoneNumber);
+    setFormPhone(user.phoneNumber === 'Not provided' ? '' : user.phoneNumber);
     setFormEmail(user.email);
     setFormStatus(user.status);
     setActiveActionMenuId(null);
@@ -294,35 +354,29 @@ export const AdminManageUsers = () => {
   };
 
   // Save Edit Changes
-  const handleSaveEdit = (e) => {
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!formName.trim()) {
       showToast('Name is required');
       return;
     }
 
-    const updater = (prev) =>
-      prev.map((u) =>
-        u.id === currentEditingUser.id
-          ? {
-              ...u,
-              name: formName.trim(),
-              phoneNumber: formPhone.trim(),
-              email: formEmail.trim(),
-              status: formStatus,
-            }
-          : u
-      );
+    try {
+      await userApi.updateUser(currentEditingUser.id || currentEditingUser._id, {
+        name: formName.trim(),
+        phone: formPhone.trim(),
+        email: formEmail.trim(),
+        isActive: formStatus === 'Active',
+      });
 
-    if (activeTab === 'staff') {
-      setStaffList(updater);
-    } else {
-      setCustomerList(updater);
+      setIsEditModalOpen(false);
+      setCurrentEditingUser(null);
+      showToast('User details updated successfully');
+      await fetchUsers();
+    } catch (err) {
+      console.error('Edit user error:', err);
+      showToast(err.message || 'Failed to update user details');
     }
-
-    setIsEditModalOpen(false);
-    setCurrentEditingUser(null);
-    showToast('User details updated successfully');
   };
 
   return (
@@ -544,11 +598,13 @@ export const AdminManageUsers = () => {
                         <td className="cell-col-name">
                           <div className="user-name-cell-wrapper">
                             <div className={`user-avatar-circle avatar-tone-${idx % 5}`}>
-                              {user.name
+                              {(user.name || 'U')
                                 .split(' ')
+                                .filter(Boolean)
                                 .map((n) => n[0])
                                 .slice(0, 2)
-                                .join('')}
+                                .join('')
+                                .toUpperCase()}
                             </div>
                             <div className="user-name-meta">
                               <span className="user-name-text">{user.name}</span>

@@ -21,6 +21,15 @@ router.post(
     appointmentFunction.checkInAppointment
 )
 
+//POST /api/v1/appointments/book
+router.post(
+    "/book",
+    authenticate,
+    authorizeRoles("CUSTOMER"),
+    appointmentLimiter.bookAppointmentLimiter,
+    appointmentFunction.createAppointment
+)
+
 //POST /api/v1/appointments/:serviceId/:availabilityId
 router.post(
     "/:serviceId/:availabilityId",
@@ -39,6 +48,16 @@ router.get(
     authorizeRoles("CUSTOMER"),
     appointmentLimiter.getAppointmentsLimiter,
     appointmentFunction.getAppointments
+)
+
+
+//GET /api/v1/appointments/today-overview
+router.get(
+    "/today-overview",
+    authenticate,
+    authorizeRoles("ADMIN", "STAFF"),
+    appointmentLimiter.getAppointmentsLimiter,
+    appointmentFunction.getTodayAppointmentsOverview
 )
 
 

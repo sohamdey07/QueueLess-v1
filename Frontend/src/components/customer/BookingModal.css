@@ -296,7 +296,11 @@
   color: var(--color-primary, #1D68F2);
 }
 
-.legend-grey {
+.legend-dark-grey {
+  color: #334155;
+}
+
+.legend-light-grey {
   color: #94A3B8;
 }
 
@@ -310,16 +314,20 @@
   background-color: var(--color-primary, #1D68F2);
 }
 
-.legend-dot.dot-grey {
-  background-color: #94A3B8;
+.legend-dot.dot-dark-grey {
+  background-color: #475569;
 }
 
-/* 8. Available Dates Grid (Horizontal Scrollable Carousel) */
+.legend-dot.dot-light-grey {
+  background-color: #CBD5E1;
+}
+
+/* 8. Available Dates Grid (Horizontal Scrollable Carousel - 7 Days) */
 .booking-dates-grid {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(110px, 1fr);
-  gap: 11px;
+  grid-auto-columns: minmax(92px, 1fr);
+  gap: 10px;
   overflow-x: auto;
   padding: 4px 2px 10px 2px;
   scrollbar-width: thin;
@@ -339,7 +347,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 13px 10px;
+  padding: 12px 8px;
   border-radius: 13px;
   cursor: pointer;
   box-shadow: none;
@@ -349,7 +357,7 @@
   justify-content: space-between;
 }
 
-/* When Slots Are Available -> BLUE Theme */
+/* STATE 1: Slots Are Available -> BLUE Theme */
 .date-slot-card.slots-available {
   background: #FFFFFF;
   border: 1.5px solid #BFDBFE;
@@ -388,8 +396,32 @@
   background-color: #FFFFFF;
 }
 
-/* When Slots Are NOT Available (Full / 0 Slots) -> GREY Theme */
-.date-slot-card.slots-empty {
+/* STATE 2: Availability Exists BUT Full or Status != OPEN -> DARK GREY Theme */
+.date-slot-card.slots-dark-grey {
+  background: #E2E8F0;
+  border: 1.5px solid #94A3B8;
+  color: #334155;
+  cursor: not-allowed;
+  opacity: 0.92;
+}
+
+.date-slot-card.slots-dark-grey:hover {
+  background: #E2E8F0;
+  border-color: #94A3B8;
+  box-shadow: none;
+}
+
+.date-slot-card.slots-dark-grey .date-card-day {
+  color: #475569;
+}
+
+.date-slot-card.slots-dark-grey .date-card-number,
+.date-slot-card.slots-dark-grey .date-card-month {
+  color: #1E293B;
+}
+
+/* STATE 3: No Availability Record Created (Dummy Day) -> LIGHT GREY Theme */
+.date-slot-card.slots-light-grey {
   background: #F8FAFC;
   border: 1.5px dashed #CBD5E1;
   color: #94A3B8;
@@ -397,10 +429,19 @@
   opacity: 0.65;
 }
 
-.date-slot-card.slots-empty:hover {
+.date-slot-card.slots-light-grey:hover {
   background: #F8FAFC;
   border-color: #CBD5E1;
   box-shadow: none;
+}
+
+.date-slot-card.slots-light-grey .date-card-day {
+  color: #94A3B8;
+}
+
+.date-slot-card.slots-light-grey .date-card-number,
+.date-slot-card.slots-light-grey .date-card-month {
+  color: #94A3B8;
 }
 
 /* Date Card Internal Elements */
@@ -441,7 +482,7 @@
   font-family: var(--font-sans);
   font-size: 10.5px;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 9999px;
   white-space: nowrap;
 }
@@ -460,15 +501,62 @@
   background-color: var(--color-primary, #1D68F2);
 }
 
-/* Grey Slot Pill (Full / 0 Slots) */
-.date-card-slots-pill.pill-grey {
-  background-color: #E2E8F0;
-  color: #64748B;
-  border: 1px solid #CBD5E1;
+/* Dark Grey Slot Pill (Full / Closed) */
+.date-card-slots-pill.pill-dark-grey {
+  background-color: #CBD5E1;
+  color: #1E293B;
+  border: 1px solid #94A3B8;
 }
 
-.slot-ban-icon {
+.date-card-slots-pill.pill-dark-grey .slot-ban-icon {
+  color: #475569;
+}
+
+/* Light Grey Slot Pill (Dummy Day / No Slots) */
+.date-card-slots-pill.pill-light-grey {
+  background-color: #F1F5F9;
   color: #94A3B8;
+  border: 1px solid #E2E8F0;
+}
+
+.slot-indicator-dot.dot-light {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #CBD5E1;
+}
+
+/* Empty state when no availability records with open slots exist */
+.no-slots-available-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  background: #F8FAFC;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 12px;
+  color: #64748B;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.no-slots-available-box .no-slots-icon {
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.booking-loading-slots {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 10px;
+  color: #64748B;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  font-weight: 500;
 }
 
 /* 9. Live Booking Summary Strip */

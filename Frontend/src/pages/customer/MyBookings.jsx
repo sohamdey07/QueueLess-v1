@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Calendar, 
@@ -16,10 +16,15 @@ import {
   XCircle,
   LogIn,
   Megaphone,
-  Play
+  Play,
+  RefreshCw,
+  AlertCircle,
+  UserX,
+  Filter
 } from 'lucide-react';
 import MyBookingBanner from '../../components/customer/MyBookingBanner';
 import ServiceCard from '../../components/common/ServiceCard';
+import appointmentApi from '../../services/api/appointment.api';
 
 import generalConsultImg from '../../assets/images/bookings/general_consultation.jpg';
 import documentVerifImg from '../../assets/images/bookings/document_verification.jpg';
@@ -31,6 +36,126 @@ import vaccinationImg from '../../assets/images/bookings/vaccination.jpg';
 import vehicleServiceImg from '../../assets/images/bookings/vehicle_service.jpg';
 
 import './MyBookings.css';
+
+/**
+ * Maps service name keywords to appropriate fallback images
+ */
+function getFallbackImage(name = '') {
+  const lower = (name || '').toLowerCase();
+  if (lower.includes('blood') || lower.includes('donation')) return bloodTestImg;
+  if (lower.includes('dental') || lower.includes('tooth') || lower.includes('teeth')) return dentalCheckupImg;
+  if (lower.includes('vaccin') || lower.includes('immun')) return vaccinationImg;
+  if (lower.includes('document') || lower.includes('verif') || lower.includes('certif')) return documentVerifImg;
+  if (lower.includes('vehicle') || lower.includes('car') || lower.includes('bike') || lower.includes('auto')) return vehicleServiceImg;
+  if (lower.includes('eye') || lower.includes('vision') || lower.includes('optic')) return eyeCheckupImg;
+  if (lower.includes('account') || lower.includes('assist')) return accountAssistImg;
+  return generalConsultImg;
+}
+
+/**
+ * Formats ISO date/time to a clean, readable string (e.g., "12 Oct 2026, 10:15 AM")
+ */
+const formatDateTime = (dateVal) => {
+  if (!dateVal) return null;
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return String(dateVal);
+  return (
+    d.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }) +
+    ', ' +
+    d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+  );
+};
+
+/**
+ * Formats YYYY-MM-DD string to "12 Oct 2026"
+ */
+const formatAppointmentDate = (dateVal) => {
+  if (!dateVal) return '';
+  if (typeof dateVal === 'string' && dateVal.includes('-') && dateVal.length === 10) {
+    const parts = dateVal.split('-');
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  }
+  return String(dateVal);
+};
+
+/**
+ * Clean status string label without icons
+ */
+const formatStatusLabel = (status = '') => {
+  const norm = (status || '').toUpperCase();
+  if (norm === 'NO_SHOW') return 'No Show';
+  if (norm === 'IN_SERVICE') return 'In Service';
+  if (norm === 'CHECKED_IN') return 'Checked In';
+  if (norm === 'BOOKED') return 'Booked';
+  if (norm === 'COMPLETED') return 'Completed';
+  if (norm === 'CANCELLED') return 'Cancelled';
+  return norm ? norm.charAt(0).toUpperCase() + norm.slice(1).toLowerCase() : 'Unknown';
+};
+
+/**
+ * Maps database appointment document to frontend booking structure
+ */
+const mapAppointmentToBooking = (appt) => {
+  const service = appt.serviceId || {};
+  const queueEntry = appt.queueEntryId || {};
+
+  const bookedAtStr = formatDateTime(appt.createdAt);
+  const checkedInAtStr = formatDateTime(appt.checkedInAt || queueEntry.joinedAt);
+  const calledAtStr = formatDateTime(queueEntry.calledAt);
+  const servingAtStr = formatDateTime(queueEntry.servingAt);
+  const completedAtStr = formatDateTime(appt.completedAt || queueEntry.completedAt);
+  const cancelledAtStr = formatDateTime(appt.cancelledAt);
+  const noShowAtStr = formatDateTime(appt.noShowAt || (appt.status === 'NO_SHOW' ? appt.updatedAt : null));
+
+  const formattedDate = formatAppointmentDate(appt.appointmentDate);
+  const prefix = service.code || 'T';
+  const formattedToken = queueEntry.token || (typeof appt.tokenNumber === 'string' && appt.tokenNumber.includes('-')
+    ? appt.tokenNumber
+    : (queueEntry.tokenNumber ? `${prefix}-${String(queueEntry.tokenNumber).padStart(3, '0')}` : null));
+
+  return {
+    id: appt.appointmentId || appt._id,
+    _id: appt._id,
+    appointmentId: appt.appointmentId,
+    title: service.name || 'Service Consultation',
+    name: service.name || 'Service Consultation',
+    description: service.description || 'Professional service scheduled at your convenience.',
+    image: service.imageUrl || getFallbackImage(service.name),
+    appointmentDate: formattedDate,
+    rawDate: appt.appointmentDate,
+    duration: service.duration ? `${service.duration} mins` : '15 mins',
+    schedule: service.service_time || 'Mon - Sat, 09:00 AM - 05:00 PM',
+    status: (appt.status || 'BOOKED').toUpperCase(),
+    tokenNumber: formattedToken,
+    rawTokenNumber: queueEntry.tokenNumber,
+    queueId: queueEntry.queueId?._id || queueEntry.queueId || appt.queueId,
+    counterName: queueEntry.counterId?.name || (queueEntry.counterId ? `Counter #${queueEntry.counterId}` : null),
+    bookedAt: bookedAtStr,
+    checkedInAt: checkedInAtStr,
+    calledAt: calledAtStr,
+    servingAt: servingAtStr,
+    completedAt: completedAtStr,
+    cancelledAt: cancelledAtStr,
+    noShowAt: noShowAtStr,
+    cancelReason: appt.cancelledAt ? 'Cancelled by customer' : null,
+    createdAt: appt.createdAt,
+  };
+};
 
 export const MyBookings = ({ defaultTab = 'upcoming' }) => {
   const navigate = useNavigate();
@@ -46,15 +171,64 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // History filters & sort
-  const [historyFilter, setHistoryFilter] = useState('all'); // 'all' | 'completed' | 'cancelled'
+  const [historyFilter, setHistoryFilter] = useState('all'); // 'all' | 'completed' | 'cancelled' | 'no_show'
+  const [showHistoryFilterDropdown, setShowHistoryFilterDropdown] = useState(false);
   const [historySort, setHistorySort] = useState('latest'); // 'latest' | 'oldest'
   const [showHistorySortDropdown, setShowHistorySortDropdown] = useState(false);
 
+  const filterDropdownRef = useRef(null);
+  const sortDropdownRef = useRef(null);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target)) {
+        setShowHistoryFilterDropdown(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+        setShowSortDropdown(false);
+        setShowHistorySortDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Backend data state
+  const [appointments, setAppointments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+
   // Modals state
   const [cancelModalBooking, setCancelModalBooking] = useState(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState(null);
+
   const [selectedDetailsBooking, setSelectedDetailsBooking] = useState(null);
   const [copiedModalId, setCopiedModalId] = useState(false);
   const [copiedListId, setCopiedListId] = useState(null);
+
+  // Fetch appointments from real Backend API
+  const loadAppointments = useCallback(async () => {
+    setIsLoading(true);
+    setFetchError(null);
+    try {
+      const res = await appointmentApi.getMyAppointments();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      setAppointments(list);
+    } catch (err) {
+      console.error('Failed to load appointments from database:', err);
+      setFetchError(err.message || 'Unable to fetch appointments.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAppointments();
+  }, [loadAppointments]);
 
   // Prevent background page from scrolling when any modal is showing
   useEffect(() => {
@@ -67,143 +241,55 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
     }
   }, [cancelModalBooking, selectedDetailsBooking]);
 
-  // Upcoming appointments list (persists newly booked appointments from BookingModal)
-  const [bookings, setBookings] = useState(() => {
-    const defaultList = [
-      {
-        id: 'QL-20260926-8F42K1',
-        title: 'General Consultation',
-        description: 'Consult with our experienced doctors for general health issues.',
-        image: generalConsultImg,
-        status: 'Booked',
-        appointmentDate: '28 Sep 2026, 10:00 AM',
-        appointmentId: 'QL-20260926-8F42K1',
-      },
-      {
-        id: 'QL-20261001-5D21P9',
-        title: 'Document Verification',
-        description: 'Submit and verify your documents with our team.',
-        image: documentVerifImg,
-        status: 'Booked',
-        appointmentDate: '01 Oct 2026, 11:30 AM',
-        appointmentId: 'QL-20261001-5D21P9',
-      },
-      {
-        id: 'QL-20261003-9K77L2',
-        title: 'Account Assistance',
-        description: 'Get help with account related services and updates.',
-        image: accountAssistImg,
-        status: 'Booked',
-        appointmentDate: '03 Oct 2026, 03:00 PM',
-        appointmentId: 'QL-20261003-9K77L2',
-      },
-    ];
+  const mappedBookings = useMemo(() => {
+    return appointments.map(mapAppointmentToBooking);
+  }, [appointments]);
 
-    try {
-      const stored = localStorage.getItem('queueless_upcoming_bookings');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+  // Tab 1: Upcoming Bookings (Active visits: BOOKED, CHECKED_IN, IN_SERVICE)
+  const upcomingBookings = useMemo(() => {
+    return mappedBookings
+      .filter((b) => {
+        const st = (b.status || '').toUpperCase();
+        return st === 'BOOKED' || st === 'CHECKED_IN' || st === 'IN_SERVICE';
+      })
+      .sort((a, b) => {
+        const dateA = a.rawDate || a.createdAt || '';
+        const dateB = b.rawDate || b.createdAt || '';
+        if (sortOption === 'nearest') {
+          return dateA.localeCompare(dateB);
         }
-      }
-    } catch {
-      // fallback
-    }
-    return defaultList;
-  });
+        return dateB.localeCompare(dateA);
+      });
+  }, [mappedBookings, sortOption]);
 
-  // Previous booked appointments history list
-  const [historyBookings] = useState([
-    {
-      id: 'QL-20260920-7A39B1',
-      title: 'General Consultation',
-      description: 'Routine general health consultation and wellness screening.',
-      image: generalConsultImg,
-      appointmentDate: '20 Sep 2026',
-      appointmentId: 'QL-20260920-7A39B1',
-      status: 'COMPLETED',
-      bookedAt: '17 Sep 2026, 02:15 PM',
-      checkedInAt: '20 Sep 2026, 09:18 AM',
-      calledAt: '20 Sep 2026, 09:28 AM',
-      counterName: 'Counter #3 (Room 102)',
-      servingAt: '20 Sep 2026, 09:32 AM',
-      servedBy: 'Dr. Sarah Mitchell, MD',
-      completedAt: '20 Sep 2026, 09:55 AM',
-    },
-    {
-      id: 'QL-20260914-4G11R7',
-      title: 'Blood Test & Diagnostics',
-      description: 'Complete blood count (CBC) and metabolic lipid panel test.',
-      image: bloodTestImg,
-      appointmentDate: '14 Sep 2026',
-      appointmentId: 'QL-20260914-4G11R7',
-      status: 'COMPLETED',
-      bookedAt: '11 Sep 2026, 05:40 PM',
-      checkedInAt: '14 Sep 2026, 08:05 AM',
-      calledAt: '14 Sep 2026, 08:12 AM',
-      counterName: 'Phlebotomy Station #1',
-      servingAt: '14 Sep 2026, 08:15 AM',
-      servedBy: 'Technician David Chen',
-      completedAt: '14 Sep 2026, 08:28 AM',
-    },
-    {
-      id: 'QL-20260908-9B22M4',
-      title: 'Dental Checkup & Cleaning',
-      description: 'Comprehensive dental examination, tartar cleaning, and x-ray.',
-      image: dentalCheckupImg,
-      appointmentDate: '08 Sep 2026',
-      appointmentId: 'QL-20260908-9B22M4',
-      status: 'CANCELLED',
-      bookedAt: '03 Sep 2026, 11:20 AM',
-      cancelledAt: '06 Sep 2026, 04:45 PM',
-      cancelReason: 'Cancelled by customer (Scheduling conflict with work)',
-    },
-    {
-      id: 'QL-20260828-6K90N3',
-      title: 'Eye Examination & Vision Test',
-      description: 'Comprehensive refractive vision assessment and retinal imaging.',
-      image: eyeCheckupImg,
-      appointmentDate: '28 Aug 2026',
-      appointmentId: 'QL-20260828-6K90N3',
-      status: 'COMPLETED',
-      bookedAt: '24 Aug 2026, 01:10 PM',
-      checkedInAt: '28 Aug 2026, 10:48 AM',
-      calledAt: '28 Aug 2026, 10:58 AM',
-      counterName: 'Optometry Suite #2',
-      servingAt: '28 Aug 2026, 11:02 AM',
-      servedBy: 'Dr. Elena Vance, OD',
-      completedAt: '28 Aug 2026, 11:35 AM',
-    },
-    {
-      id: 'QL-20260815-1X55T8',
-      title: 'Vaccination & Immunization',
-      description: 'Seasonal influenza booster shot and vaccine record updating.',
-      image: vaccinationImg,
-      appointmentDate: '15 Aug 2026',
-      appointmentId: 'QL-20260815-1X55T8',
-      status: 'CANCELLED',
-      bookedAt: '12 Aug 2026, 09:00 AM',
-      cancelledAt: '14 Aug 2026, 11:20 AM',
-      cancelReason: 'Cancelled by customer (Already received vaccine elsewhere)',
-    },
-    {
-      id: 'QL-20260802-8L33Z5',
-      title: 'Vehicle Inspection & Service',
-      description: 'Periodic multipoint safety inspection, oil change, and diagnostics.',
-      image: vehicleServiceImg,
-      appointmentDate: '02 Aug 2026',
-      appointmentId: 'QL-20260802-8L33Z5',
-      status: 'COMPLETED',
-      bookedAt: '29 Jul 2026, 05:30 PM',
-      checkedInAt: '02 Aug 2026, 09:50 AM',
-      calledAt: '02 Aug 2026, 10:02 AM',
-      counterName: 'Service Bay #4',
-      servingAt: '02 Aug 2026, 10:06 AM',
-      servedBy: 'Lead Mechanic Mark Reynolds',
-      completedAt: '02 Aug 2026, 10:48 AM',
-    },
-  ]);
+  // Tab 2: Appointment History (All bookings, specially previous visits)
+  const historyBookings = useMemo(() => {
+    return mappedBookings
+      .filter((b) => {
+        if (historyFilter === 'all') return true;
+        return (b.status || '').toUpperCase() === historyFilter.toUpperCase();
+      })
+      .sort((a, b) => {
+        const dateA = a.rawDate || a.createdAt || '';
+        const dateB = b.rawDate || b.createdAt || '';
+        if (historySort === 'latest') {
+          return dateB.localeCompare(dateA);
+        }
+        return dateA.localeCompare(dateB);
+      });
+  }, [mappedBookings, historyFilter, historySort]);
+
+  const completedCount = useMemo(() => {
+    return mappedBookings.filter((b) => (b.status || '').toUpperCase() === 'COMPLETED').length;
+  }, [mappedBookings]);
+
+  const cancelledCount = useMemo(() => {
+    return mappedBookings.filter((b) => (b.status || '').toUpperCase() === 'CANCELLED').length;
+  }, [mappedBookings]);
+
+  const noShowCount = useMemo(() => {
+    return mappedBookings.filter((b) => (b.status || '').toUpperCase() === 'NO_SHOW').length;
+  }, [mappedBookings]);
 
   const handleTabSwitch = (tab) => {
     setInternalTab(tab);
@@ -215,30 +301,77 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
   };
 
   const handleJoinQueue = (booking) => {
-    navigate('/virtual-queue', { state: { booking } });
+    if (booking.status === 'CHECKED_IN' || booking.status === 'IN_SERVICE') {
+      navigate('/virtual-queue', {
+        state: {
+          queueData: {
+            tokenNumber: booking.tokenNumber,
+            serviceName: booking.title,
+            appointmentId: booking.appointmentId,
+            serviceImage: booking.image,
+            appointmentSchedule: booking.schedule,
+            joinedAt: booking.checkedInAt || 'Today',
+            status: booking.status === 'IN_SERVICE' ? 'In Service' : 'In Queue'
+          }
+        }
+      });
+    } else {
+      // Navigate to Join Queue page with prefilled appointmentId to perform check-in
+      navigate('/join-queue', {
+        state: {
+          appointmentId: booking.appointmentId,
+          booking
+        }
+      });
+    }
   };
 
   const handleOpenCancelModal = (booking) => {
     setCancelModalBooking(booking);
+    setCancelError(null);
   };
 
-  const handleConfirmCancel = () => {
-    if (cancelModalBooking) {
-      setBookings((prev) => {
-        const updated = prev.filter((b) => b.id !== cancelModalBooking.id);
-        try {
-          localStorage.setItem('queueless_upcoming_bookings', JSON.stringify(updated));
-        } catch (err) {
-          console.warn('Could not update localStorage on cancellation:', err);
+  const handleConfirmCancel = async () => {
+    if (!cancelModalBooking) return;
+    setIsCancelling(true);
+    setCancelError(null);
+    try {
+      const apptId = cancelModalBooking.appointmentId || cancelModalBooking.id;
+      await appointmentApi.cancelAppointment(apptId);
+
+      // Update state locally
+      setAppointments((prev) =>
+        prev.map((a) =>
+          (a.appointmentId === apptId || a._id === apptId)
+            ? { ...a, status: 'CANCELLED', cancelledAt: new Date().toISOString() }
+            : a
+        )
+      );
+
+      // Clean up localStorage cached bookings if present
+      try {
+        const stored = localStorage.getItem('queueless_upcoming_bookings');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const filtered = list.filter((b) => b.id !== apptId && b.appointmentId !== apptId);
+          localStorage.setItem('queueless_upcoming_bookings', JSON.stringify(filtered));
         }
-        return updated;
-      });
+      } catch (err) {
+        console.warn('LocalStorage update warning:', err);
+      }
+
       setCancelModalBooking(null);
+    } catch (err) {
+      console.error('Failed to cancel appointment:', err);
+      setCancelError(err.message || 'Failed to cancel appointment. Please try again.');
+    } finally {
+      setIsCancelling(false);
     }
   };
 
   const handleCloseCancelModal = () => {
     setCancelModalBooking(null);
+    setCancelError(null);
   };
 
   const handleOpenDetailsModal = (booking) => {
@@ -260,26 +393,11 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
     }
   };
 
-  // Filter & sort history bookings
-  const displayedHistory = historyBookings
-    .filter((b) => {
-      if (historyFilter === 'all') return true;
-      return b.status.toLowerCase() === historyFilter.toLowerCase();
-    })
-    .sort((a, b) => {
-      if (historySort === 'latest') {
-        return b.id.localeCompare(a.id);
-      }
-      return a.id.localeCompare(b.id);
-    });
-
-  const completedCount = historyBookings.filter(b => b.status === 'COMPLETED').length;
-  const cancelledCount = historyBookings.filter(b => b.status === 'CANCELLED').length;
-
-  // Generate vertical progress track steps
+  // Generate milestone timestamps for vertical progress track in Details Pop-up
   const getTimelineSteps = (booking) => {
     if (!booking) return [];
     const isCancelled = booking.status?.toUpperCase() === 'CANCELLED';
+    const isNoShow = booking.status?.toUpperCase() === 'NO_SHOW';
 
     if (isCancelled) {
       return [
@@ -302,6 +420,43 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
       ];
     }
 
+    if (isNoShow) {
+      return [
+        {
+          id: 'booked',
+          label: 'Appointment Booked',
+          time: booking.bookedAt,
+          desc: 'Confirmed via QueueLess online portal',
+          status: 'completed',
+          icon: CalendarCheck,
+        },
+        ...(booking.checkedInAt ? [{
+          id: 'checkin',
+          label: 'Check-in Time',
+          time: booking.checkedInAt,
+          desc: 'Customer check-in verified at reception kiosk',
+          status: 'completed',
+          icon: LogIn,
+        }] : []),
+        ...(booking.calledAt ? [{
+          id: 'called',
+          label: 'Called Time',
+          time: booking.calledAt,
+          desc: booking.counterName ? `Called to ${booking.counterName}` : 'Customer called to counter',
+          status: 'completed',
+          icon: Megaphone,
+        }] : []),
+        {
+          id: 'no_show',
+          label: 'No Show Marked',
+          time: booking.noShowAt || 'Marked as No Show',
+          desc: 'Customer missed their appointment window or was absent when called',
+          status: 'no_show',
+          icon: UserX,
+        },
+      ];
+    }
+
     return [
       {
         id: 'booked',
@@ -314,33 +469,35 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
       {
         id: 'checkin',
         label: 'Check-in Time',
-        time: booking.checkedInAt,
-        desc: 'Self check-in verified at reception kiosk',
-        status: 'completed',
+        time: booking.checkedInAt || 'Pending',
+        desc: booking.checkedInAt ? 'Customer check-in verified at reception kiosk' : 'Awaiting check-in at reception',
+        status: booking.checkedInAt ? 'completed' : 'pending',
         icon: LogIn,
       },
       {
         id: 'called',
         label: 'Called Time',
-        time: booking.calledAt,
-        desc: booking.counterName ? `Called to ${booking.counterName}` : 'Customer called to counter',
-        status: 'completed',
+        time: booking.calledAt || 'Pending',
+        desc: booking.calledAt 
+          ? (booking.counterName ? `Called to ${booking.counterName}` : 'Customer called to counter')
+          : 'Waiting to be called to service counter',
+        status: booking.calledAt ? 'completed' : 'pending',
         icon: Megaphone,
       },
       {
         id: 'serving',
-        label: 'Start Service Time',
-        time: booking.servingAt,
-        desc: booking.servedBy ? `Service commenced with ${booking.servedBy}` : 'Service consultation started',
-        status: 'completed',
+        label: 'Service Time',
+        time: booking.servingAt || 'Pending',
+        desc: booking.servingAt ? 'Service consultation commenced' : 'Service consultation not yet started',
+        status: booking.servingAt ? 'completed' : 'pending',
         icon: Play,
       },
       {
         id: 'completed',
-        label: 'Complete at Time',
-        time: booking.completedAt,
-        desc: 'Service finished & token cleared successfully',
-        status: 'completed',
+        label: 'Completion Time',
+        time: booking.completedAt || 'Pending',
+        desc: booking.completedAt ? 'Service finished & token cleared successfully' : 'Awaiting service completion',
+        status: booking.completedAt ? 'completed' : 'pending',
         icon: CheckCircle2,
       },
     ];
@@ -362,7 +519,9 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
         >
           <CalendarDays size={18} className="tab-btn-icon" />
           <span>Upcoming Appointments</span>
-          <span className={`tab-badge ${activeTab === 'upcoming' ? 'blue-badge' : 'gray-badge'}`}>{bookings.length}</span>
+          <span className={`tab-badge ${activeTab === 'upcoming' ? 'blue-badge' : 'gray-badge'}`}>
+            {upcomingBookings.length}
+          </span>
         </button>
 
         <button
@@ -374,7 +533,9 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
         >
           <CalendarClock size={18} className="tab-btn-icon" />
           <span>Appointment History</span>
-          <span className={`tab-badge ${activeTab === 'history' ? 'blue-badge' : 'gray-badge'}`}>{historyBookings.length}</span>
+          <span className={`tab-badge ${activeTab === 'history' ? 'blue-badge' : 'gray-badge'}`}>
+            {historyBookings.length}
+          </span>
         </button>
       </div>
 
@@ -402,36 +563,82 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
             </div>
           </div>
 
-          {/* Section Actions: Filter pills and sort dropdown */}
+          {/* Section Actions: Filter dropdown and sort dropdown */}
           <div className="section-header-right-actions">
             {activeTab === 'history' && (
-              <div className="history-filter-pills" role="group" aria-label="Filter appointments by status">
+              <div className="section-filter-wrapper" ref={filterDropdownRef}>
                 <button
                   type="button"
-                  className={`history-filter-pill ${historyFilter === 'all' ? 'active' : ''}`}
-                  onClick={() => setHistoryFilter('all')}
+                  className="filter-dropdown-btn"
+                  onClick={() => setShowHistoryFilterDropdown(prev => !prev)}
+                  aria-label="Filter appointment history by status"
+                  aria-expanded={showHistoryFilterDropdown}
                 >
-                  All ({historyBookings.length})
+                  <Filter size={15} className="filter-dropdown-icon" />
+                  <span>
+                    {historyFilter === 'completed'
+                      ? 'Completed'
+                      : historyFilter === 'cancelled'
+                      ? 'Cancelled'
+                      : historyFilter === 'no_show'
+                      ? 'No Show'
+                      : 'All'}
+                  </span>
+                  <ChevronDown 
+                    size={15} 
+                    className={`sort-chevron ${showHistoryFilterDropdown ? 'open' : ''}`} 
+                  />
                 </button>
-                <button
-                  type="button"
-                  className={`history-filter-pill ${historyFilter === 'completed' ? 'active' : ''}`}
-                  onClick={() => setHistoryFilter('completed')}
-                >
-                  Completed ({completedCount})
-                </button>
-                <button
-                  type="button"
-                  className={`history-filter-pill ${historyFilter === 'cancelled' ? 'active' : ''}`}
-                  onClick={() => setHistoryFilter('cancelled')}
-                >
-                  Cancelled ({cancelledCount})
-                </button>
+
+                {showHistoryFilterDropdown && (
+                  <div className="filter-dropdown-menu">
+                    <button
+                      type="button"
+                      className={`filter-menu-item ${historyFilter === 'all' ? 'selected' : ''}`}
+                      onClick={() => {
+                        setHistoryFilter('all');
+                        setShowHistoryFilterDropdown(false);
+                      }}
+                    >
+                      All
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-menu-item ${historyFilter === 'completed' ? 'selected' : ''}`}
+                      onClick={() => {
+                        setHistoryFilter('completed');
+                        setShowHistoryFilterDropdown(false);
+                      }}
+                    >
+                      Completed
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-menu-item ${historyFilter === 'cancelled' ? 'selected' : ''}`}
+                      onClick={() => {
+                        setHistoryFilter('cancelled');
+                        setShowHistoryFilterDropdown(false);
+                      }}
+                    >
+                      Cancelled
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-menu-item ${historyFilter === 'no_show' ? 'selected' : ''}`}
+                      onClick={() => {
+                        setHistoryFilter('no_show');
+                        setShowHistoryFilterDropdown(false);
+                      }}
+                    >
+                      No Show
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Sort Dropdown */}
-            <div className="section-sort-wrapper">
+            <div className="section-sort-wrapper" ref={sortDropdownRef}>
               <button
                 type="button"
                 className="sort-dropdown-btn"
@@ -510,11 +717,59 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
           </div>
         </div>
 
-        {/* 3-Column Grid of Service Cards */}
-        {activeTab === 'upcoming' ? (
-          bookings.length > 0 ? (
+        {/* Loading Spinner */}
+        {isLoading ? (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '60px 20px',
+            gap: 14,
+            color: '#64748B'
+          }}>
+            <RefreshCw size={26} className="spin-icon" color="#1D68F2" />
+            <span style={{ fontSize: 14, fontWeight: 600 }}>Loading your appointments from database...</span>
+          </div>
+        ) : fetchError ? (
+          <div style={{
+            background: '#FEF2F2',
+            border: '1px solid #FECACA',
+            color: '#B91C1C',
+            borderRadius: 12,
+            padding: '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            fontSize: 14
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <AlertCircle size={20} />
+              <span>{fetchError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={loadAppointments}
+              style={{
+                background: '#B91C1C',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: 8,
+                padding: '6px 14px',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : activeTab === 'upcoming' ? (
+          /* Upcoming Bookings Grid */
+          upcomingBookings.length > 0 ? (
             <div className="my-bookings-grid">
-              {bookings.map((booking) => (
+              {upcomingBookings.map((booking) => (
                 <ServiceCard
                   key={booking.id}
                   service={{
@@ -523,6 +778,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                   }}
                   onJoinQueue={handleJoinQueue}
                   onCancel={handleOpenCancelModal}
+                  onDetails={handleOpenDetailsModal}
                   cancelText="Cancel"
                   joinQueueText="Join Queue"
                 />
@@ -545,7 +801,8 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
             </div>
           )
         ) : (
-          displayedHistory.length > 0 ? (
+          /* Appointment History Table */
+          historyBookings.length > 0 ? (
             <div className="history-table-container">
               <table className="history-table" aria-label="Appointment History Table">
                 <thead>
@@ -559,7 +816,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedHistory.map((booking) => (
+                  {historyBookings.map((booking) => (
                     <tr key={booking.id} className="history-table-row">
                       {/* 1. Service Image */}
                       <td className="td-service-img">
@@ -582,7 +839,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                       <td className="td-apt-date">
                         <div className="table-date-cell">
                           <Calendar size={14} className="table-date-icon" />
-                          <span>{booking.appointmentDate ? booking.appointmentDate.split(',')[0].trim() : ''}</span>
+                          <span>{booking.appointmentDate}</span>
                         </div>
                       </td>
 
@@ -617,14 +874,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                       {/* 5. Status */}
                       <td className="td-status">
                         <span className={`table-status-pill status-${booking.status.toLowerCase()}`}>
-                          {booking.status.toLowerCase() === 'completed' ? (
-                            <CheckCircle2 size={13} strokeWidth={2.4} />
-                          ) : (
-                            <XCircle size={13} strokeWidth={2.4} />
-                          )}
-                          <span>
-                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
-                          </span>
+                          <span>{formatStatusLabel(booking.status)}</span>
                         </span>
                       </td>
 
@@ -700,11 +950,26 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
               <strong>{cancelModalBooking.appointmentDate}</strong>? This action cannot be undone.
             </p>
 
+            {cancelError && (
+              <div style={{
+                color: '#DC2626',
+                fontSize: 13,
+                background: '#FEF2F2',
+                border: '1px solid #FECACA',
+                padding: '8px 12px',
+                borderRadius: 8,
+                marginBottom: 14
+              }}>
+                {cancelError}
+              </div>
+            )}
+
             <div className="cancel-modal-actions">
               <button 
                 type="button" 
                 className="cancel-modal-back-btn" 
                 onClick={handleCloseCancelModal}
+                disabled={isCancelling}
               >
                 Keep Appointment
               </button>
@@ -712,8 +977,9 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                 type="button" 
                 className="cancel-modal-confirm-btn" 
                 onClick={handleConfirmCancel}
+                disabled={isCancelling}
               >
-                Yes, Cancel
+                {isCancelling ? 'Cancelling...' : 'Yes, Cancel'}
               </button>
             </div>
           </div>
@@ -744,17 +1010,12 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                       {selectedDetailsBooking.title}
                     </h3>
                     <span className={`history-status-pill status-${selectedDetailsBooking.status.toLowerCase()}`}>
-                      {selectedDetailsBooking.status.toLowerCase() === 'completed' ? (
-                        <CheckCircle2 size={13} strokeWidth={2.4} />
-                      ) : (
-                        <XCircle size={13} strokeWidth={2.4} />
-                      )}
-                      <span>
-                        {selectedDetailsBooking.status.charAt(0).toUpperCase() + 
-                         selectedDetailsBooking.status.slice(1).toLowerCase()}
-                      </span>
+                      <span>{formatStatusLabel(selectedDetailsBooking.status)}</span>
                     </span>
                   </div>
+                  {selectedDetailsBooking.description && (
+                    <p className="history-modal-desc">{selectedDetailsBooking.description}</p>
+                  )}
                 </div>
               </div>
               <button 
@@ -795,6 +1056,20 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                     {copiedModalId ? <Check size={13} className="copied-check" /> : <Copy size={13} />}
                   </button>
                 </div>
+                {selectedDetailsBooking.status === 'NO_SHOW' && (
+                  <>
+                    <div className="history-meta-divider" />
+                    <div className="history-meta-item no-show-meta-item">
+                      <UserX size={15} className="history-meta-icon no-show-icon" />
+                      <div className="history-meta-data">
+                        <span className="history-meta-label">No Show Recorded</span>
+                        <span className="history-meta-value no-show-value">
+                          {selectedDetailsBooking.noShowAt || 'Marked as No Show'}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Vertical Progress Track Section */}
@@ -804,7 +1079,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                   <span className="timeline-section-caption">
                     {selectedDetailsBooking.status.toLowerCase() === 'completed' 
                       ? 'All captured milestone timestamps'
-                      : 'Booking & cancellation records'}
+                      : 'Milestone timestamps & records'}
                   </span>
                 </div>
 
@@ -825,7 +1100,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                             <IconComponent size={16} strokeWidth={2.4} />
                           </div>
                           {!isLast && (
-                            <div className={`timeline-connector-line line-${isCancelStep ? 'cancelled' : 'completed'}`} />
+                            <div className={`timeline-connector-line line-${isCancelStep ? 'cancelled' : step.status}`} />
                           )}
                         </div>
 

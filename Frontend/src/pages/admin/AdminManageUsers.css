@@ -38,6 +38,7 @@
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -99,6 +100,7 @@
   background: linear-gradient(145deg, #FFFFFF 0%, #F0F7FF 100%);
   border: 1px solid #DBEAFE;
 }
+
 .admin-user-metric-card.card-blue-soft::before {
   background: rgba(29, 104, 242, 0.2);
 }
@@ -107,6 +109,7 @@
   background: linear-gradient(145deg, #FFFFFF 0%, #FAF5FF 100%);
   border: 1px solid #EDE9FE;
 }
+
 .admin-user-metric-card.card-purple-soft::before {
   background: rgba(124, 58, 237, 0.2);
 }
@@ -115,6 +118,7 @@
   background: linear-gradient(145deg, #FFFFFF 0%, #ECFDF5 100%);
   border: 1px solid #D1FAE5;
 }
+
 .admin-user-metric-card.card-green-soft::before {
   background: rgba(16, 185, 129, 0.22);
 }
@@ -123,6 +127,7 @@
   background: linear-gradient(145deg, #FFFFFF 0%, #FFF1F2 100%);
   border: 1px solid #FEE2E2;
 }
+
 .admin-user-metric-card.card-red-soft::before {
   background: rgba(239, 68, 68, 0.2);
 }
@@ -464,8 +469,15 @@
 }
 
 @keyframes adminUsersFade {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .users-status-filter-option {
@@ -572,7 +584,7 @@
 }
 
 .admin-users-data-table th.th-col-date {
-  min-width: 130px;
+  min-width: 100px;
 }
 
 .admin-users-data-table th.th-col-status {
@@ -839,8 +851,15 @@
 }
 
 @keyframes popoverFade {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .popover-toggle-row {
@@ -893,13 +912,9 @@
   flex-shrink: 0;
 }
 
-.ios-toggle-switch:hover {
-  transform: scale(1.05);
-}
 
 .ios-toggle-switch.checked {
   background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
 }
 
 .ios-toggle-thumb {
@@ -1081,8 +1096,13 @@
 }
 
 @keyframes adminModalFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .admin-user-modal-box {
@@ -1096,8 +1116,15 @@
 }
 
 @keyframes adminModalPop {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal-header-row {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import {
@@ -12,16 +12,18 @@ import {
   Check,
   CalendarCheck,
   Ban,
-  PartyPopper
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
+import appointmentApi from '../../services/api/appointment.api';
+import availabilityApi from '../../services/api/availability.api';
 import './BookingModal.css';
 
 /**
- * Triggers multi-stage celebratory confetti poppers across the screen
+ * Triggers celebratory confetti poppers across the screen
  */
 const triggerCelebrationPoppers = () => {
   try {
-    // Stage 1: Big Center Cannon Blast
     confetti({
       particleCount: 80,
       spread: 75,
@@ -31,7 +33,6 @@ const triggerCelebrationPoppers = () => {
       zIndex: 1600,
     });
 
-    // Stage 2: Left corner cannon popper angled upwards
     setTimeout(() => {
       confetti({
         particleCount: 55,
@@ -43,7 +44,6 @@ const triggerCelebrationPoppers = () => {
       });
     }, 150);
 
-    // Stage 3: Right corner cannon popper angled upwards
     setTimeout(() => {
       confetti({
         particleCount: 55,
@@ -54,41 +54,47 @@ const triggerCelebrationPoppers = () => {
         zIndex: 1600,
       });
     }, 300);
-
-    // Stage 4: Shower of celebratory floating circles and shapes
-    setTimeout(() => {
-      confetti({
-        particleCount: 45,
-        spread: 100,
-        origin: { y: 0.45 },
-        shapes: ['circle', 'square'],
-        scalar: 1.2,
-        colors: ['#1D68F2', '#10B981', '#F59E0B', '#A855F7'],
-        zIndex: 1600,
-      });
-    }, 450);
   } catch (err) {
     console.warn('Poppers animation error:', err);
   }
 };
 
 /**
- * Generate present and future dates starting from Today.
- * Past dates are strictly excluded.
- * Some dates have available slots (Blue), some have 0 slots (Grey).
+ * Helper to safely parse YYYY-MM-DD into a local Date without timezone offset shifts
  */
-const generateAvailableDates = () => {
+const parseIsoDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return new Date(dateStr);
+  const [year, month, day] = parts.map(Number);
+  return new Date(year, month - 1, day);
+};
+
+const getIsoDateString = (dateObj) => {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Builds 7 upcoming calendar days starting from today:
+ * 1. If admin created an availability record with status === 'OPEN' and slotsAvailable > 0:
+ *    -> Shown as BLUE in color with available slots (capacity - bookedCount).
+ * 2. If admin created an availability record but status is full/closed or slotsAvailable <= 0:
+ *    -> Shown as DARK GREY in color with 'Full' or 'Closed'.
+ * 3. Otherwise (dummy days without admin availability):
+ *    -> Shown as LIGHT GREY in color with 'No Slots'.
+ */
+const buildDateOptions = (availabilities = []) => {
   const dates = [];
-  const baseDate = new Date();
+  const today = new Date();
 
-  for (let i = 0; i < 10; i++) {
-    const d = new Date(baseDate);
-    d.setDate(baseDate.getDate() + i);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
 
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const isoDate = `${year}-${month}-${day}`;
+    const isoDate = getIsoDateString(d);
 
     const dayName = i === 0
       ? 'Today'
@@ -104,23 +110,64 @@ const generateAvailableDates = () => {
       year: 'numeric'
     });
 
-    // Realistic slot distribution:
-    // Sunday (day 0) or day index 4 is full (0 slots = Grey)
-    // Other days have active booking capacity (4 to 14 slots = Blue)
-    const isSunday = d.getDay() === 0;
-    const isFull = isSunday || i === 4;
-    const slotsCount = isFull ? 0 : Math.max(4, 14 - ((i * 3) % 9));
+    const match = Array.isArray(availabilities)
+      ? availabilities.find((a) => a && a.date === isoDate)
+      : null;
 
-    dates.push({
-      dateStr: isoDate,
-      dayName,
-      formattedDay,
-      formattedMonth,
-      fullDateText,
-      isToday: i === 0,
-      slotsAvailable: slotsCount,
-      isAvailable: slotsCount > 0,
-    });
+    if (match) {
+      const capacity = Number(match.capacity) || 0;
+      const bookedCount = Number(match.bookedCount) || 0;
+      const slotsAvailable = capacity - bookedCount;
+      const statusUpper = (match.status || 'OPEN').toUpperCase();
+
+      if (statusUpper === 'OPEN' && slotsAvailable > 0) {
+        // STATE 1: AVAILABLE -> BLUE
+        dates.push({
+          dateStr: isoDate,
+          availabilityId: match._id,
+          dayName,
+          formattedDay,
+          formattedMonth,
+          fullDateText,
+          slotsAvailable,
+          isAvailable: true,
+          themeClass: 'slots-available',
+          pillClass: 'pill-blue',
+          pillText: `${slotsAvailable} slots`,
+        });
+      } else {
+        // STATE 2: FULL / STATUS OTHER THAN OPEN -> DARK GREY
+        const isFull = slotsAvailable <= 0 || statusUpper === 'FULL';
+        dates.push({
+          dateStr: isoDate,
+          availabilityId: match._id,
+          dayName,
+          formattedDay,
+          formattedMonth,
+          fullDateText,
+          slotsAvailable: Math.max(0, slotsAvailable),
+          isAvailable: false,
+          themeClass: 'slots-dark-grey',
+          pillClass: 'pill-dark-grey',
+          pillText: isFull ? 'Full' : (statusUpper === 'CLOSED' ? 'Closed' : 'Unavailable'),
+        });
+      }
+    } else {
+      // STATE 3: DUMMY / NO RECORD CREATED BY ADMIN -> LIGHT GREY
+      dates.push({
+        dateStr: isoDate,
+        availabilityId: null,
+        dayName,
+        formattedDay,
+        formattedMonth,
+        fullDateText,
+        slotsAvailable: 0,
+        isAvailable: false,
+        themeClass: 'slots-light-grey',
+        pillClass: 'pill-light-grey',
+        pillText: 'No Slots',
+      });
+    }
   }
 
   return dates;
@@ -133,23 +180,65 @@ export const BookingModal = ({
   onBookingSuccess
 }) => {
   const navigate = useNavigate();
-  const dateOptions = useMemo(() => generateAvailableDates(), []);
 
-  // Default selected date to first available date with open slots
-  const firstAvailableDate = useMemo(() => {
-    return dateOptions.find(d => d.isAvailable) || dateOptions[0];
-  }, [dateOptions]);
-
-  const [selectedDateStr, setSelectedDateStr] = useState(() => firstAvailableDate?.dateStr || '');
+  const [dbAvailabilities, setDbAvailabilities] = useState([]);
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  const [selectedDateStr, setSelectedDateStr] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [confirmedData, setConfirmedData] = useState(null);
+  const [bookingError, setBookingError] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
+
+  const serviceId = service?._id || service?.id;
+
+  // Fetch real database availability for this service when modal opens
+  const fetchAvailability = useCallback(async () => {
+    if (!serviceId) return;
+    setIsLoadingAvailability(true);
+    try {
+      const res = await availabilityApi.getAvailability(serviceId);
+      const list = Array.isArray(res?.data) ? res.data : [];
+      setDbAvailabilities(list);
+    } catch (err) {
+      console.warn('Could not fetch real availability from database:', err);
+      setDbAvailabilities([]);
+    } finally {
+      setIsLoadingAvailability(false);
+    }
+  }, [serviceId]);
+
+  useEffect(() => {
+    if (isOpen && serviceId) {
+      fetchAvailability();
+      setBookingError(null);
+      setBookingConfirmed(false);
+      setConfirmedData(null);
+    }
+  }, [isOpen, serviceId, fetchAvailability]);
+
+  // Generate date options strictly from real database availability records
+  const dateOptions = useMemo(() => {
+    return buildDateOptions(dbAvailabilities);
+  }, [dbAvailabilities]);
+
+  // Default selected date to first available date with open slots
+  useEffect(() => {
+    const firstAvailable = dateOptions.find((d) => d.isAvailable);
+    if (firstAvailable) {
+      const stillValid = dateOptions.some((d) => d.dateStr === selectedDateStr && d.isAvailable);
+      if (!stillValid) {
+        setSelectedDateStr(firstAvailable.dateStr);
+      }
+    } else {
+      setSelectedDateStr('');
+    }
+  }, [dateOptions, selectedDateStr]);
 
   // Keep track of currently chosen date object
   const currentSelectedDate = useMemo(() => {
-    return dateOptions.find(d => d.dateStr === selectedDateStr) || firstAvailableDate;
-  }, [dateOptions, selectedDateStr, firstAvailableDate]);
+    return dateOptions.find((d) => d.dateStr === selectedDateStr && d.isAvailable) || null;
+  }, [dateOptions, selectedDateStr]);
 
   // Prevent background page from scrolling when modal is open
   useEffect(() => {
@@ -162,7 +251,7 @@ export const BookingModal = ({
     }
   }, [isOpen]);
 
-  // Trigger screen-wide celebration poppers when appointment is booked successfully
+  // Trigger celebration poppers when confirmed
   useEffect(() => {
     if (bookingConfirmed) {
       triggerCelebrationPoppers();
@@ -172,27 +261,38 @@ export const BookingModal = ({
   if (!isOpen || !service) return null;
 
   const handleSelectDate = (dateItem) => {
-    if (!dateItem.isAvailable) return; // Cannot select dates without slots
+    if (!dateItem.isAvailable) return;
     setSelectedDateStr(dateItem.dateStr);
+    setBookingError(null);
   };
 
-  const handleConfirmBooking = (e) => {
+  // Submit booking to real Backend API
+  const handleConfirmBooking = async (e) => {
     e.preventDefault();
     if (!currentSelectedDate?.isAvailable) return;
 
     setIsSubmitting(true);
+    setBookingError(null);
 
-    // Simulated instantaneous backend appointment booking response
-    setTimeout(() => {
-      const randomHex = Math.random().toString(16).substring(2, 8).toUpperCase();
-      const generatedId = `QL-${currentSelectedDate.dateStr.replace(/-/g, '')}-${randomHex}`;
+    try {
+      const srvId = service._id || service.id;
+      const availId = currentSelectedDate.availabilityId || undefined;
+
+      const res = await appointmentApi.bookAppointment(srvId, availId, {
+        serviceId: srvId,
+        availabilityId: availId,
+        date: currentSelectedDate.dateStr,
+      });
+
+      const appointmentData = res?.data || {};
+      const generatedId = appointmentData.appointmentId || appointmentData._id || 'BOOKED';
 
       const newAppointment = {
         id: generatedId,
         appointmentId: generatedId,
-        title: service.title,
+        title: service.title || service.name,
         description: service.description,
-        image: service.image,
+        image: service.image || service.imageUrl,
         appointmentDate: currentSelectedDate.fullDateText,
         duration: service.duration,
         schedule: service.schedule,
@@ -200,7 +300,7 @@ export const BookingModal = ({
         createdAt: new Date().toISOString(),
       };
 
-      // Persist to localStorage so My Bookings page sees this new appointment
+      // Persist to localStorage so My Bookings page displays this new appointment
       try {
         const stored = localStorage.getItem('queueless_upcoming_bookings');
         const list = stored ? JSON.parse(stored) : [];
@@ -213,18 +313,24 @@ export const BookingModal = ({
       }
 
       setConfirmedData(newAppointment);
-      setIsSubmitting(false);
       setBookingConfirmed(true);
 
       if (onBookingSuccess) {
         onBookingSuccess(newAppointment);
       }
-    }, 500);
+    } catch (err) {
+      console.error('Booking failed:', err);
+      setBookingError(err.message || 'Failed to complete appointment booking. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
     setBookingConfirmed(false);
     setConfirmedData(null);
+    setBookingError(null);
+    setSelectedDateStr('');
     onClose();
   };
 
@@ -234,11 +340,6 @@ export const BookingModal = ({
       setCopiedId(true);
       setTimeout(() => setCopiedId(false), 2000);
     }
-  };
-
-  const handleNavigateToBookings = () => {
-    handleClose();
-    navigate('/my-bookings');
   };
 
   return (
@@ -273,11 +374,11 @@ export const BookingModal = ({
               <div className="booking-service-card">
                 <img
                   src={service.image}
-                  alt={service.title}
+                  alt={service.title || service.name}
                   className="booking-service-card-img"
                 />
                 <div className="booking-service-card-body">
-                  <h3 className="booking-service-card-title">{service.title}</h3>
+                  <h3 className="booking-service-card-title">{service.title || service.name}</h3>
                   {service.description && (
                     <p className="booking-service-card-desc">{service.description}</p>
                   )}
@@ -296,7 +397,25 @@ export const BookingModal = ({
                 </div>
               </div>
 
-              {/* 2. Customer Auto-Fetch Reassurance Note (No customer inputs required) */}
+              {/* 2. Error Message if booking fails */}
+              {bookingError && (
+                <div style={{
+                  background: '#FEF2F2',
+                  border: '1px solid #FECACA',
+                  color: '#B91C1C',
+                  borderRadius: 10,
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  fontSize: 13
+                }}>
+                  <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                  <span>{bookingError}</span>
+                </div>
+              )}
+
+              {/* 3. Customer Auto-Fetch Reassurance Note */}
               <div className="booking-auto-account-note">
                 <div className="auto-account-icon">
                   <ShieldCheck size={18} />
@@ -309,7 +428,7 @@ export const BookingModal = ({
                 </div>
               </div>
 
-              {/* 3. Available Dates Section (Present & Future Only) */}
+              {/* 4. Available Dates Section */}
               <div className="booking-section">
                 <div className="booking-section-header">
                   <div className="section-header-title-group">
@@ -319,61 +438,76 @@ export const BookingModal = ({
                   <div className="slots-legend">
                     <span className="legend-item legend-blue">
                       <span className="legend-dot dot-blue" />
-                      <span>Slots Available (Blue)</span>
+                      <span>Available (Blue)</span>
                     </span>
-                    <span className="legend-item legend-grey">
-                      <span className="legend-dot dot-grey" />
-                      <span>No Slots / Full (Grey)</span>
+                    <span className="legend-item legend-dark-grey">
+                      <span className="legend-dot dot-dark-grey" />
+                      <span>Full / Closed (Dark Grey)</span>
+                    </span>
+                    <span className="legend-item legend-light-grey">
+                      <span className="legend-dot dot-light-grey" />
+                      <span>No Slots (Light Grey)</span>
                     </span>
                   </div>
                 </div>
 
                 {/* Dates Horizontal Grid / Scroller */}
                 <div className="booking-dates-grid" role="radiogroup" aria-label="Available dates">
-                  {dateOptions.map((opt) => {
-                    const isSelected = selectedDateStr === opt.dateStr;
-                    const hasSlots = opt.isAvailable;
+                  {isLoadingAvailability ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px 10px', color: '#64748B', fontSize: 13 }}>
+                      <RefreshCw size={16} className="spin-icon" color="#1D68F2" />
+                      <span>Checking slot availability from database...</span>
+                    </div>
+                  ) : (
+                    dateOptions.map((opt) => {
+                      const isSelected = selectedDateStr === opt.dateStr && opt.isAvailable;
 
-                    return (
-                      <button
-                        type="button"
-                        key={opt.dateStr}
-                        disabled={!hasSlots}
-                        className={`date-slot-card ${hasSlots ? 'slots-available' : 'slots-empty'} ${isSelected ? 'selected' : ''}`}
-                        onClick={() => handleSelectDate(opt)}
-                        aria-checked={isSelected}
-                        aria-disabled={!hasSlots}
-                      >
-                        {/* Day Label (e.g. Today / Tomorrow / Fri) */}
-                        <span className="date-card-day">{opt.dayName}</span>
+                      return (
+                        <button
+                          type="button"
+                          key={opt.dateStr}
+                          disabled={!opt.isAvailable}
+                          className={`date-slot-card ${opt.themeClass} ${isSelected ? 'selected' : ''}`}
+                          onClick={() => handleSelectDate(opt)}
+                          aria-checked={isSelected}
+                          aria-disabled={!opt.isAvailable}
+                        >
+                          {/* Day Label */}
+                          <span className="date-card-day">{opt.dayName}</span>
 
-                        {/* Date Number & Month */}
-                        <div className="date-card-main">
-                          <span className="date-card-number">{opt.formattedDay}</span>
-                          <span className="date-card-month">{opt.formattedMonth}</span>
-                        </div>
+                          {/* Date Number & Month */}
+                          <div className="date-card-main">
+                            <span className="date-card-number">{opt.formattedDay}</span>
+                            <span className="date-card-month">{opt.formattedMonth}</span>
+                          </div>
 
-                        {/* Slots Availability Badge: Blue if available, Grey if full */}
-                        <div className={`date-card-slots-pill ${hasSlots ? 'pill-blue' : 'pill-grey'}`}>
-                          {hasSlots ? (
-                            <>
-                              <span className="slot-indicator-dot" />
-                              <span>{opt.slotsAvailable} slots</span>
-                            </>
-                          ) : (
-                            <>
-                              <Ban size={10} className="slot-ban-icon" />
-                              <span>Full</span>
-                            </>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
+                          {/* Slots Availability Badge */}
+                          <div className={`date-card-slots-pill ${opt.pillClass}`}>
+                            {opt.isAvailable ? (
+                              <>
+                                <span className="slot-indicator-dot" />
+                                <span>{opt.pillText}</span>
+                              </>
+                            ) : opt.themeClass === 'slots-dark-grey' ? (
+                              <>
+                                <Ban size={10} className="slot-ban-icon" />
+                                <span>{opt.pillText}</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="slot-indicator-dot dot-light" />
+                                <span>{opt.pillText}</span>
+                              </>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
-              {/* 4. Live Booking Summary Box */}
+              {/* 5. Live Booking Summary Box */}
               <div className="booking-selection-summary">
                 <div className="summary-item">
                   <span className="summary-label">Selected Date</span>
@@ -385,8 +519,8 @@ export const BookingModal = ({
                 <div className="summary-divider" />
                 <div className="summary-item">
                   <span className="summary-label">Availability</span>
-                  <span className={`summary-value ${currentSelectedDate?.isAvailable ? 'highlight' : ''}`}>
-                    {currentSelectedDate?.isAvailable
+                  <span className={`summary-value ${currentSelectedDate ? 'highlight' : ''}`}>
+                    {currentSelectedDate
                       ? `${currentSelectedDate.slotsAvailable} slots open`
                       : 'No slots available'}
                   </span>
@@ -395,7 +529,7 @@ export const BookingModal = ({
                 <div className="summary-item">
                   <span className="summary-label">Estimated Service</span>
                   <span className="summary-value highlight">
-                    {service.duration}
+                    {service.duration || '15 minutes'}
                   </span>
                 </div>
               </div>
@@ -411,17 +545,17 @@ export const BookingModal = ({
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting || !currentSelectedDate?.isAvailable}
+                  disabled={isSubmitting || !currentSelectedDate || dateOptions.length === 0}
                   className="booking-footer-btn booking-submit-btn"
                 >
                   <CalendarCheck size={16} />
-                  <span>{isSubmitting ? 'Confirming...' : 'Confirm'}</span>
+                  <span>{isSubmitting ? 'Confirming with database...' : 'Confirm'}</span>
                   <ArrowRight size={15} />
                 </button>
               </div>
             </form>
           ) : (
-            /* Booking Confirmed Success Screen with Celebration Poppers */
+            /* Booking Confirmed Success Screen */
             <div className="booking-success-view">
               <div className="booking-success-animation-wrap">
                 <div className="booking-success-icon-ring">
@@ -460,45 +594,24 @@ export const BookingModal = ({
                     <span className="ticket-cell-value">{confirmedData?.title}</span>
                   </div>
                   <div className="ticket-cell">
+                    <span className="ticket-cell-label">Date & Day</span>
+                    <span className="ticket-cell-value">{confirmedData?.appointmentDate}</span>
+                  </div>
+                  <div className="ticket-cell">
                     <span className="ticket-cell-label">Duration</span>
                     <span className="ticket-cell-value">{confirmedData?.duration}</span>
                   </div>
                   <div className="ticket-cell">
-                    <span className="ticket-cell-label">Appointment Date</span>
-                    <span className="ticket-cell-value">{confirmedData?.appointmentDate}</span>
+                    <span className="ticket-cell-label">Status</span>
+                    <span className="ticket-cell-value status-booked-tag">
+                      {confirmedData?.status || 'Booked'}
+                    </span>
                   </div>
-                  <div className="ticket-cell">
-                    <span className="ticket-cell-label">Schedule Hours</span>
-                    <span className="ticket-cell-value">{confirmedData?.schedule}</span>
-                  </div>
-                </div>
-
-                <div className="ticket-footer-status">
-                  <span className="ticket-status-pill">
-                    <CheckCircle2 size={13} />
-                    <span>Confirmed • Status: BOOKED</span>
-                  </span>
                 </div>
               </div>
 
-              {/* Post-booking action buttons */}
-              <div className="booking-success-actions">
-                <button
-                  type="button"
-                  className="booking-action-btn view-bookings-btn"
-                  onClick={handleNavigateToBookings}
-                >
-                  <CalendarCheck size={16} />
-                  <span>View in My Bookings</span>
-                </button>
-                <button
-                  type="button"
-                  className="booking-action-btn done-btn"
-                  onClick={handleClose}
-                >
-                  Done
-                </button>
-              </div>
+              {/* Success Action Buttons */}
+
             </div>
           )}
         </div>

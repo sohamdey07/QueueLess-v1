@@ -17,11 +17,17 @@ const createCounterSchema = z.object({
             "Counter code can contain only letters, numbers, hyphens and underscores"
         ),
 
+    serviceId: z
+        .string({ error: "Service ID is required" })
+        .trim()
+        .min(1, "Service ID is required"),
+
     assignedStaffId: z
         .string()
-        .min(1, "Assigned staff ID cannot be empty")
+        .trim()
         .optional()
         .nullable()
+        .transform((val) => (!val || val === "null" || val === "undefined" ? null : val))
 });
 
 
@@ -44,11 +50,22 @@ const updateCounterSchema = z.object({
         )
         .optional(),
 
+    serviceId: z
+        .string({ error: "Service ID must be a string" })
+        .trim()
+        .min(1, "Service ID cannot be empty")
+        .optional(),
+
     assignedStaffId: z
         .string()
-        .min(1, "Assigned staff ID cannot be empty")
+        .trim()
         .optional()
-        .nullable(),
+        .nullable()
+        .transform((val) => {
+            if (val === undefined) return undefined;
+            if (!val || val === "null" || val === "undefined") return null;
+            return val;
+        }),
 
     isActive: z
         .boolean({

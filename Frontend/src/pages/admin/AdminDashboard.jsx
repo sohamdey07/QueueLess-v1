@@ -27,6 +27,7 @@ import {
 import AdminBanner from '../../components/admin/AdminBanner';
 import serviceApi from '../../services/api/service.api';
 import counterApi from '../../services/api/counter.api';
+import appointmentApi from '../../services/api/appointment.api';
 import './AdminDashboard.css';
 
 // Chart Data (Hourly Distribution for 8 Oct 2026)
@@ -53,21 +54,44 @@ export const AdminDashboard = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('Day');
   const [liveServices, setLiveServices] = useState([]);
   const [liveCounters, setLiveCounters] = useState([]);
+  const [liveStaff, setLiveStaff] = useState([]);
+  const [todayStats, setTodayStats] = useState({
+    totalAppointmentsToday: 0,
+    totalServedToday: 0,
+    totalWaitingToday: 0,
+    totalNoShowToday: 0,
+    services: {},
+  });
   const [isLoading, setIsLoading] = useState(true);
+
+  // Today's formatted display date
+  const currentDisplayDate = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date());
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        const [servicesRes, countersRes] = await Promise.allSettled([
+        const [servicesRes, countersRes, staffRes, overviewRes] = await Promise.allSettled([
           serviceApi.getAllServices(),
-          counterApi.getAllCounters()
+          counterApi.getAllCounters(),
+          counterApi.getStaffList(),
+          appointmentApi.getTodayOverview(),
         ]);
         if (servicesRes.status === 'fulfilled' && Array.isArray(servicesRes.value?.data)) {
           setLiveServices(servicesRes.value.data);
         }
         if (countersRes.status === 'fulfilled' && Array.isArray(countersRes.value?.data)) {
           setLiveCounters(countersRes.value.data);
+        }
+        if (staffRes.status === 'fulfilled' && Array.isArray(staffRes.value?.data)) {
+          setLiveStaff(staffRes.value.data);
+        }
+        if (overviewRes.status === 'fulfilled' && overviewRes.value?.data) {
+          setTodayStats(overviewRes.value.data);
         }
       } catch (e) {
         console.error('Failed to load dashboard metrics:', e);
@@ -131,7 +155,7 @@ export const AdminDashboard = () => {
               <LayoutGrid size={20} strokeWidth={2.4} />
             </div>
             <span className="metric-card-pill pill-purple">
-              <ArrowUp size={11} strokeWidth={2.8} /> 2 new
+              <ArrowUp size={11} strokeWidth={2.8} /> {liveServices.filter((s) => s.isActive !== false).length} active
             </span>
           </div>
           <div className="metric-info-block">
@@ -148,12 +172,12 @@ export const AdminDashboard = () => {
               <Users size={20} strokeWidth={2.4} />
             </div>
             <span className="metric-card-pill pill-orange">
-              <ArrowUp size={11} strokeWidth={2.8} /> 1 new
+              <ArrowUp size={11} strokeWidth={2.8} /> {liveStaff.length} active
             </span>
           </div>
           <div className="metric-info-block">
             <span className="metric-info-label">Total Staffs</span>
-            <span className="metric-info-value">12</span>
+            <span className="metric-info-value">{liveStaff.length}</span>
             <span className="metric-info-subtext">Operational team members</span>
           </div>
         </div>
@@ -165,30 +189,30 @@ export const AdminDashboard = () => {
               <Calendar size={20} strokeWidth={2.4} />
             </div>
             <span className="metric-card-pill pill-blue">
-              <ArrowUp size={11} strokeWidth={2.8} /> 12% today
+              <ArrowUp size={11} strokeWidth={2.8} /> Today
             </span>
           </div>
           <div className="metric-info-block">
             <span className="metric-info-label">Total Appointments</span>
-            <span className="metric-info-value">120</span>
+            <span className="metric-info-value">{todayStats.totalAppointmentsToday || 0}</span>
             <span className="metric-info-subtext">Bookings scheduled today</span>
           </div>
         </div>
 
-        {/* Card 4: Total Served */}
+        {/* Card 4: Total Counters (Updated from Total Served) */}
         <div className="admin-stat-card card-green-soft">
           <div className="metric-card-header-line">
             <div className="metric-icon-square icon-green">
-              <CheckCircle2 size={20} strokeWidth={2.4} />
+              <Store size={20} strokeWidth={2.4} />
             </div>
             <span className="metric-card-pill pill-green">
-              <ArrowUp size={11} strokeWidth={2.8} /> 8% today
+              <ArrowUp size={11} strokeWidth={2.8} /> {liveCounters.filter((c) => c.isActive !== false).length} active
             </span>
           </div>
           <div className="metric-info-block">
-            <span className="metric-info-label">Total Served</span>
-            <span className="metric-info-value">68</span>
-            <span className="metric-info-subtext">Successfully resolved today</span>
+            <span className="metric-info-label">Total Counters</span>
+            <span className="metric-info-value">{liveCounters.length}</span>
+            <span className="metric-info-subtext">Configured service desks</span>
           </div>
         </div>
       </div>
@@ -205,7 +229,7 @@ export const AdminDashboard = () => {
             <div className="admin-header-controls">
               <div className="admin-date-pill">
                 <Calendar size={14} className="pill-icon" />
-                <span>8 Oct 2026</span>
+                <span>{currentDisplayDate}</span>
               </div>
             </div>
           </div>
@@ -224,36 +248,45 @@ export const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-    {liveServices.length > 0 ? (
-      liveServices.slice(0, 10).map((srv, idx) => (
-        <tr key={srv._id || srv.id || idx}>
-          <td className="col-index">{idx + 1}</td>
-          <td className="col-service">
-            <div className="service-icon-circle blue-service-bg">
-              <Layers size={16} className="blue-service-icon" />
-            </div>
-            <span className="service-name-text">{srv.name || srv.title}</span>
-          </td>
-          <td className="col-stat">{srv.capacity || 0}</td>
-          <td className="col-stat">0</td>
-          <td className="col-stat">0</td>
-          <td className="col-stat">0</td>
-          <td className="col-status">
-            <span className={`status-pill ${srv.isActive !== false ? 'active-pill' : 'inactive-pill'}`}>
-              <span className={`status-dot ${srv.isActive !== false ? 'green-dot' : 'red-dot'}`} />
-              <span>{srv.isActive !== false ? 'Active' : 'Inactive'}</span>
-            </span>
-          </td>
-        </tr>
-      ))
-    ) : (
-      <tr>
-        <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#64748B' }}>
-          No services configured yet. Navigate to Service Management to create services.
-        </td>
-      </tr>
-    )}
-  </tbody>
+                {liveServices.length > 0 ? (
+                  liveServices.slice(0, 10).map((srv, idx) => {
+                    const srvId = srv._id || srv.id;
+                    const srvStats = todayStats.services?.[srvId] || {
+                      totalAppointments: 0,
+                      served: 0,
+                      waiting: 0,
+                      noShow: 0,
+                    };
+                    return (
+                      <tr key={srvId || idx}>
+                        <td className="col-index">{idx + 1}</td>
+                        <td className="col-service">
+                          <div className="service-icon-circle blue-service-bg">
+                            <Layers size={16} className="blue-service-icon" />
+                          </div>
+                          <span className="service-name-text">{srv.name || srv.title}</span>
+                        </td>
+                        <td className="col-stat">{srvStats.totalAppointments}</td>
+                        <td className="col-stat">{srvStats.served}</td>
+                        <td className="col-stat">{srvStats.waiting}</td>
+                        <td className="col-stat">{srvStats.noShow}</td>
+                        <td className="col-status">
+                          <span className={`status-pill ${srv.isActive !== false ? 'active-pill' : 'inactive-pill'}`}>
+                            <span className={`status-dot ${srv.isActive !== false ? 'green-dot' : 'red-dot'}`} />
+                            <span>{srv.isActive !== false ? 'Active' : 'Inactive'}</span>
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#64748B' }}>
+                      No services configured yet. Navigate to Service Management to create services.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             </table>
           </div>
         </div>

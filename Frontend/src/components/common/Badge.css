@@ -40,6 +40,16 @@
   border-radius: var(--radius-full);
 }
 
+/* No Show Badge - pill shape */
+.ql-badge-no_show {
+  background-color: #FFF7ED;
+  color: #C2410C;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
 /* Primary Badge */
 .ql-badge-primary {
   background-color: var(--color-primary-light);

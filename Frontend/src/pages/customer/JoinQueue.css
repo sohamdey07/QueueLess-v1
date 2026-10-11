@@ -142,6 +142,82 @@
   color: #94A3B8;
 }
 
+/* Error Banner */
+.join-queue-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #FEF2F2;
+  border: 1px solid #FEE2E2;
+  color: #DC2626;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.join-queue-error-icon {
+  flex-shrink: 0;
+  color: #DC2626;
+}
+
+/* Today's Booked Quick Selection */
+.join-queue-suggestion-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.join-queue-suggestion-label {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #64748B);
+}
+
+.join-queue-suggestion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.join-queue-suggestion-chip {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-family: monospace, var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary, #1D68F2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.join-queue-suggestion-chip:hover {
+  background: var(--color-primary-light, #EBF3FE);
+  border-color: var(--color-primary, #1D68F2);
+}
+
+.join-queue-suggestion-chip .chip-svc {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted, #64748B);
+}
+
 /* Submit Button - NO hover box shadow */
 .join-queue-submit-btn {
   width: 100%;

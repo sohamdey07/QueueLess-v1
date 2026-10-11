@@ -37,6 +37,27 @@ router.get(
 );
 
 
+//GET    /api/v1/counters/staff
+router.get(
+    "/staff",
+    counterReadLimiter,
+    authenticate,
+    authorizeRoles("ADMIN"),
+    counterFunction.getCounterStaff
+);
+
+
+//GET    /api/v1/counters/:counterId
+router.get(
+    "/:counterId",
+    counterReadLimiter,
+    authenticate,
+    authorizeRoles("ADMIN", "STAFF"),
+    validate(counterValidation.counterParamsSchema, "params"),
+    counterFunction.getCounterById
+);
+
+
 //PATCH  /api/v1/counters/:counterId
 router.patch(
     "/:counterId",

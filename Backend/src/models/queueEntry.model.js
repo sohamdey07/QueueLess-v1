@@ -27,6 +27,12 @@ const queueEntrySchema = new mongoose.Schema(
             min: 1
         },
 
+        token: {
+            type: String,
+            trim: true,
+            default: null
+        },
+
         status: {
             type: String,
             enum: [

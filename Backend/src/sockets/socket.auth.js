@@ -7,6 +7,10 @@ const socketAuth = (socket, next) => {
             socket.handshake.headers?.authorization?.replace("Bearer ", "");
 
         if (!token) {
+            if (socket.handshake.auth?.isTvDisplay || socket.handshake.query?.clientType === "TV_DISPLAY") {
+                socket.user = { role: "TV_DISPLAY" };
+                return next();
+            }
             return next(new Error("Authentication required"));
         }
 
@@ -28,6 +32,10 @@ const socketAuth = (socket, next) => {
         next();
 
     } catch (error) {
+        if (socket.handshake.auth?.isTvDisplay || socket.handshake.query?.clientType === "TV_DISPLAY") {
+            socket.user = { role: "TV_DISPLAY" };
+            return next();
+        }
         next(new Error("Invalid or expired access token"));
     }
 };

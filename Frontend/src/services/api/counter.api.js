@@ -11,6 +11,25 @@ export const counterApi = {
   },
 
   /**
+   * Fetch active staff members available for counters
+   */
+  getStaffList: async () => {
+    return apiClient('/counters/staff', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Fetch single counter by ID
+   * @param {string} counterId
+   */
+  getCounterById: async (counterId) => {
+    return apiClient(`/counters/${counterId}`, {
+      method: 'GET',
+    });
+  },
+
+  /**
    * Create a new counter (Admin)
    * @param {Object} data - { name, code, serviceId, assignedStaffId }
    */

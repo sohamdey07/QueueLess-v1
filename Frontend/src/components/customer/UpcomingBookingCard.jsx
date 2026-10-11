@@ -1,20 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, CalendarClock } from 'lucide-react';
 import Badge from '../common/Badge';
 import generalConsultImg from '../../assets/images/bookings/general_consultation.jpg';
 import './UpcomingBookingCard.css';
 
 export const UpcomingBookingCard = ({
-  booking = {
-    title: 'General Consultation',
-    date: '26 Sep 2026',
-    duration: '15 minutes',
-    status: 'UPCOMING',
-    image: generalConsultImg,
-  },
+  booking = null,
+  isLoading = false,
   onViewAll,
-  onBookingClick
+  onBookingClick,
 }) => {
   const navigate = useNavigate();
 
@@ -27,6 +22,11 @@ export const UpcomingBookingCard = ({
   const handleCardClick = () => {
     if (onBookingClick) onBookingClick();
     navigate('/my-bookings');
+  };
+
+  const handleBookNow = (e) => {
+    e.stopPropagation();
+    navigate('/book-appointment');
   };
 
   return (
@@ -47,49 +47,71 @@ export const UpcomingBookingCard = ({
         </a>
       </div>
 
-      {/* Inner Card Box with clean border & padding */}
-      <div
-        className="upcoming-booking-inner-box"
-        onClick={handleCardClick}
-        role="button"
-        tabIndex={0}
-      >
-        {/* Left Thumbnail (Stethoscope) */}
-        <div className="upcoming-booking-image-wrap">
-          <img
-            src={booking.image || generalConsultImg}
-            alt={booking.title}
-            className="upcoming-booking-image"
-          />
+      {isLoading ? (
+        <div className="upcoming-booking-loading-box">
+          <div className="upcoming-loading-spinner" />
+          <span className="upcoming-loading-text">Loading upcoming booking...</span>
         </div>
+      ) : booking ? (
+        /* Inner Card Box with clean border & padding */
+        <div
+          className="upcoming-booking-inner-box"
+          onClick={handleCardClick}
+          role="button"
+          tabIndex={0}
+        >
+          {/* Left Thumbnail */}
+          <div className="upcoming-booking-image-wrap">
+            <img
+              src={booking.image || generalConsultImg}
+              alt={booking.title}
+              className="upcoming-booking-image"
+            />
+          </div>
 
-        {/* Center Details */}
-        <div className="upcoming-booking-details">
-          <Badge variant="upcoming" className="upcoming-status-badge">
-            {booking.status}
-          </Badge>
+          {/* Center Details */}
+          <div className="upcoming-booking-details">
+            <Badge variant={booking.statusVariant || 'upcoming'} className="upcoming-status-badge">
+              {booking.status || 'BOOKED'}
+            </Badge>
 
-          <h3 className="upcoming-booking-title">{booking.title}</h3>
+            <h3 className="upcoming-booking-title">{booking.title}</h3>
 
-          {/* Meta Row: Date/Time & Duration */}
-          <div className="upcoming-booking-meta-row">
-            <div className="upcoming-meta-item">
-              <Calendar size={16} className="meta-icon" />
-              <div className="meta-text-group">
-                <span className="meta-highlight">{booking.date}</span>
+            {/* Meta Row: Date/Time & Duration */}
+            <div className="upcoming-booking-meta-row">
+              <div className="upcoming-meta-item">
+                <Calendar size={16} className="meta-icon" />
+                <div className="meta-text-group">
+                  <span className="meta-highlight">{booking.date}</span>
+                </div>
               </div>
-            </div>
 
-            <div className="upcoming-meta-item">
-              <Clock size={16} className="meta-icon" />
-              <div className="meta-text-group">
-                <span className="meta-highlight">{booking.duration}</span>
+              <div className="upcoming-meta-item">
+                <Clock size={16} className="meta-icon" />
+                <div className="meta-text-group">
+                  <span className="meta-highlight">{booking.duration}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-      </div>
+      ) : (
+        /* Empty State */
+        <div className="upcoming-booking-empty-box">
+          <div className="upcoming-empty-icon-wrap">
+            <CalendarClock size={28} />
+          </div>
+          <h3 className="upcoming-empty-title">No Upcoming Booking</h3>
+          <p className="upcoming-empty-desc">You don't have any appointments scheduled right now.</p>
+          <button
+            type="button"
+            className="upcoming-book-now-btn"
+            onClick={handleBookNow}
+          >
+            Book an Appointment
+          </button>
+        </div>
+      )}
     </div>
   );
 };

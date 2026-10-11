@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Ticket, 
   ArrowRight, 
@@ -9,16 +9,35 @@ import {
   X,
   Users,
   Clock,
-  ExternalLink
+  ExternalLink,
+  AlertCircle
 } from 'lucide-react';
 import JoinQueueBanner from '../../components/customer/JoinQueueBanner';
+import appointmentApi from '../../services/api/appointment.api';
 import './JoinQueue.css';
 
 export const JoinQueue = () => {
   const navigate = useNavigate();
-  const [appointmentId, setAppointmentId] = useState('');
+  const location = useLocation();
+
+  // Prefill appointmentId if navigated from My Bookings or Dashboard
+  const [appointmentId, setAppointmentId] = useState(
+    location.state?.appointmentId || location.state?.booking?.appointmentId || ''
+  );
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [queueTokenModal, setQueueTokenModal] = useState(null);
+  const [joinedQueue, setJoinedQueue] = useState(null);
+  const [todayBookedList, setTodayBookedList] = useState([]);
+
+  // Helper to format today's date in YYYY-MM-DD
+  const getTodayDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   // Prevent background page from scrolling when queue token modal is showing
   useEffect(() => {
@@ -31,42 +50,160 @@ export const JoinQueue = () => {
     }
   }, [queueTokenModal]);
 
-  // Active joined queue item for the user (matching illustration & live queue state)
-  const [joinedQueue, setJoinedQueue] = useState({
-    serviceName: 'General Consultation',
-    appointmentId: 'QL-20260926-8F42K1',
-    tokenNumber: 'A-042',
-    counter: 'Counter 02',
-    peopleAhead: 3,
-    estimatedWait: '12 mins',
-    status: 'In Queue'
-  });
+  // Load customer appointments on mount to check if user already joined a queue today or has an appointment today
+  useEffect(() => {
+    let isMounted = true;
 
-  const handleJoinQueue = (e) => {
-    e.preventDefault();
-    if (!appointmentId.trim()) return;
+    const checkActiveAppointments = async () => {
+      try {
+        const res = await appointmentApi.getMyAppointments();
+        const appts = Array.isArray(res?.data) ? res.data : [];
+        const today = getTodayDateString();
+
+        if (!isMounted) return;
+
+        // Check if customer already has a checked-in or in-service queue entry for today
+        const activeQueueAppt = appts.find(
+          (a) => a.appointmentDate === today && ['CHECKED_IN', 'IN_SERVICE'].includes(a.status)
+        );
+
+        if (activeQueueAppt) {
+          const service = activeQueueAppt.serviceId || {};
+          const qEntry = activeQueueAppt.queueEntryId || {};
+          const prefix = service.code || 'T';
+          const tokenNum = qEntry.tokenNumber ?? (typeof activeQueueAppt.tokenNumber === 'number' ? activeQueueAppt.tokenNumber : 1);
+          const formattedToken = qEntry.token || (typeof activeQueueAppt.tokenNumber === 'string' && activeQueueAppt.tokenNumber.includes('-')
+            ? activeQueueAppt.tokenNumber 
+            : `${prefix}-${String(tokenNum).padStart(3, '0')}`);
+
+          setJoinedQueue({
+            serviceName: service.name || 'Service',
+            serviceImage: service.imageUrl || null,
+            serviceDescription: service.description || '',
+            appointmentId: activeQueueAppt.appointmentId,
+            tokenNumber: formattedToken,
+            rawTokenNumber: tokenNum,
+            status: activeQueueAppt.status === 'IN_SERVICE' ? 'In Service' : 'In Queue',
+            joinedAt: qEntry.joinedAt 
+              ? new Date(qEntry.joinedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : (activeQueueAppt.checkedInAt ? new Date(activeQueueAppt.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today')
+          });
+        }
+
+        // Check booked appointments for today that have not been checked in yet
+        const todayBooked = appts.filter(
+          (a) => a.appointmentDate === today && a.status === 'BOOKED'
+        );
+        setTodayBookedList(todayBooked);
+
+        // Autofill if field is empty and exactly 1 appointment is booked for today
+        if (!appointmentId && todayBooked.length === 1) {
+          setAppointmentId(todayBooked[0].appointmentId);
+        }
+      } catch (err) {
+        console.error('Failed to load customer appointments:', err);
+      }
+    };
+
+    checkActiveAppointments();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleJoinQueue = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const cleanId = appointmentId.trim();
+    if (!cleanId) {
+      setErrorMessage('Please enter an Appointment ID.');
+      return;
+    }
 
     setIsLoading(true);
+    setErrorMessage(null);
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const res = await appointmentApi.checkIn(cleanId);
+      const data = res?.data || {};
+
+      const matchedAppt = todayBookedList.find((a) => a.appointmentId === cleanId);
+      const serviceObj = matchedAppt?.serviceId || {};
+      const serviceName = serviceObj.name || data.serviceName || 'Service';
+      const prefix = serviceObj.code || data.serviceCode || 'T';
+      const tokenNum = data.tokenNumber ?? 1;
+      const formattedToken = data.token || `${prefix}-${String(tokenNum).padStart(3, '0')}`;
+
       const newQueueData = {
-        tokenNumber: 'A-042',
-        serviceName: 'General Consultation',
-        peopleAhead: 3,
-        estimatedWait: '12 mins',
-        appointmentId: appointmentId.trim(),
-        joinedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        status: 'In Queue'
+        tokenNumber: formattedToken,
+        rawTokenNumber: tokenNum,
+        serviceName,
+        serviceImage: serviceObj.imageUrl || null,
+        serviceDescription: serviceObj.description || '',
+        peopleAhead: 0,
+        estimatedWait: '10-15 mins',
+        appointmentId: data.appointmentId || cleanId,
+        queueEntryId: data.queueEntryId,
+        queueId: data.queueId,
+        joinedAt: new Date(data.joinedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: data.status === 'IN_SERVICE' ? 'In Service' : 'In Queue'
       };
 
       setJoinedQueue(newQueueData);
       setQueueTokenModal(newQueueData);
-    }, 500);
+      setTodayBookedList((prev) => prev.filter((a) => a.appointmentId !== cleanId));
+    } catch (err) {
+      console.error('Join queue error:', err);
+      const errMsg = err.message || '';
+      // If appointment is already checked in, fetch real queue entry from DB and display it
+      if (err.status === 409 || errMsg.includes('CHECKED_IN') || errMsg.includes('already')) {
+        try {
+          const resAppts = await appointmentApi.getMyAppointments();
+          const appts = Array.isArray(resAppts?.data) ? resAppts.data : [];
+          const found = appts.find((a) => a.appointmentId === cleanId);
+          if (found && ['CHECKED_IN', 'IN_SERVICE'].includes(found.status)) {
+            const service = found.serviceId || {};
+            const qEntry = found.queueEntryId || {};
+            const prefix = service.code || 'T';
+            const tokenNum = qEntry.tokenNumber ?? (typeof found.tokenNumber === 'number' ? found.tokenNumber : 1);
+            const formattedToken = qEntry.token || (typeof found.tokenNumber === 'string' && found.tokenNumber.includes('-')
+              ? found.tokenNumber
+              : `${prefix}-${String(tokenNum).padStart(3, '0')}`);
+
+            const existingQueueData = {
+              tokenNumber: formattedToken,
+              rawTokenNumber: tokenNum,
+              serviceName: service.name || 'Service',
+              serviceImage: service.imageUrl || null,
+              serviceDescription: service.description || '',
+              peopleAhead: 0,
+              estimatedWait: '10-15 mins',
+              appointmentId: found.appointmentId,
+              queueEntryId: qEntry._id,
+              queueId: qEntry.queueId?._id || qEntry.queueId || found.queueId,
+              joinedAt: qEntry.joinedAt
+                ? new Date(qEntry.joinedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : 'Today',
+              status: found.status === 'IN_SERVICE' ? 'In Service' : 'In Queue'
+            };
+
+            setJoinedQueue(existingQueueData);
+            setQueueTokenModal(existingQueueData);
+            setErrorMessage(null);
+            return;
+          }
+        } catch (fetchErr) {
+          console.warn('Could not retrieve active appointment:', fetchErr);
+        }
+      }
+      setErrorMessage(err.message || 'Unable to join queue. Please check your appointment ID.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoToQueue = () => {
-    navigate('/virtual-queue');
+    navigate('/virtual-queue', { state: { queueData: joinedQueue } });
   };
 
   const handleCloseModal = () => {
@@ -107,7 +244,10 @@ export const JoinQueue = () => {
                     id="appointmentIdInput"
                     type="text"
                     value={appointmentId}
-                    onChange={(e) => setAppointmentId(e.target.value)}
+                    onChange={(e) => {
+                      setAppointmentId(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
                     placeholder="e.g. QL-20260926-8F42K1"
                     className="join-queue-input"
                     required
@@ -115,13 +255,44 @@ export const JoinQueue = () => {
                 </div>
               </div>
 
+              {/* Today's Booked Appointment Quick Helper */}
+              {todayBookedList.length > 0 && !joinedQueue && (
+                <div className="join-queue-suggestion-box">
+                  <span className="join-queue-suggestion-label">Today's Booked Appointment:</span>
+                  <div className="join-queue-suggestion-chips">
+                    {todayBookedList.map((item) => (
+                      <button
+                        key={item.appointmentId}
+                        type="button"
+                        className="join-queue-suggestion-chip"
+                        onClick={() => {
+                          setAppointmentId(item.appointmentId);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                      >
+                        <span>{item.appointmentId}</span>
+                        <span className="chip-svc">({item.serviceId?.name || 'Service'})</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message Alert */}
+              {errorMessage && (
+                <div className="join-queue-error-banner" role="alert">
+                  <AlertCircle size={16} strokeWidth={2.2} className="join-queue-error-icon" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
               <button
                 type="submit"
                 className="join-queue-submit-btn"
-                disabled={isLoading}
+                disabled={isLoading || !appointmentId.trim()}
                 aria-label="Join Virtual Queue"
               >
-                <span>{isLoading ? 'Verifying...' : 'Join Virtual Queue'}</span>
+                <span>{isLoading ? 'Joining Queue...' : 'Join Virtual Queue'}</span>
                 <ArrowRight size={17} strokeWidth={2.2} className="join-queue-btn-arrow" />
               </button>
             </form>
@@ -320,8 +491,9 @@ export const JoinQueue = () => {
               type="button" 
               className="queue-token-action-btn"
               onClick={() => {
+                const tokenData = queueTokenModal;
                 handleCloseModal();
-                navigate('/virtual-queue');
+                navigate('/virtual-queue', { state: { queueData: tokenData } });
               }}
             >
               Go to Queue Page

@@ -4,6 +4,7 @@ import queueModel from "../models/queue.model.js";
 import queueEntryModel from "../models/queueEntry.model.js";
 import appointmentModel from "../models/appointment.model.js";
 import counterModel from "../models/counter.model.js";
+import serviceModel from "../models/service.model.js";
 
 import { emitQueueUpdated } from "./queueSocket.service.js";
 
@@ -175,14 +176,20 @@ export async function callNextCustomerService({ queueId, staffId }) {
                 .session(session);
 
 
-            // --------------------------------------------------
-            // 8. Prepare result
-            // --------------------------------------------------
+            const service = await serviceModel.findById(queue.serviceId).select("name code").session(session);
+            const prefix = service?.code || "T";
+            const tokenFormatted = updatedEntry.token || `${prefix}-${String(updatedEntry.tokenNumber).padStart(3, "0")}`;
+
+            // Ensure token is saved on entry
+            if (!updatedEntry.token) {
+                await queueEntryModel.findByIdAndUpdate(updatedEntry._id, { token: tokenFormatted }, { session });
+            }
 
             result = {
                 queueId: queue._id,
                 queueEntryId: updatedEntry._id,
                 tokenNumber: updatedEntry.tokenNumber,
+                token: tokenFormatted,
 
                 counterId: counter._id,
                 counterName: counter.name,
@@ -203,7 +210,9 @@ export async function callNextCustomerService({ queueId, staffId }) {
         emitQueueUpdated(result.queueId, {
             type: "CUSTOMER_CALLED",
             tokenNumber: result.tokenNumber,
-            counterId: result.counterId
+            token: result.token,
+            counterId: result.counterId,
+            counterName: result.counterName
         });
 
 
@@ -335,12 +344,26 @@ export async function skipQueueEntryService({
             // 5. Prepare result
             // --------------------------------------------------
 
+            let tokenStr = updatedEntry.token;
+            if (!tokenStr) {
+                const queueDoc = await queueModel.findById(updatedEntry.queueId).select("serviceId").session(session);
+                if (queueDoc) {
+                    const srv = await serviceModel.findById(queueDoc.serviceId).select("code").session(session);
+                    const prefix = srv?.code || "T";
+                    tokenStr = `${prefix}-${String(updatedEntry.tokenNumber).padStart(3, "0")}`;
+                    await queueEntryModel.findByIdAndUpdate(updatedEntry._id, { token: tokenStr }, { session });
+                }
+            }
+
             result = {
                 queueId: updatedEntry.queueId,
                 queueEntryId: updatedEntry._id,
                 tokenNumber: updatedEntry.tokenNumber,
+                token: tokenStr || String(updatedEntry.tokenNumber),
                 status: updatedEntry.status,
                 counterId: counter._id,
+                counterName: counter.name,
+                counterCode: counter.code,
                 appointmentId: appointment?.appointmentId || null
             };
         });
@@ -352,7 +375,10 @@ export async function skipQueueEntryService({
 
         emitQueueUpdated(result.queueId, {
             type: "CUSTOMER_SKIPPED",
-            tokenNumber: result.tokenNumber
+            tokenNumber: result.tokenNumber,
+            token: result.token,
+            counterId: result.counterId,
+            counterName: result.counterName
         });
 
 
@@ -494,12 +520,26 @@ export async function startQueueEntryService({
             // 5. Prepare result
             // --------------------------------------------------
 
+            let tokenStr = updatedEntry.token;
+            if (!tokenStr) {
+                const queueDoc = await queueModel.findById(updatedEntry.queueId).select("serviceId").session(session);
+                if (queueDoc) {
+                    const srv = await serviceModel.findById(queueDoc.serviceId).select("code").session(session);
+                    const prefix = srv?.code || "T";
+                    tokenStr = `${prefix}-${String(updatedEntry.tokenNumber).padStart(3, "0")}`;
+                    await queueEntryModel.findByIdAndUpdate(updatedEntry._id, { token: tokenStr }, { session });
+                }
+            }
+
             result = {
                 queueId: updatedEntry.queueId,
                 queueEntryId: updatedEntry._id,
                 appointmentId: appointment.appointmentId,
                 tokenNumber: updatedEntry.tokenNumber,
+                token: tokenStr || String(updatedEntry.tokenNumber),
                 counterId: counter._id,
+                counterName: counter.name,
+                counterCode: counter.code,
                 status: updatedEntry.status,
                 servingAt: updatedEntry.servingAt
             };
@@ -512,7 +552,10 @@ export async function startQueueEntryService({
 
         emitQueueUpdated(result.queueId, {
             type: "SERVICE_STARTED",
-            tokenNumber: result.tokenNumber
+            tokenNumber: result.tokenNumber,
+            token: result.token,
+            counterId: result.counterId,
+            counterName: result.counterName
         });
 
 
@@ -656,12 +699,26 @@ export async function completeQueueEntryService({
             // 5. Prepare result
             // --------------------------------------------------
 
+            let tokenStr = updatedEntry.token;
+            if (!tokenStr) {
+                const queueDoc = await queueModel.findById(updatedEntry.queueId).select("serviceId").session(session);
+                if (queueDoc) {
+                    const srv = await serviceModel.findById(queueDoc.serviceId).select("code").session(session);
+                    const prefix = srv?.code || "T";
+                    tokenStr = `${prefix}-${String(updatedEntry.tokenNumber).padStart(3, "0")}`;
+                    await queueEntryModel.findByIdAndUpdate(updatedEntry._id, { token: tokenStr }, { session });
+                }
+            }
+
             result = {
                 queueId: updatedEntry.queueId,
                 queueEntryId: updatedEntry._id,
                 appointmentId: appointment.appointmentId,
                 tokenNumber: updatedEntry.tokenNumber,
+                token: tokenStr || String(updatedEntry.tokenNumber),
                 counterId: counter._id,
+                counterName: counter.name,
+                counterCode: counter.code,
                 status: updatedEntry.status,
                 completedAt
             };
@@ -674,7 +731,10 @@ export async function completeQueueEntryService({
 
         emitQueueUpdated(result.queueId, {
             type: "SERVICE_COMPLETED",
-            tokenNumber: result.tokenNumber
+            tokenNumber: result.tokenNumber,
+            token: result.token,
+            counterId: result.counterId,
+            counterName: result.counterName
         });
 
 

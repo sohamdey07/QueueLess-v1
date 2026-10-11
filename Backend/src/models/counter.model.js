@@ -19,7 +19,7 @@ const counterSchema = new mongoose.Schema(
         assignedStaffId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required:true
+            default: null
         },
         
         serviceId:{

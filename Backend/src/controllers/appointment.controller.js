@@ -1,11 +1,15 @@
-import {createAppointment as createAppointmentService} from "../services/appointment.service.js";
-import {successResponse,errorResponse} from "../utils/apiResponse.js";
+import crypto from "crypto";
+import { createAppointment as createAppointmentService } from "../services/appointment.service.js";
+import { successResponse, errorResponse } from "../utils/apiResponse.js";
 import mongoose from "mongoose";
 import appointmentModel from "../models/appointment.model.js";
 import availabilityModel from "../models/dailyAvailability.model.js";
+import serviceModel from "../models/service.model.js";
 import queueModel from "../models/queue.model.js";
 import queueEntryModel from "../models/queueEntry.model.js";
-import {isPastDate,getTodayDate} from "../utils/date.js";
+import userModel from "../models/user.model.js";
+import { isPastDate, getTodayDate, isValidDateString } from "../utils/date.js";
+import { emitQueueUpdated } from "../services/queueSocket.service.js";
 
 
 
@@ -14,13 +18,39 @@ import {isPastDate,getTodayDate} from "../utils/date.js";
 //function to create appointment
 export async function createAppointment(req, res, next) {
     try {
-        const { serviceId, availabilityId } = req.params;
+        const serviceId = req.params.serviceId || req.body?.serviceId;
+        let availabilityId = req.params.availabilityId || req.body?.availabilityId;
+        const date = req.body?.date || req.query?.date;
+
+        if (!serviceId) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "Service ID is required"
+            });
+        }
+
+        // If availabilityId is not provided directly, look up the existing availability record for this date
+        if (!availabilityId && date) {
+            const availability = await availabilityModel.findOne({ serviceId, date });
+            if (availability) {
+                availabilityId = availability._id.toString();
+            }
+        }
+
+        if (!availabilityId) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "Availability ID or appointment date is required"
+            });
+        }
+
+        const idempotencyKey = req.headers["idempotency-key"] || crypto.randomUUID();
 
         const result = await createAppointmentService({
             userId: req.user.id,
             serviceId,
             availabilityId,
-            idempotencyKey: req.headers["idempotency-key"]
+            idempotencyKey
         });
 
         return successResponse(res, {
@@ -38,36 +68,74 @@ export async function createAppointment(req, res, next) {
 
 //get all appointments for a user
 export async function getAppointments(req, res, next) {
-    try{
+    try {
         const userId = req.user.id;
-        const appointments = await appointmentModel.find({ customerId: userId }).sort({ appointmentDate: -1, createdAt: -1 });
+        const user = await userModel.findById(userId).select("appointments");
+        const userApptIds = user?.appointments || [];
 
-        if (!appointments || appointments.length === 0) {
-            return successResponse(res, {
-                statusCode: 200,
-                message: "No appointments found",
-                data: []
-            });
-        }
-        
+        const appointments = await appointmentModel
+            .find({
+                $or: [
+                    { customerId: userId },
+                    { _id: { $in: userApptIds } }
+                ]
+            })
+            .populate("serviceId", "name code description duration service_time imageUrl")
+            .populate({
+                path: "queueEntryId",
+                select: "queueId tokenNumber token status joinedAt calledAt servingAt completedAt counterId",
+                populate: { path: "counterId", select: "name code" }
+            })
+            .sort({ appointmentDate: -1, createdAt: -1 });
+
+        // Ensure queueEntryId milestones and token strings are populated
+        const enrichedAppointments = await Promise.all(
+            appointments.map(async (appt) => {
+                const doc = appt.toObject();
+                const prefix = doc.serviceId?.code || "T";
+                if (!doc.queueEntryId) {
+                    const qEntry = await queueEntryModel.findOne({ appointmentId: appt._id })
+                        .select("queueId tokenNumber token status joinedAt calledAt servingAt completedAt counterId")
+                        .populate("counterId", "name code")
+                        .lean();
+                    if (qEntry) {
+                        doc.queueEntryId = qEntry;
+                    }
+                }
+                if (doc.queueEntryId) {
+                    const rawNum = doc.queueEntryId.tokenNumber;
+                    const formattedToken = doc.queueEntryId.token || (rawNum ? `${prefix}-${String(rawNum).padStart(3, "0")}` : null);
+                    doc.queueEntryId.token = formattedToken;
+                    doc.token = formattedToken;
+                    doc.tokenNumber = formattedToken;
+                }
+                return doc;
+            })
+        );
+
         return successResponse(res, {
             statusCode: 200,
             message: "Appointments retrieved successfully",
-            data: appointments
+            data: enrichedAppointments
         });
-    }
-    catch (error) {
+    } catch (error) {
         next(error);
     }
 }
 
-//get data  of a single appointment
+//get data of a single appointment
 export async function getAppointmentById(req, res, next) {
     try {
         const { appointmentId } = req.params;
         const userId = req.user.id;
 
-        const appointment = await appointmentModel.findOne({ appointmentId: appointmentId, customerId: userId });
+        const appointment = await appointmentModel.findOne({ appointmentId, customerId: userId })
+            .populate("serviceId", "name code description duration service_time imageUrl")
+            .populate({
+                path: "queueEntryId",
+                select: "queueId tokenNumber token status joinedAt calledAt servingAt completedAt counterId",
+                populate: { path: "counterId", select: "name code" }
+            });
 
         if (!appointment) {
             return errorResponse(res, {
@@ -76,13 +144,31 @@ export async function getAppointmentById(req, res, next) {
             });
         }
 
+        const doc = appointment.toObject();
+        const prefix = doc.serviceId?.code || "T";
+        if (!doc.queueEntryId) {
+            const qEntry = await queueEntryModel.findOne({ appointmentId: appointment._id })
+                .select("queueId tokenNumber token status joinedAt calledAt servingAt completedAt counterId")
+                .populate("counterId", "name code")
+                .lean();
+            if (qEntry) {
+                doc.queueEntryId = qEntry;
+            }
+        }
+        if (doc.queueEntryId) {
+            const rawNum = doc.queueEntryId.tokenNumber;
+            const formattedToken = doc.queueEntryId.token || (rawNum ? `${prefix}-${String(rawNum).padStart(3, "0")}` : null);
+            doc.queueEntryId.token = formattedToken;
+            doc.token = formattedToken;
+            doc.tokenNumber = formattedToken;
+        }
+
         return successResponse(res, {
             statusCode: 200,
             message: "Appointment retrieved successfully",
-            data: appointment
+            data: doc
         });
-    }
-    catch (error) {
+    } catch (error) {
         next(error);
     }
 }
@@ -265,9 +351,9 @@ export async function checkInAppointment(req, res, next) {
                 // ------------------------------------------------
 
                 const existingAppointment = await appointmentModel.findOne({
-                        appointmentId,
-                        customerId
-                    }).session(session);
+                    appointmentId,
+                    customerId
+                }).session(session);
 
                 if (!existingAppointment) {
                     const error = new Error(
@@ -308,24 +394,24 @@ export async function checkInAppointment(req, res, next) {
                 // ------------------------------------------------
 
                 const appointment = await appointmentModel.findOneAndUpdate(
-                        {
-                            _id: existingAppointment._id,
-                            customerId,
-                            status: "BOOKED",
-                            appointmentDate: today
-                        },
-                        {
-                            $set: {
-                                status: "CHECKED_IN",
-                                checkedInAt: new Date()
-                            }
-                        },
-                        {
-                            returnDocument: "after",
-                            session
+                    {
+                        _id: existingAppointment._id,
+                        customerId,
+                        status: "BOOKED",
+                        appointmentDate: today
+                    },
+                    {
+                        $set: {
+                            status: "CHECKED_IN",
+                            checkedInAt: new Date()
                         }
-                    );
-                    
+                    },
+                    {
+                        returnDocument: "after",
+                        session
+                    }
+                );
+
 
                 if (!appointment) {
 
@@ -342,10 +428,10 @@ export async function checkInAppointment(req, res, next) {
                 // ------------------------------------------------
 
                 const queue = await queueModel.findOne({
-                        serviceId: appointment.serviceId,
-                        date: appointment.appointmentDate,
-                        status: "ACTIVE"
-                    }).session(session);
+                    serviceId: appointment.serviceId,
+                    date: appointment.appointmentDate,
+                    status: "ACTIVE"
+                }).session(session);
 
                 if (!queue) {
 
@@ -388,18 +474,16 @@ export async function checkInAppointment(req, res, next) {
                     throw error;
                 }
 
-                // nextToken starts from 1.
-                // After increment:
-                // 1 -> 2  => token 1
-                // 2 -> 3  => token 2
-                // 3 -> 4  => token 3
-
                 const tokenNumber =
                     updatedQueue.nextToken - 1;
 
                 // ------------------------------------------------
-                // 7. Create queue entry
+                // 7. Create queue entry with formatted token
                 // ------------------------------------------------
+
+                const service = await serviceModel.findById(appointment.serviceId).select("name code").session(session);
+                const prefix = service?.code || "T";
+                const tokenFormatted = `${prefix}-${String(tokenNumber).padStart(3, "0")}`;
 
                 const [queueEntry] =
                     await queueEntryModel.create(
@@ -409,6 +493,7 @@ export async function checkInAppointment(req, res, next) {
                                 serviceId: appointment.serviceId,
                                 queueId: updatedQueue._id,
                                 tokenNumber,
+                                token: tokenFormatted,
                                 status: "WAITING",
                                 counterId: null,
                                 joinedAt: new Date(),
@@ -439,17 +524,28 @@ export async function checkInAppointment(req, res, next) {
                 result = {
                     appointmentId: appointment.appointmentId,
                     serviceId: appointment.serviceId,
+                    serviceName: service?.name || "Service",
+                    serviceCode: prefix,
                     appointmentDate: appointment.appointmentDate,
+                    queueId: queue._id,
                     queueEntryId: queueEntry._id,
                     tokenNumber,
+                    token: tokenFormatted,
                     status: appointment.status,
                     joinedAt: queueEntry.joinedAt
                 };
             });
 
             // ----------------------------------------------------
-            // Transaction successful
+            // Transaction successful - Broadcast real-time event
             // ----------------------------------------------------
+
+            emitQueueUpdated(result.queueId, {
+                type: "CUSTOMER_JOINED",
+                tokenNumber: result.tokenNumber,
+                token: result.token,
+                queueId: result.queueId
+            });
 
             return successResponse(res, {
                 statusCode: 200,
@@ -471,6 +567,99 @@ export async function checkInAppointment(req, res, next) {
             });
         }
 
+        next(error);
+    }
+}
+
+// Function to get today's appointments overview for admin dashboard
+export async function getTodayAppointmentsOverview(req, res, next) {
+    try {
+        const queryDate = req.query.date;
+        const targetDate = (queryDate && isValidDateString(queryDate)) ? queryDate : getTodayDate();
+
+        // 1. Fetch non-cancelled appointments for target date
+        const appointments = await appointmentModel.find({
+            appointmentDate: targetDate,
+            status: { $ne: "CANCELLED" }
+        }).select("_id appointmentId serviceId status appointmentDate");
+
+        // 2. Fetch daily availabilities for target date
+        const availabilities = await availabilityModel.find({
+            date: targetDate
+        }).select("serviceId bookedCount capacity status");
+
+        // 3. Aggregate metrics by service
+        const serviceStatsMap = {};
+
+        appointments.forEach(appt => {
+            const srvId = appt.serviceId?.toString();
+            if (!srvId) return;
+
+            if (!serviceStatsMap[srvId]) {
+                serviceStatsMap[srvId] = {
+                    totalAppointments: 0,
+                    served: 0,
+                    waiting: 0,
+                    noShow: 0
+                };
+            }
+
+            serviceStatsMap[srvId].totalAppointments += 1;
+            if (appt.status === "COMPLETED") {
+                serviceStatsMap[srvId].served += 1;
+            } else if (["BOOKED", "CHECKED_IN", "IN_SERVICE"].includes(appt.status)) {
+                serviceStatsMap[srvId].waiting += 1;
+            } else if (appt.status === "NO_SHOW") {
+                serviceStatsMap[srvId].noShow += 1;
+            }
+        });
+
+        // Ensure daily availability bookedCount is reflected if higher
+        availabilities.forEach(avail => {
+            const srvId = avail.serviceId?.toString();
+            if (!srvId) return;
+
+            if (!serviceStatsMap[srvId]) {
+                serviceStatsMap[srvId] = {
+                    totalAppointments: avail.bookedCount || 0,
+                    served: 0,
+                    waiting: avail.bookedCount || 0,
+                    noShow: 0
+                };
+            } else {
+                if ((avail.bookedCount || 0) > serviceStatsMap[srvId].totalAppointments) {
+                    const diff = avail.bookedCount - serviceStatsMap[srvId].totalAppointments;
+                    serviceStatsMap[srvId].totalAppointments = avail.bookedCount;
+                    serviceStatsMap[srvId].waiting += diff;
+                }
+            }
+        });
+
+        let totalAppointmentsToday = 0;
+        let totalServedToday = 0;
+        let totalWaitingToday = 0;
+        let totalNoShowToday = 0;
+
+        Object.values(serviceStatsMap).forEach(stat => {
+            totalAppointmentsToday += stat.totalAppointments;
+            totalServedToday += stat.served;
+            totalWaitingToday += stat.waiting;
+            totalNoShowToday += stat.noShow;
+        });
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Today's appointments overview retrieved successfully",
+            data: {
+                date: targetDate,
+                totalAppointmentsToday,
+                totalServedToday,
+                totalWaitingToday,
+                totalNoShowToday,
+                services: serviceStatsMap
+            }
+        });
+    } catch (error) {
         next(error);
     }
 }

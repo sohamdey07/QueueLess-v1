@@ -10,12 +10,6 @@ const registerSocketEvents = (io, socket) => {
         try {
             const { queueId } = payload;
 
-            if (socket.user?.role !== "CUSTOMER") {
-                return socket.emit("queue:error", {
-                    message: "Only customers can join a queue"
-                });
-            }
-
             // 1. Validate queueId
             if (!queueId || !mongoose.Types.ObjectId.isValid(queueId)) {
                 return socket.emit("queue:error", {
@@ -34,53 +28,60 @@ const registerSocketEvents = (io, socket) => {
                 });
             }
 
-            if (queue.status !== "ACTIVE") {
-                return socket.emit("queue:error", {
-                    message: "This queue is closed"
-                });
-            }
+            // Join Socket.IO room for live queue broadcast updates
+            await socket.join(`queue:${String(queue._id)}`);
 
-            // 3. Find customer's appointment for this queue
-            const appointment = await appointmentModel
-                .findOne({
-                    customerId: socket.user.id,
-                    serviceId: queue.serviceId,
-                    appointmentDate: queue.date
-                })
-                .select("_id appointmentId");
-
-            if (!appointment) {
-                return socket.emit("queue:error", {
-                    message: "You are not authorized to join this queue"
-                });
-            }
-
-            // 4. Verify that the customer actually joined this queue
-            const queueEntry = await queueEntryModel
-                .findOne({
-                    queueId: queue._id,
-                    appointmentId: appointment._id,
-                    status: {
-                        $in: ["WAITING", "CALLED", "SERVING"]
+            // Lookup customer's queue entry in this queue if customer
+            let userQueueEntry = null;
+            if (socket.user?.id) {
+                const { appointmentId } = payload;
+                if (appointmentId) {
+                    const specificAppt = await appointmentModel.findOne({
+                        appointmentId,
+                        customerId: socket.user.id
+                    }).select("_id");
+                    if (specificAppt) {
+                        userQueueEntry = await queueEntryModel.findOne({
+                            queueId: queue._id,
+                            appointmentId: specificAppt._id
+                        }).select("_id tokenNumber token status");
                     }
-                })
-                .select("_id tokenNumber status");
+                }
 
-            if (!queueEntry) {
-                return socket.emit("queue:error", {
-                    message: "You have not joined this queue"
-                });
+                if (!userQueueEntry) {
+                    const customerAppointments = await appointmentModel.find({ customerId: socket.user.id }).select("_id");
+                    const apptIds = customerAppointments.map(a => a._id);
+
+                    // Prioritize active waiting/called/serving entry, newest tokenNumber first!
+                    userQueueEntry = await queueEntryModel
+                        .findOne({
+                            queueId: queue._id,
+                            appointmentId: { $in: apptIds },
+                            status: { $in: ["WAITING", "CALLED", "SERVING"] }
+                        })
+                        .sort({ tokenNumber: -1, createdAt: -1 })
+                        .select("_id tokenNumber token status");
+
+                    if (!userQueueEntry) {
+                        userQueueEntry = await queueEntryModel
+                            .findOne({
+                                queueId: queue._id,
+                                appointmentId: { $in: apptIds }
+                            })
+                            .sort({ tokenNumber: -1, createdAt: -1 })
+                            .select("_id tokenNumber token status");
+                    }
+                }
             }
 
-            // 5. Join Socket.IO room
-            await socket.join(`queue:${queue._id}`);
-
-            // 6. Confirm successful join
+            // Confirm successful join
             socket.emit("queue:joined", {
                 queueId: queue._id,
-                queueEntryId: queueEntry._id,
-                tokenNumber: queueEntry.tokenNumber,
-                status: queueEntry.status
+                queueEntryId: userQueueEntry?._id || null,
+                tokenNumber: userQueueEntry?.tokenNumber || null,
+                token: userQueueEntry?.token || null,
+                queueStatus: queue.status,
+                status: userQueueEntry?.status || null
             });
 
         } catch (error) {
@@ -99,10 +100,27 @@ const registerSocketEvents = (io, socket) => {
                 return;
             }
 
-            await socket.leave(`queue:${queueId}`);
+            await socket.leave(`queue:${String(queueId)}`);
 
         } catch (error) {
             // Ignore leave errors
+        }
+    });
+
+    socket.on("tv:join", async () => {
+        try {
+            await socket.join("tv:display");
+            socket.emit("tv:joined", { message: "Joined TV display channel" });
+        } catch (error) {
+            socket.emit("tv:error", { message: "Unable to join TV display channel" });
+        }
+    });
+
+    socket.on("tv:leave", async () => {
+        try {
+            await socket.leave("tv:display");
+        } catch (error) {
+            // Ignore
         }
     });
 };

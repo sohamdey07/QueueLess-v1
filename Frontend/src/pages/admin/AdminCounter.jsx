@@ -33,19 +33,26 @@ import './AdminCounter.css';
 import counterApi from '../../services/api/counter.api';
 import serviceApi from '../../services/api/service.api';
 
-// Pre-defined Staff Members matching Manage Users seed data
-const STAFF_LIST = [
-  { id: 'staff-1', name: 'Rohan Das', email: 'rohan.das@qless.com', status: 'Active', role: 'Staff' },
-  { id: 'staff-2', name: 'Ananya Sen', email: 'ananya.sen@qless.com', status: 'Inactive', role: 'Staff' },
-  { id: 'staff-3', name: 'Souvik Roy', email: 'souvik.roy@qless.com', status: 'Active', role: 'Staff' },
-  { id: 'staff-4', name: 'Priya Shah', email: 'priya.shah@qless.com', status: 'Active', role: 'Staff' },
-  { id: 'staff-5', name: 'Arjun Mehta', email: 'arjun.mehta@qless.com', status: 'Inactive', role: 'Staff' },
-  { id: 'staff-6', name: 'Neha Verma', email: 'neha.verma@qless.com', status: 'Active', role: 'Staff' },
-  { id: 'staff-7', name: 'Karan Tiwari', email: 'karan.tiwari@qless.com', status: 'Active', role: 'Staff' },
-  { id: 'staff-8', name: 'Mitali Singh', email: 'mitali.singh@qless.com', status: 'Inactive', role: 'Staff' },
-];
+// Fallback / default service placeholder
+const DEFAULT_SERVICE_PLACEHOLDER = {
+  id: '',
+  _id: '',
+  title: 'Select Service',
+  name: 'Select Service',
+  code: 'Choose a service queue',
+  status: 'Inactive',
+  isPlaceholder: true,
+};
 
-const INITIAL_COUNTERS = [];
+// Fallback / default staff options
+const UNASSIGNED_STAFF = {
+  id: '',
+  _id: '',
+  name: 'Unassigned (No Staff)',
+  email: 'Assign a staff member later',
+  status: 'Inactive',
+  role: 'Staff'
+};
 
 export const AdminCounter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,10 +64,22 @@ export const AdminCounter = () => {
   // Counters State
   const [counters, setCounters] = useState([]);
   const [servicesList, setServicesList] = useState([]);
+  const [staffList, setStaffList] = useState([]);
   const [isLoadingCounters, setIsLoadingCounters] = useState(true);
+  const [isLoadingServices, setIsLoadingServices] = useState(true);
+  const [isLoadingStaff, setIsLoadingStaff] = useState(true);
+
+  // Form Fields State
+  const [editingId, setEditingId] = useState(null);
+  const [counterName, setCounterName] = useState('');
+  const [counterCode, setCounterCode] = useState('');
+  const [selectedService, setSelectedService] = useState(DEFAULT_SERVICE_PLACEHOLDER);
+  const [selectedStaff, setSelectedStaff] = useState(UNASSIGNED_STAFF);
+  const [counterStatus, setCounterStatus] = useState('Active'); // 'Active' or 'Inactive'
 
   const loadServices = async () => {
     try {
+      setIsLoadingServices(true);
       const res = await serviceApi.getAllServices();
       const list = Array.isArray(res?.data) ? res.data : [];
       const normalized = list.map(s => ({
@@ -73,11 +92,31 @@ export const AdminCounter = () => {
         icon: Layers
       }));
       setServicesList(normalized);
-      if (normalized.length > 0 && !selectedService) {
-        setSelectedService(normalized[0]);
-      }
     } catch (e) {
       console.error('Failed to load services in counters:', e);
+    } finally {
+      setIsLoadingServices(false);
+    }
+  };
+
+  const loadStaff = async () => {
+    try {
+      setIsLoadingStaff(true);
+      const res = await counterApi.getStaffList();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      const normalized = list.map(s => ({
+        id: s._id || s.id,
+        _id: s._id || s.id,
+        name: s.name,
+        email: s.email,
+        status: s.isActive !== false ? 'Active' : 'Inactive',
+        role: s.role || 'Staff'
+      }));
+      setStaffList(normalized);
+    } catch (e) {
+      console.error('Failed to load staff in counters:', e);
+    } finally {
+      setIsLoadingStaff(false);
     }
   };
 
@@ -110,18 +149,9 @@ export const AdminCounter = () => {
 
   useEffect(() => {
     loadServices();
+    loadStaff();
     loadCounters();
   }, []);
-
-  // Edit / Modify State
-  const [editingId, setEditingId] = useState(null);
-
-  // Form Fields State
-  const [counterName, setCounterName] = useState('');
-  const [counterCode, setCounterCode] = useState('');
-  const [selectedService, setSelectedService] = useState(null);
-  const [selectedStaff, setSelectedStaff] = useState(STAFF_LIST[0]);
-  const [counterStatus, setCounterStatus] = useState('Active'); // 'Active' or 'Inactive'
 
   // Dropdown Open States
   const [isServiceDropdownOpen, setIsServiceDropdownOpen] = useState(false);
@@ -187,8 +217,8 @@ export const AdminCounter = () => {
   const handleClearForm = () => {
     setCounterName('');
     setCounterCode('');
-    setSelectedService(servicesList[0] || null);
-    setSelectedStaff(STAFF_LIST[0]);
+    setSelectedService(DEFAULT_SERVICE_PLACEHOLDER);
+    setSelectedStaff(UNASSIGNED_STAFF);
     setCounterStatus('Active');
     setEditingId(null);
   };
@@ -200,22 +230,29 @@ export const AdminCounter = () => {
     setCounterCode(counter.code);
 
     const srv = servicesList.find((s) => (s._id || s.id) === (counter.serviceId?._id || counter.serviceId)) || {
-      id: counter.serviceId,
-      title: counter.serviceTitle,
-      code: counter.serviceCode,
+      id: counter.serviceId?._id || counter.serviceId,
+      _id: counter.serviceId?._id || counter.serviceId,
+      title: counter.serviceTitle || 'General Service',
+      name: counter.serviceTitle || 'General Service',
+      code: counter.serviceCode || 'GEN-01',
       status: 'Active',
       icon: Layers,
     };
     setSelectedService(srv);
 
-    const stf = STAFF_LIST.find((s) => s.id === counter.staffId) || {
-      id: counter.staffId,
-      name: counter.staffName,
-      email: counter.staffEmail,
-      status: 'Active',
-      role: 'Staff',
-    };
-    setSelectedStaff(stf);
+    if (counter.staffId) {
+      const stf = staffList.find((s) => (s._id || s.id) === counter.staffId) || {
+        id: counter.staffId,
+        _id: counter.staffId,
+        name: counter.staffName,
+        email: counter.staffEmail,
+        status: 'Active',
+        role: 'Staff',
+      };
+      setSelectedStaff(stf);
+    } else {
+      setSelectedStaff(UNASSIGNED_STAFF);
+    }
 
     setCounterStatus(counter.status);
     setActiveTab('add');
@@ -236,17 +273,21 @@ export const AdminCounter = () => {
       return;
     }
 
-    if (!selectedService || (!selectedService._id && !selectedService.id)) {
-      showToast('Please create and select a service first.');
+    const srvId = selectedService?._id || selectedService?.id;
+    if (!srvId || srvId === 'none' || selectedService?.isPlaceholder) {
+      showToast('Please select a valid service first.');
       return;
     }
+
+    const assignedStaffId = (selectedStaff?.id || selectedStaff?._id) ? (selectedStaff._id || selectedStaff.id) : null;
 
     try {
       if (editingId) {
         await counterApi.updateCounter(editingId, {
           name: counterName.trim(),
           code: counterCode.trim().toUpperCase(),
-          serviceId: selectedService._id || selectedService.id,
+          serviceId: srvId,
+          assignedStaffId: assignedStaffId,
           isActive: counterStatus === 'Active',
         });
         showToast('Counter "' + counterName.trim() + '" updated successfully!');
@@ -254,8 +295,8 @@ export const AdminCounter = () => {
         await counterApi.createCounter({
           name: counterName.trim(),
           code: counterCode.trim().toUpperCase(),
-          serviceId: selectedService._id || selectedService.id,
-          assignedStaffId: selectedStaff?.id || selectedStaff?._id || undefined,
+          serviceId: srvId,
+          assignedStaffId: assignedStaffId,
         });
         showToast('Counter "' + counterName.trim() + '" created successfully!');
       }
@@ -474,8 +515,11 @@ export const AdminCounter = () => {
                     </div>
                   </div>
 
-                  {/* Field 3: Select Service */}
-                  <div className="counter-form-group" ref={serviceDropdownRef}>
+                  {/* Field 3: Select Service (Upper position - opens downward) */}
+                  <div
+                    className={`counter-form-group open-downward ${isServiceDropdownOpen ? 'dropdown-active-z' : ''}`}
+                    ref={serviceDropdownRef}
+                  >
                     <label className="counter-field-label">
                       Select Service <span className="counter-required-star">*</span>
                     </label>
@@ -487,14 +531,20 @@ export const AdminCounter = () => {
                       tabIndex={0}
                     >
                       <div className="counter-selector-left-content">
-                        <div className="service-leading-icon-box">
+                        <div className={`service-leading-icon-box ${(!selectedService || selectedService.isPlaceholder) ? 'placeholder-icon' : ''}`}>
                           <Layers size={16} />
                         </div>
                         <div className="selector-text-stack">
-                          <span className="selector-text-title">{selectedService.title}</span>
-                          <span className="selector-text-subcode">{selectedService.code}</span>
+                          <span className={`selector-text-title ${(!selectedService || selectedService.isPlaceholder) ? 'text-placeholder' : ''}`}>
+                            {selectedService?.title || 'Select Service'}
+                          </span>
+                          <span className="selector-text-subcode">
+                            {selectedService?.code || 'Choose a service queue'}
+                          </span>
                         </div>
-                        <span className="selector-service-tag">Active Service</span>
+                        <span className={`selector-service-tag ${(!selectedService || selectedService.isPlaceholder) ? 'tag-required' : ''}`}>
+                          {(!selectedService || selectedService.isPlaceholder) ? 'Required' : 'Active Service'}
+                        </span>
                       </div>
                       <ChevronDown
                         size={17}
@@ -502,14 +552,37 @@ export const AdminCounter = () => {
                       />
                     </div>
 
-                    {/* Service Dropdown Menu */}
+                    {/* Service Dropdown Menu (Upper position - opens downward) */}
                     {isServiceDropdownOpen && (
-                      <div className="counter-floating-dropdown-menu">
-                        {(servicesList.length > 0 ? servicesList : [{ id: "none", title: "No services available", code: "N/A", icon: Layers }]).map((srv) => {
-                          const isSelected = selectedService.id === srv.id;
+                      <div className="counter-floating-dropdown-menu menu-downward">
+                        {/* Option 1: Default 'Select Service' */}
+                        <div
+                          className={`counter-dropdown-option-item ${(!selectedService || !selectedService.id || selectedService.isPlaceholder) ? 'selected' : ''}`}
+                          onClick={() => {
+                            setSelectedService(DEFAULT_SERVICE_PLACEHOLDER);
+                            setIsServiceDropdownOpen(false);
+                          }}
+                        >
+                          <div className="option-leading-content">
+                            <div className="option-icon-box placeholder-icon">
+                              <Layers size={15} />
+                            </div>
+                            <div className="option-text-stack">
+                              <span className="option-title">Select Service</span>
+                              <span className="option-subtext">Choose a service queue</span>
+                            </div>
+                          </div>
+                          {(!selectedService || !selectedService.id || selectedService.isPlaceholder) && (
+                            <Check size={16} className="option-check-icon" />
+                          )}
+                        </div>
+
+                        {/* Available Services */}
+                        {servicesList.map((srv) => {
+                          const isSelected = selectedService && !selectedService.isPlaceholder && (selectedService._id || selectedService.id) === (srv._id || srv.id);
                           return (
                             <div
-                              key={srv.id}
+                              key={srv.id || srv._id}
                               className={`counter-dropdown-option-item ${isSelected ? 'selected' : ''}`}
                               onClick={() => {
                                 setSelectedService(srv);
@@ -533,15 +606,15 @@ export const AdminCounter = () => {
                     )}
                   </div>
 
-                  {/* Two Column Row: Select Staff & Status */}
-                  <div className="counter-form-two-col-row">
-                    {/* Field 4: Select Staff */}
+                  {/* Two Column Row: Select Staff & Status (Lower position - opens upward) */}
+                  <div className={`counter-form-two-col-row ${isStaffDropdownOpen || isStatusDropdownOpen ? 'row-active-z' : ''}`}>
+                    {/* Field 4: Select Staff (Lower position - opens upward) */}
                     <div
-                      className={`counter-form-group ${isStaffDropdownOpen ? 'dropdown-active-z' : ''}`}
+                      className={`counter-form-group open-upward ${isStaffDropdownOpen ? 'dropdown-active-z' : ''}`}
                       ref={staffDropdownRef}
                     >
                       <label className="counter-field-label">
-                        Select Staff <span className="counter-required-star">*</span>
+                        Select Staff (Optional)
                       </label>
 
                       <div
@@ -551,23 +624,30 @@ export const AdminCounter = () => {
                         tabIndex={0}
                       >
                         <div className="counter-selector-left-content">
-                          <div className="staff-leading-avatar">
-                            {selectedStaff.name
-                              .split(' ')
-                              .map((n) => n[0])
-                              .slice(0, 2)
-                              .join('')}
+                          <div className={`staff-leading-avatar ${!selectedStaff || selectedStaff.id === '' ? 'unassigned-avatar' : ''}`}>
+                            {selectedStaff && selectedStaff.name && selectedStaff.id !== ''
+                              ? selectedStaff.name
+                                  .split(' ')
+                                  .map((n) => n[0])
+                                  .slice(0, 2)
+                                  .join('')
+                                  .toUpperCase()
+                              : 'UN'}
                           </div>
                           <div className="selector-text-stack">
-                            <span className="selector-text-title">{selectedStaff.name}</span>
-                            <span className="selector-text-subcode">{selectedStaff.email}</span>
+                            <span className="selector-text-title">
+                              {selectedStaff?.name || 'Unassigned (No Staff)'}
+                            </span>
+                            <span className="selector-text-subcode">
+                              {selectedStaff?.email || 'Assign a staff member later'}
+                            </span>
                           </div>
                           <span
                             className={`selector-status-badge ${
-                              selectedStaff.status === 'Active' ? 'badge-green' : 'badge-gray'
+                              selectedStaff?.status === 'Active' ? 'badge-green' : 'badge-gray'
                             }`}
                           >
-                            {selectedStaff.status}
+                            {selectedStaff?.id !== '' ? selectedStaff?.status : 'Unassigned'}
                           </span>
                         </div>
                         <ChevronDown
@@ -576,14 +656,46 @@ export const AdminCounter = () => {
                         />
                       </div>
 
-                      {/* Staff Dropdown Menu */}
+                      {/* Staff Dropdown Menu (Lower position - opens upward) */}
                       {isStaffDropdownOpen && (
-                        <div className="counter-floating-dropdown-menu staff-menu">
-                          {STAFF_LIST.map((stf) => {
-                            const isSelected = selectedStaff.id === stf.id;
+                        <div className="counter-floating-dropdown-menu menu-upward staff-menu">
+                          {/* Option 1: Unassigned / Clear staff */}
+                          <div
+                            className={`counter-dropdown-option-item ${
+                              !selectedStaff || selectedStaff.id === '' ? 'selected' : ''
+                            }`}
+                            onClick={() => {
+                              setSelectedStaff(UNASSIGNED_STAFF);
+                              setIsStaffDropdownOpen(false);
+                            }}
+                          >
+                            <div className="option-leading-content">
+                              <div className="staff-option-avatar unassigned">
+                                UN
+                              </div>
+                              <div className="option-text-stack">
+                                <span className="option-title">Unassigned (No Staff)</span>
+                                <span className="option-subtext">Leave booth unassigned for now</span>
+                              </div>
+                            </div>
+                            <div className="option-trailing-content">
+                              <span className="staff-pill-mini pill-inactive">
+                                None
+                              </span>
+                              {(!selectedStaff || selectedStaff.id === '') && (
+                                <Check size={16} className="option-check-icon" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Real Staff from database */}
+                          {staffList.map((stf) => {
+                            const isSelected =
+                              selectedStaff &&
+                              (selectedStaff.id === stf.id || selectedStaff._id === stf._id);
                             return (
                               <div
-                                key={stf.id}
+                                key={stf.id || stf._id}
                                 className={`counter-dropdown-option-item ${isSelected ? 'selected' : ''}`}
                                 onClick={() => {
                                   setSelectedStaff(stf);
@@ -596,7 +708,8 @@ export const AdminCounter = () => {
                                       .split(' ')
                                       .map((n) => n[0])
                                       .slice(0, 2)
-                                      .join('')}
+                                      .join('')
+                                      .toUpperCase()}
                                   </div>
                                   <div className="option-text-stack">
                                     <span className="option-title">{stf.name}</span>
@@ -620,9 +733,9 @@ export const AdminCounter = () => {
                       )}
                     </div>
 
-                    {/* Field 5: Status (Active / Inactive) */}
+                    {/* Field 5: Status (Active / Inactive) (Lower position - opens upward) */}
                     <div
-                      className={`counter-form-group ${isStatusDropdownOpen ? 'dropdown-active-z' : ''}`}
+                      className={`counter-form-group open-upward ${isStatusDropdownOpen ? 'dropdown-active-z' : ''}`}
                       ref={statusDropdownRef}
                     >
                       <label className="counter-field-label">
@@ -649,9 +762,9 @@ export const AdminCounter = () => {
                         />
                       </div>
 
-                      {/* Status Dropdown Options */}
+                      {/* Status Dropdown Options (Lower position - opens upward) */}
                       {isStatusDropdownOpen && (
-                        <div className="counter-floating-dropdown-menu">
+                        <div className="counter-floating-dropdown-menu menu-upward status-menu">
                           {[
                             {
                               val: 'Active',
@@ -827,7 +940,13 @@ export const AdminCounter = () => {
               </div>
 
               {/* Table of Assigned Counters */}
-              {filteredCounters.length > 0 ? (
+              {isLoadingCounters ? (
+                <div className="counter-empty-state-card">
+                  <div className="counter-spinner-ring" />
+                  <h4 className="empty-state-title">Loading Counters...</h4>
+                  <p className="empty-state-desc">Fetching active service counters from server.</p>
+                </div>
+              ) : filteredCounters.length > 0 ? (
                 <div className="counter-table-responsive-wrapper">
                   <table className="counter-data-table">
                     <thead>
@@ -879,15 +998,19 @@ export const AdminCounter = () => {
                             <td className="cell-col-staff">
                               <div className="counter-staff-cell-inner">
                                 <div className={`staff-table-avatar avatar-tone-${idx % 5}`}>
-                                  {item.staffName
-                                    .split(' ')
-                                    .map((n) => n[0])
-                                    .slice(0, 2)
-                                    .join('')}
+                                  {item.staffName && item.staffName !== 'Unassigned Staff'
+                                    ? item.staffName
+                                        .trim()
+                                        .split(/\s+/)
+                                        .map((n) => n[0])
+                                        .slice(0, 2)
+                                        .join('')
+                                        .toUpperCase()
+                                    : 'UN'}
                                 </div>
                                 <div className="staff-meta-block">
-                                  <span className="staff-cell-name">{item.staffName}</span>
-                                  <span className="staff-cell-email">{item.staffEmail}</span>
+                                  <span className="staff-cell-name">{item.staffName || 'Unassigned Staff'}</span>
+                                  <span className="staff-cell-email">{item.staffEmail || 'No staff assigned'}</span>
                                 </div>
                               </div>
                             </td>
