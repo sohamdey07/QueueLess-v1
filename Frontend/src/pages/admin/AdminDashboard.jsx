@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -25,6 +25,8 @@ import {
   History
 } from 'lucide-react';
 import AdminBanner from '../../components/admin/AdminBanner';
+import serviceApi from '../../services/api/service.api';
+import counterApi from '../../services/api/counter.api';
 import './AdminDashboard.css';
 
 // Chart Data (Hourly Distribution for 8 Oct 2026)
@@ -49,6 +51,32 @@ const chartData = [
 export const AdminDashboard = () => {
   const navigate = useNavigate();
   const [selectedTimeframe, setSelectedTimeframe] = useState('Day');
+  const [liveServices, setLiveServices] = useState([]);
+  const [liveCounters, setLiveCounters] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        const [servicesRes, countersRes] = await Promise.allSettled([
+          serviceApi.getAllServices(),
+          counterApi.getAllCounters()
+        ]);
+        if (servicesRes.status === 'fulfilled' && Array.isArray(servicesRes.value?.data)) {
+          setLiveServices(servicesRes.value.data);
+        }
+        if (countersRes.status === 'fulfilled' && Array.isArray(countersRes.value?.data)) {
+          setLiveCounters(countersRes.value.data);
+        }
+      } catch (e) {
+        console.error('Failed to load dashboard metrics:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
   const [activeChartPoint, setActiveChartPoint] = useState(null);
 
   // Quick Action Handler
@@ -108,7 +136,7 @@ export const AdminDashboard = () => {
           </div>
           <div className="metric-info-block">
             <span className="metric-info-label">Total Services</span>
-            <span className="metric-info-value">8</span>
+            <span className="metric-info-value">{liveServices.length}</span>
             <span className="metric-info-subtext">Active department offerings</span>
           </div>
         </div>
@@ -196,90 +224,36 @@ export const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {/* Row 1: General Consultation */}
-                <tr>
-                  <td className="col-index">1</td>
-                  <td className="col-service">
-                    <div className="service-icon-circle blue-service-bg">
-                      <Layers size={16} className="blue-service-icon" />
-                    </div>
-                    <span className="service-name-text">General Consultation</span>
-                  </td>
-                  <td className="col-stat">50</td>
-                  <td className="col-stat">28</td>
-                  <td className="col-stat">18</td>
-                  <td className="col-stat">2</td>
-                  <td className="col-status">
-                    <span className="status-pill active-pill">
-                      <span className="status-dot green-dot" />
-                      <span>Active</span>
-                    </span>
-                  </td>
-                </tr>
-
-                {/* Row 2: Follow-up Consultation */}
-                <tr>
-                  <td className="col-index">2</td>
-                  <td className="col-service">
-                    <div className="service-icon-circle orange-service-bg">
-                      <Layers size={16} className="orange-service-icon" />
-                    </div>
-                    <span className="service-name-text">Follow-up Consultation</span>
-                  </td>
-                  <td className="col-stat">30</td>
-                  <td className="col-stat">18</td>
-                  <td className="col-stat">7</td>
-                  <td className="col-stat">2</td>
-                  <td className="col-status">
-                    <span className="status-pill active-pill">
-                      <span className="status-dot green-dot" />
-                      <span>Active</span>
-                    </span>
-                  </td>
-                </tr>
-
-                {/* Row 3: Diagnostics */}
-                <tr>
-                  <td className="col-index">3</td>
-                  <td className="col-service">
-                    <div className="service-icon-circle amber-service-bg">
-                      <Layers size={16} className="amber-service-icon" />
-                    </div>
-                    <span className="service-name-text">Diagnostics</span>
-                  </td>
-                  <td className="col-stat">25</td>
-                  <td className="col-stat">14</td>
-                  <td className="col-stat">5</td>
-                  <td className="col-stat">1</td>
-                  <td className="col-status">
-                    <span className="status-pill active-pill">
-                      <span className="status-dot green-dot" />
-                      <span>Active</span>
-                    </span>
-                  </td>
-                </tr>
-
-                {/* Row 4: Vaccination */}
-                <tr>
-                  <td className="col-index">4</td>
-                  <td className="col-service">
-                    <div className="service-icon-circle lightblue-service-bg">
-                      <Layers size={16} className="lightblue-service-icon" />
-                    </div>
-                    <span className="service-name-text">Vaccination</span>
-                  </td>
-                  <td className="col-stat">15</td>
-                  <td className="col-stat">8</td>
-                  <td className="col-stat">3</td>
-                  <td className="col-stat">0</td>
-                  <td className="col-status">
-                    <span className="status-pill inactive-pill">
-                      <span className="status-dot red-dot" />
-                      <span>Inactive</span>
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
+    {liveServices.length > 0 ? (
+      liveServices.slice(0, 10).map((srv, idx) => (
+        <tr key={srv._id || srv.id || idx}>
+          <td className="col-index">{idx + 1}</td>
+          <td className="col-service">
+            <div className="service-icon-circle blue-service-bg">
+              <Layers size={16} className="blue-service-icon" />
+            </div>
+            <span className="service-name-text">{srv.name || srv.title}</span>
+          </td>
+          <td className="col-stat">{srv.capacity || 0}</td>
+          <td className="col-stat">0</td>
+          <td className="col-stat">0</td>
+          <td className="col-stat">0</td>
+          <td className="col-status">
+            <span className={`status-pill ${srv.isActive !== false ? 'active-pill' : 'inactive-pill'}`}>
+              <span className={`status-dot ${srv.isActive !== false ? 'green-dot' : 'red-dot'}`} />
+              <span>{srv.isActive !== false ? 'Active' : 'Inactive'}</span>
+            </span>
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#64748B' }}>
+          No services configured yet. Navigate to Service Management to create services.
+        </td>
+      </tr>
+    )}
+  </tbody>
             </table>
           </div>
         </div>

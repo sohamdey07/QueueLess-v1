@@ -416,47 +416,21 @@ const createAppointment = async ({
                 // Create appointment
                 // --------------------------------------------
 
-                const [appointment] =
-                    await appointmentModel.create(
-                        [
+                const [appointment] = await appointmentModel.create([
                             {
                                 appointmentId,
-
-                                customerId:
-                                    user._id,
-
-                                customerName:
-                                    user.name,
-
-                                customerEmail:
-                                    user.email,
-
-                                customerPhone:
-                                    user.phone,
-
-                                serviceId:
-                                    service._id,
-
-                                appointmentDate:
-                                    updatedAvailability.date,
-
-                                status:
-                                    "BOOKED",
-
-                                queueEntryId:
-                                    null,
-
-                                checkedInAt:
-                                    null,
-
-                                completedAt:
-                                    null,
-
-                                cancelledAt:
-                                    null,
-
-                                noShowAt:
-                                    null
+                                customerId:user._id,
+                                customerName:user.name,
+                                customerEmail:user.email,
+                                customerPhone:user.phone,
+                                serviceId:service._id,
+                                appointmentDate:updatedAvailability.date,
+                                status:"BOOKED",
+                                queueEntryId:null,
+                                checkedInAt:null,
+                                completedAt:null,
+                                cancelledAt:null,
+                                noShowAt:null
                             }
                         ],
                         {
@@ -466,28 +440,33 @@ const createAppointment = async ({
 
 
                 // --------------------------------------------
+                // Save appointment to user
+                // --------------------------------------------
+
+                await userModel.findByIdAndUpdate(
+                    user._id,
+                    {
+                        $push: {
+                            appointments: appointment._id
+                        }
+                    },
+                    {
+                        session
+                    }
+                );
+
+
+                // --------------------------------------------
                 // Response data
                 // --------------------------------------------
 
                 const responseData = {
-
-                    appointmentId:
-                        appointment.appointmentId,
-
-                    serviceId:
-                        appointment.serviceId,
-
-                    serviceName:
-                        service.name,
-
-                    availabilityId:
-                        updatedAvailability._id,
-
-                    appointmentDate:
-                        appointment.appointmentDate,
-
-                    status:
-                        appointment.status
+                    appointmentId:appointment.appointmentId,
+                    serviceId:appointment.serviceId,
+                    serviceName:service.name,
+                    availabilityId:updatedAvailability._id,
+                    appointmentDate:appointment.appointmentDate,
+                    status:appointment.status
                 };
 
 

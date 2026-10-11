@@ -1,40 +1,50 @@
 import serviceModel from "../models/service.model.js";
-import {successResponse, errorResponse} from "../utils/apiResponse.js";
+import counterModel from "../models/counter.model.js";
+import { successResponse, errorResponse } from "../utils/apiResponse.js";
 import { uploadImage } from "../services/storage.service.js";
+import logger from "../utils/logger.js";
 
-
-//create new service function
+// Create new service function
 export async function createService(req, res, next) {
-    try{
-        const {name, code, description, service_time, duration, capacity} = req.body;
+    try {
+        const { name, code, description, service_time, duration, capacity, isActive } = req.body;
 
-        if(!name || !code || !service_time || !duration || !capacity){
+        if (!name || !code || !service_time || !duration || !capacity) {
             return errorResponse(res, {
                 statusCode: 400,
                 message: "Missing required fields"
             });
-        }   
+        }
 
-        const existingService = await serviceModel.findOne({code: code.toUpperCase()});
+        const normalizedCode = code.toUpperCase().trim();
 
-        if(existingService){
+        const existingService = await serviceModel.findOne({ code: normalizedCode });
+
+        if (existingService) {
             return errorResponse(res, {
                 statusCode: 409,
-                message: "Service with this code already exists"
+                message: `Service with code '${normalizedCode}' already exists`
             });
         }
 
-        const imageFile = req.file;
-        const imageUrl = imageFile ? await uploadImage(imageFile) : undefined;
+        let imageUrl = req.body.imageUrl || undefined;
+        if (req.file) {
+            try {
+                imageUrl = await uploadImage(req.file);
+            } catch (uploadErr) {
+                logger.error({ err: uploadErr }, "Image upload failed during service creation");
+            }
+        }
 
         const newService = await serviceModel.create({
-            name,
-            code,
-            description,
+            name: name.trim(),
+            code: normalizedCode,
+            description: description ? description.trim() : "",
             imageUrl,
-            service_time,
-            duration,
-            capacity
+            service_time: service_time.trim(),
+            duration: Number(duration),
+            capacity: Number(capacity),
+            isActive: isActive !== undefined ? (isActive === true || isActive === "true") : true
         });
 
         return successResponse(res, {
@@ -42,18 +52,16 @@ export async function createService(req, res, next) {
             message: "Service created successfully",
             data: newService
         });
-    }
-    catch (err) {
+    } catch (err) {
         next(err);
     }
 }
 
-//update the existing service function
+// Update existing service function
 export async function updateService(req, res, next) {
-  try {
+    try {
         const { serviceId } = req.params;
-
-        const {name, code, description, service_time, duration, capacity, isActive} = req.body;
+        const { name, code, description, service_time, duration, capacity, isActive, imageUrl } = req.body;
 
         // Check whether service exists
         const service = await serviceModel.findById(serviceId);
@@ -69,38 +77,58 @@ export async function updateService(req, res, next) {
         const updateData = {};
 
         if (name !== undefined) {
-            updateData.name = name;
+            updateData.name = name.trim();
         }
 
         if (code !== undefined) {
-            updateData.code = code;
+            const normalizedCode = code.toUpperCase().trim();
+            if (normalizedCode !== service.code) {
+                const duplicate = await serviceModel.findOne({
+                    code: normalizedCode,
+                    _id: { $ne: serviceId }
+                });
+                if (duplicate) {
+                    return errorResponse(res, {
+                        statusCode: 409,
+                        message: `Service with code '${normalizedCode}' already exists`
+                    });
+                }
+            }
+            updateData.code = normalizedCode;
         }
 
         if (description !== undefined) {
-            updateData.description = description;
+            updateData.description = description ? description.trim() : "";
         }
 
         if (service_time !== undefined) {
-            updateData.service_time = service_time;
+            updateData.service_time = service_time.trim();
         }
 
         if (duration !== undefined) {
-            updateData.duration = duration;
+            updateData.duration = Number(duration);
         }
 
         if (capacity !== undefined) {
-            updateData.capacity = capacity;
+            updateData.capacity = Number(capacity);
         }
 
         if (isActive !== undefined) {
-            updateData.isActive = isActive;
+            updateData.isActive = isActive === true || isActive === "true";
         }
 
-        // Upload new image only if user provided one
-        if (req.file) {
-            const imageUrl = await uploadImage(req.file);
-
+        if (imageUrl !== undefined && imageUrl !== "") {
             updateData.imageUrl = imageUrl;
+        }
+
+        // Upload new image only if user provided a file
+        if (req.file) {
+            try {
+                const uploadedUrl = await uploadImage(req.file);
+                updateData.imageUrl = uploadedUrl;
+            } catch (uploadErr) {
+                logger.error({ err: uploadErr }, "Image upload failed during service update");
+            }
         }
 
         const updatedService = await serviceModel.findByIdAndUpdate(
@@ -119,13 +147,12 @@ export async function updateService(req, res, next) {
             message: "Service updated successfully",
             data: updatedService
         });
-
     } catch (error) {
         next(error);
     }
 }
 
-//delete the existing service function
+// Delete existing service function
 export async function deleteService(req, res, next) {
     try {
         const { serviceId } = req.params;
@@ -140,41 +167,54 @@ export async function deleteService(req, res, next) {
             });
         }
 
+        // Check if any counter is currently assigned to this service
+        const counterUsingService = await counterModel.findOne({ serviceId });
+        if (counterUsingService) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: `Cannot delete service because counter '${counterUsingService.name}' (${counterUsingService.code}) is assigned to it. Please reassign the counter first or deactivate this service.`
+            });
+        }
+
         await serviceModel.findByIdAndDelete(serviceId);
 
         return successResponse(res, {
             statusCode: 200,
             message: "Service deleted successfully"
         });
-    } 
-    catch (err) {
+    } catch (err) {
         next(err);
     }
 }
 
-//get all services function
+// Get all services function
 export async function getAllServices(req, res, next) {
     try {
-        const services = await serviceModel.find().sort({ createdAt: -1 }).limit(10); // Limit to 10 services for performance
-
-        if (services.length === 0) {
-            return errorResponse(res, {
-                statusCode: 404,
-                message: "No services found"
-            });
+        const filter = {};
+        if (req.query.isActive !== undefined) {
+            filter.isActive = req.query.isActive === "true";
         }
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : 0;
+        let query = serviceModel.find(filter).sort({ createdAt: -1 });
+
+        if (limit > 0) {
+            query = query.limit(limit);
+        }
+
+        const services = await query;
+
         return successResponse(res, {
             statusCode: 200,
-            message: "Services retrieved successfully",
+            message: services.length === 0 ? "No services found" : "Services retrieved successfully",
             data: services
         });
-    }
-    catch (err) {
+    } catch (err) {
         next(err);
     }
 }
 
-//get service by id function
+// Get service by ID function
 export async function getServiceById(req, res, next) {
     try {
         const { serviceId } = req.params;
@@ -200,9 +240,7 @@ export async function getServiceById(req, res, next) {
             message: "Service retrieved successfully",
             data: service
         });
-    }
-    catch (err) {
+    } catch (err) {
         next(err);
     }
 }
-

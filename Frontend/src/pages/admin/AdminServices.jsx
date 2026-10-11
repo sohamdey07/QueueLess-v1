@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Plus, 
@@ -18,14 +18,16 @@ import {
   Hash,
   Sparkles,
   FileText,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import AdminBanner from '../../components/admin/AdminBanner';
 import ServiceCard from '../../components/common/ServiceCard';
 import serviceBannerImg from '../../assets/images/banners/admin/service.png';
+import serviceApi from '../../services/api/service.api';
 import './AdminServices.css';
 
-// Pre-loaded Service Images matching mockup
+// Preset Service Images for quick selection in the modal
 import generalConsultImg from '../../assets/images/bookings/general_consultation.jpg';
 import bloodTestImg from '../../assets/images/bookings/blood_test.jpg';
 import vaccinationImg from '../../assets/images/bookings/vaccination.jpg';
@@ -34,138 +36,6 @@ import dentalCheckupImg from '../../assets/images/bookings/dental_checkup.jpg';
 import eyeCheckupImg from '../../assets/images/bookings/eye_checkup.jpg';
 import physiotherapyImg from '../../assets/images/bookings/physiotherapy.jpg';
 import dermatologyImg from '../../assets/images/bookings/dermatology.jpg';
-
-// Initial 8 Services matching the UI mockup with code, status, capacity and timestamps
-const initialServices = [
-  {
-    id: 'srv-1',
-    title: 'General Consultation',
-    name: 'General Consultation',
-    code: 'GEN-01',
-    description: 'Consult with our experienced doctors for general health issues.',
-    duration: 15,
-    schedule: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    service_time: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    scheduleType: 'green',
-    image: generalConsultImg,
-    status: 'active',
-    isActive: true,
-    capacity: 10,
-    createdAt: '2026-10-09T10:00:00Z',
-  },
-  {
-    id: 'srv-2',
-    title: 'Diagnostics',
-    name: 'Diagnostics',
-    code: 'DIAG-01',
-    description: 'Blood tests, urine tests and other diagnostic services.',
-    duration: 30,
-    schedule: 'Mon - Sat, 08:00 AM - 04:00 PM',
-    service_time: 'Mon - Sat, 08:00 AM - 04:00 PM',
-    scheduleType: 'green',
-    image: bloodTestImg,
-    status: 'active',
-    isActive: true,
-    capacity: 15,
-    createdAt: '2026-10-08T09:30:00Z',
-  },
-  {
-    id: 'srv-3',
-    title: 'Vaccination',
-    name: 'Vaccination',
-    code: 'VACC-01',
-    description: 'Routine and travel vaccinations for all age groups.',
-    duration: 10,
-    schedule: 'Mon - Sat, 09:00 AM - 04:00 PM',
-    service_time: 'Mon - Sat, 09:00 AM - 04:00 PM',
-    scheduleType: 'green',
-    image: vaccinationImg,
-    status: 'active',
-    isActive: true,
-    capacity: 20,
-    createdAt: '2026-10-07T14:15:00Z',
-  },
-  {
-    id: 'srv-4',
-    title: 'Follow-up Consultation',
-    name: 'Follow-up Consultation',
-    code: 'FOL-01',
-    description: 'Review and follow-up with existing patients.',
-    duration: 10,
-    schedule: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    service_time: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    scheduleType: 'green',
-    image: followUpImg,
-    status: 'active',
-    isActive: true,
-    capacity: 12,
-    createdAt: '2026-10-06T11:00:00Z',
-  },
-  {
-    id: 'srv-5',
-    title: 'Dental Checkup',
-    name: 'Dental Checkup',
-    code: 'DENT-01',
-    description: 'Complete dental examination and basic oral care.',
-    duration: 20,
-    schedule: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    service_time: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    scheduleType: 'green',
-    image: dentalCheckupImg,
-    status: 'active',
-    isActive: true,
-    capacity: 8,
-    createdAt: '2026-10-05T08:45:00Z',
-  },
-  {
-    id: 'srv-6',
-    title: 'Eye Checkup',
-    name: 'Eye Checkup',
-    code: 'EYE-01',
-    description: 'Vision testing and eye health consultation.',
-    duration: 20,
-    schedule: 'Mon - Sat, 10:00 AM - 05:00 PM',
-    service_time: 'Mon - Sat, 10:00 AM - 05:00 PM',
-    scheduleType: 'green',
-    image: eyeCheckupImg,
-    status: 'inactive',
-    isActive: false,
-    capacity: 8,
-    createdAt: '2026-10-04T16:20:00Z',
-  },
-  {
-    id: 'srv-7',
-    title: 'Physiotherapy',
-    name: 'Physiotherapy',
-    code: 'PHYS-01',
-    description: 'Physical therapy and rehabilitation sessions.',
-    duration: 30,
-    schedule: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    service_time: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    scheduleType: 'green',
-    image: physiotherapyImg,
-    status: 'active',
-    isActive: true,
-    capacity: 6,
-    createdAt: '2026-10-03T13:30:00Z',
-  },
-  {
-    id: 'srv-8',
-    title: 'Dermatology Consultation',
-    name: 'Dermatology Consultation',
-    code: 'DERM-01',
-    description: 'Consultation for skin, hair and nail related issues.',
-    duration: 15,
-    schedule: 'Mon - Sat, 10:00 AM - 04:00 PM',
-    service_time: 'Mon - Sat, 10:00 AM - 04:00 PM',
-    scheduleType: 'green',
-    image: dermatologyImg,
-    status: 'active',
-    isActive: true,
-    capacity: 10,
-    createdAt: '2026-10-02T10:00:00Z',
-  },
-];
 
 const availableImages = [
   { label: 'General Consultation', img: generalConsultImg },
@@ -186,7 +56,7 @@ const timeOptions = [
   '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM', '09:00 PM'
 ];
 
-// Helper to convert 12-hour time format (e.g. "09:00 AM") to minutes from midnight for exact comparison
+// Helper to convert 12-hour time format (e.g. "09:00 AM") to minutes from midnight
 const parseTimeToMinutes = (timeStr) => {
   if (!timeStr) return 0;
   const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -210,13 +80,18 @@ const daysOfWeek = [
 ];
 
 export const AdminServices = () => {
-  const [services, setServices] = useState(initialServices);
+  // Live Services loaded from Backend
+  const [services, setServices] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [dateSort, setDateSort] = useState('newer'); // 'newer' | 'older'
   const [activenessFilter, setActivenessFilter] = useState('all'); // 'all' | 'active' | 'inactive'
   const [toastMessage, setToastMessage] = useState('');
 
-  // Custom Dropdown Open States & Refs (Opens strictly under the filter)
+  // Custom Dropdown Open States & Refs
   const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
   const [isActivenessDropdownOpen, setIsActivenessDropdownOpen] = useState(false);
   const dateDropdownRef = useRef(null);
@@ -236,6 +111,43 @@ export const AdminServices = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const showToast = useCallback((msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3500);
+  }, []);
+
+  // Fetch all services from live backend API
+  const fetchServices = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await serviceApi.getAllServices();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      const normalized = list.map((s) => ({
+        ...s,
+        id: s._id || s.id,
+        _id: s._id || s.id,
+        title: s.name,
+        name: s.name,
+        image: s.imageUrl || generalConsultImg,
+        imageUrl: s.imageUrl || generalConsultImg,
+        schedule: s.service_time,
+        service_time: s.service_time,
+        status: s.isActive === false ? 'inactive' : 'active',
+        isActive: s.isActive !== false,
+      }));
+      setServices(normalized);
+    } catch (err) {
+      console.error('Failed to fetch services:', err);
+      showToast(err.message || 'Failed to load services from backend');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
@@ -245,8 +157,8 @@ export const AdminServices = () => {
     code: '',
     description: '',
     duration: 15,
-    schedule: 'Mon - Sat, 09:00 AM - 05:00 PM',
-    service_time: 'Mon - Sat, 09:00 AM - 05:00 PM',
+    schedule: 'Mon - Fri, 09:00 AM - 05:00 PM',
+    service_time: 'Mon - Fri, 09:00 AM - 05:00 PM',
     status: 'active',
     isActive: true,
     capacity: 10,
@@ -277,6 +189,7 @@ export const AdminServices = () => {
 
   // Image Upload & Library states
   const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [imageFileName, setImageFileName] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
@@ -294,11 +207,6 @@ export const AdminServices = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isModalOpen, serviceToDelete]);
-
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
-  };
 
   // Filtered & Sorted Services based on search (name, code, desc), activeness, and date sort
   const filteredServices = useMemo(() => {
@@ -340,6 +248,7 @@ export const AdminServices = () => {
     setEndDay('Fri');
     setFormStartTime('09:00 AM');
     setFormEndTime('05:00 PM');
+    setSelectedFile(null);
     setImageFileName('');
     setFormData({
       title: '',
@@ -352,7 +261,7 @@ export const AdminServices = () => {
       status: 'active',
       isActive: true,
       capacity: 10,
-      image: '',
+      image: availableImages[0].img,
     });
     setIsModalOpen(true);
   };
@@ -363,7 +272,7 @@ export const AdminServices = () => {
     
     // Parse existing schedule (e.g. "Mon - Sat, 09:00 AM - 05:00 PM")
     let parsedStartDay = 'Mon';
-    let parsedEndDay = 'Sat';
+    let parsedEndDay = 'Fri';
     let parsedStart = '09:00 AM';
     let parsedEnd = '05:00 PM';
     
@@ -401,16 +310,17 @@ export const AdminServices = () => {
     setEndDay(parsedEndDay);
     setFormStartTime(parsedStart);
     setFormEndTime(parsedEnd);
+    setSelectedFile(null);
     setImageFileName('');
     
     setFormData({
       title: service.title || service.name || '',
       name: service.title || service.name || '',
-      code: service.code || `SRV-${(service.id || '').slice(-2).toUpperCase() || '01'}`,
+      code: service.code || '',
       description: service.description || '',
       duration: typeof service.duration === 'number' ? service.duration : parseInt(service.duration, 10) || 15,
-      schedule: service.schedule || service.service_time || 'Mon - Sat, 09:00 AM - 05:00 PM',
-      service_time: service.schedule || service.service_time || 'Mon - Sat, 09:00 AM - 05:00 PM',
+      schedule: service.schedule || service.service_time || 'Mon - Fri, 09:00 AM - 05:00 PM',
+      service_time: service.schedule || service.service_time || 'Mon - Fri, 09:00 AM - 05:00 PM',
       status: service.status || (service.isActive === false ? 'inactive' : 'active'),
       isActive: service.isActive !== false && service.status !== 'inactive',
       capacity: service.capacity || 10,
@@ -456,6 +366,7 @@ export const AdminServices = () => {
         showToast('Please select a valid image file');
         return;
       }
+      setSelectedFile(file);
       setImageFileName(file.name);
       const previewUrl = URL.createObjectURL(file);
       setFormData((prev) => ({ ...prev, image: previewUrl }));
@@ -472,14 +383,15 @@ export const AdminServices = () => {
         showToast('Please drop a valid image file');
         return;
       }
+      setSelectedFile(file);
       setImageFileName(file.name);
       const previewUrl = URL.createObjectURL(file);
       setFormData((prev) => ({ ...prev, image: previewUrl }));
     }
   };
 
-  // Save new or updated service
-  const handleSaveService = (e) => {
+  // Save new or updated service to Backend
+  const handleSaveService = async (e) => {
     e.preventDefault();
     const serviceName = (formData.title || formData.name || '').trim();
     if (!serviceName) {
@@ -496,62 +408,81 @@ export const AdminServices = () => {
       ? formData.code.trim().toUpperCase() 
       : `${serviceName.replace(/[^A-Za-z]/g, '').slice(0, 4).toUpperCase() || 'SRV'}-01`);
 
-    if (editingService) {
-      // Update
-      setServices((prev) =>
-        prev.map((s) =>
-          s.id === editingService.id
-            ? {
-                ...s,
-                title: serviceName,
-                name: serviceName,
-                code: cleanCode,
-                description: formData.description.trim(),
-                duration: Number(formData.duration) || 15,
-                schedule: combinedServiceTime,
-                service_time: combinedServiceTime,
-                status: formData.status,
-                isActive: formData.status === 'active',
-                capacity: Number(formData.capacity) || 10,
-                image: formData.image,
-                imageUrl: formData.image,
-              }
-            : s
-        )
-      );
-      showToast(`Updated "${serviceName}" successfully`);
-    } else {
-      // Add
-      const newService = {
-        id: `srv-${Date.now()}`,
-        title: serviceName,
-        name: serviceName,
-        code: cleanCode,
-        description: formData.description.trim(),
-        duration: Number(formData.duration) || 15,
-        schedule: combinedServiceTime,
-        service_time: combinedServiceTime,
-        scheduleType: 'green',
-        status: formData.status || 'active',
-        isActive: (formData.status || 'active') === 'active',
-        capacity: Number(formData.capacity) || 10,
-        createdAt: new Date().toISOString(),
-        image: formData.image,
-        imageUrl: formData.image,
-      };
-      setServices((prev) => [newService, ...prev]);
-      showToast(`Added "${serviceName}" successfully`);
-    }
+    setIsSubmitting(true);
+    try {
+      if (selectedFile instanceof File) {
+        // Send multipart form-data with file upload
+        const multipart = new FormData();
+        multipart.append('name', serviceName);
+        multipart.append('code', cleanCode);
+        multipart.append('description', (formData.description || '').trim());
+        multipart.append('service_time', combinedServiceTime);
+        multipart.append('duration', Number(formData.duration) || 15);
+        multipart.append('capacity', Number(formData.capacity) || 10);
+        multipart.append('isActive', (formData.status || 'active') === 'active');
+        multipart.append('imageUrl', selectedFile);
 
-    setIsModalOpen(false);
+        if (editingService) {
+          const targetId = editingService._id || editingService.id;
+          await serviceApi.updateService(targetId, multipart);
+          showToast(`Updated "${serviceName}" successfully`);
+        } else {
+          await serviceApi.createService(multipart);
+          showToast(`Created "${serviceName}" successfully`);
+        }
+      } else {
+        // Send JSON payload
+        const jsonPayload = {
+          name: serviceName,
+          code: cleanCode,
+          description: (formData.description || '').trim(),
+          service_time: combinedServiceTime,
+          duration: Number(formData.duration) || 15,
+          capacity: Number(formData.capacity) || 10,
+          isActive: (formData.status || 'active') === 'active',
+        };
+
+        // If a preset image or URL is selected, attach as imageUrl
+        if (formData.image && typeof formData.image === 'string' && !formData.image.startsWith('blob:')) {
+          jsonPayload.imageUrl = formData.image;
+        }
+
+        if (editingService) {
+          const targetId = editingService._id || editingService.id;
+          await serviceApi.updateService(targetId, jsonPayload);
+          showToast(`Updated "${serviceName}" successfully`);
+        } else {
+          await serviceApi.createService(jsonPayload);
+          showToast(`Created "${serviceName}" successfully`);
+        }
+      }
+
+      await fetchServices();
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Error saving service:', err);
+      showToast(err.message || 'Failed to save service');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Confirm delete
-  const handleConfirmDelete = () => {
+  // Confirm delete on Backend
+  const handleConfirmDelete = async () => {
     if (!serviceToDelete) return;
-    setServices((prev) => prev.filter((s) => s.id !== serviceToDelete.id));
-    showToast(`Deleted "${serviceToDelete.title}"`);
-    setServiceToDelete(null);
+    setIsDeleting(true);
+    try {
+      const targetId = serviceToDelete._id || serviceToDelete.id;
+      await serviceApi.deleteService(targetId);
+      showToast(`Deleted "${serviceToDelete.title || serviceToDelete.name}" successfully`);
+      setServiceToDelete(null);
+      await fetchServices();
+    } catch (err) {
+      console.error('Delete service error:', err);
+      showToast(err.message || 'Failed to delete service');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -572,7 +503,7 @@ export const AdminServices = () => {
           <input
             type="text"
             className="admin-search-input"
-            placeholder="Search services by name or description..."
+            placeholder="Search services by name, code or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search services"
@@ -584,12 +515,12 @@ export const AdminServices = () => {
               onClick={() => setSearchQuery('')}
               aria-label="Clear search"
             >
-              <X size={16} />
+              <X size={14} />
             </button>
           )}
         </div>
 
-        {/* Filter 1: Sort by Date (Older, Newer) - Opens under the filter */}
+        {/* Filter 1: Sort by Date (Older, Newer) */}
         <div className="admin-toolbar-filter-group" ref={dateDropdownRef}>
           <button
             type="button"
@@ -639,7 +570,7 @@ export const AdminServices = () => {
           )}
         </div>
 
-        {/* Filter 2: Activeness (All, Active, Inactive) - Opens under the filter */}
+        {/* Filter 2: Activeness (All, Active, Inactive) */}
         <div className="admin-toolbar-filter-group" ref={activenessDropdownRef}>
           <button
             type="button"
@@ -654,11 +585,11 @@ export const AdminServices = () => {
           >
             <Activity size={14} className="filter-select-icon" />
             <span>
-              {activenessFilter === 'active'
+              {activenessFilter === 'all'
+                ? 'Activeness: All'
+                : activenessFilter === 'active'
                 ? 'Activeness: Active'
-                : activenessFilter === 'inactive'
-                ? 'Activeness: Inactive'
-                : 'Activeness: All'}
+                : 'Activeness: Inactive'}
             </span>
             <ChevronDown size={14} className={`filter-select-chevron ${isActivenessDropdownOpen ? 'open' : ''}`} />
           </button>
@@ -729,12 +660,20 @@ export const AdminServices = () => {
           </h2>
         </div>
 
-        {/* Services Grid */}
-        {filteredServices.length > 0 ? (
+        {/* Loading Spinner */}
+        {isLoading ? (
+          <div className="admin-services-empty" style={{ padding: '60px 20px' }}>
+            <div className="admin-empty-icon-box" style={{ animation: 'spin 1.5s linear infinite' }}>
+              <Loader2 size={32} color="#4F46E5" />
+            </div>
+            <h3 className="admin-empty-title">Loading services...</h3>
+            <p className="admin-empty-desc">Fetching live services from server.</p>
+          </div>
+        ) : filteredServices.length > 0 ? (
           <div className="admin-services-grid">
             {filteredServices.map((service) => (
               <ServiceCard
-                key={service.id}
+                key={service.id || service._id}
                 service={service}
                 isAdmin={true}
                 onEdit={handleOpenEditModal}
@@ -742,21 +681,43 @@ export const AdminServices = () => {
               />
             ))}
           </div>
+        ) : services.length === 0 ? (
+          <div className="admin-services-empty">
+            <div className="admin-empty-icon-box">
+              <Layers size={32} color="#6366F1" />
+            </div>
+            <h3 className="admin-empty-title">No services found</h3>
+            <p className="admin-empty-desc">
+              You haven't added any services yet. Click below to create your first service.
+            </p>
+            <button
+              type="button"
+              className="admin-add-service-btn"
+              style={{ margin: '8px auto 0' }}
+              onClick={handleOpenAddModal}
+            >
+              <Plus size={16} strokeWidth={2.4} />
+              <span>Add Your First Service</span>
+            </button>
+          </div>
         ) : (
           <div className="admin-services-empty">
             <div className="admin-empty-icon-box">
               <Search size={28} />
             </div>
-            <h3 className="admin-empty-title">No services found</h3>
+            <h3 className="admin-empty-title">No matching services</h3>
             <p className="admin-empty-desc">
               No services matched "{searchQuery}". Try searching with a different term or reset your search.
             </p>
             <button
               type="button"
               className="admin-empty-reset-btn"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setActivenessFilter('all');
+              }}
             >
-              Clear Search Filter
+              Clear Filter
             </button>
           </div>
         )}
@@ -764,7 +725,7 @@ export const AdminServices = () => {
 
       {/* 5. Add / Edit Service Modal */}
       {isModalOpen && (
-        <div className="admin-modal-backdrop" onClick={() => setIsModalOpen(false)}>
+        <div className="admin-modal-backdrop" onClick={() => !isSubmitting && setIsModalOpen(false)}>
           <div className="admin-modal-card admin-service-modal-card" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
             <div className="admin-modal-header">
@@ -776,8 +737,9 @@ export const AdminServices = () => {
               <button
                 type="button"
                 className="admin-modal-close-btn"
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => !isSubmitting && setIsModalOpen(false)}
                 aria-label="Close modal"
+                disabled={isSubmitting}
               >
                 <X size={18} />
               </button>
@@ -803,7 +765,6 @@ export const AdminServices = () => {
                           ...prev,
                           title: val,
                           name: val,
-                          // Auto-fill code if code is currently empty or matches previous prefix
                           code: prev.code ? prev.code : (val.replace(/[^A-Za-z]/g, '').slice(0, 4).toUpperCase() || ''),
                         }));
                       }}
@@ -1116,6 +1077,7 @@ export const AdminServices = () => {
                                 key={idx}
                                 className={`admin-preset-sample-card ${isSelected ? 'selected' : ''}`}
                                 onClick={() => {
+                                  setSelectedFile(null);
                                   setFormData({ ...formData, image: imgOpt.img });
                                   setImageFileName('');
                                 }}
@@ -1124,6 +1086,7 @@ export const AdminServices = () => {
                                 tabIndex={0}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' || e.key === ' ') {
+                                    setSelectedFile(null);
                                     setFormData({ ...formData, image: imgOpt.img });
                                     setImageFileName('');
                                   }
@@ -1160,11 +1123,23 @@ export const AdminServices = () => {
                   type="button"
                   className="admin-btn-secondary"
                   onClick={() => setIsModalOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="admin-btn-primary">
-                  {editingService ? 'Save Changes' : 'Create Service'}
+                <button type="submit" className="admin-btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="button-spinner" />
+                      <span>
+                        {selectedFile instanceof File 
+                          ? (editingService ? 'Uploading & Updating...' : 'Uploading & Creating...') 
+                          : (editingService ? 'Saving Changes...' : 'Creating Service...')}
+                      </span>
+                    </>
+                  ) : (
+                    <span>{editingService ? 'Save Changes' : 'Create Service'}</span>
+                  )}
                 </button>
               </div>
             </form>
@@ -1174,7 +1149,7 @@ export const AdminServices = () => {
 
       {/* 6. Delete Confirmation Modal */}
       {serviceToDelete && (
-        <div className="admin-modal-backdrop" onClick={() => setServiceToDelete(null)}>
+        <div className="admin-modal-backdrop" onClick={() => !isDeleting && setServiceToDelete(null)}>
           <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h3 className="admin-modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1184,8 +1159,9 @@ export const AdminServices = () => {
               <button
                 type="button"
                 className="admin-modal-close-btn"
-                onClick={() => setServiceToDelete(null)}
+                onClick={() => !isDeleting && setServiceToDelete(null)}
                 aria-label="Close modal"
+                disabled={isDeleting}
               >
                 <X size={18} />
               </button>
@@ -1193,7 +1169,7 @@ export const AdminServices = () => {
 
             <div className="admin-modal-body">
               <p style={{ margin: 0, fontSize: '14.5px', color: '#475569', lineHeight: 1.5 }}>
-                Are you sure you want to delete <b>{serviceToDelete.title}</b>? This action cannot be undone and will remove this service from available appointments.
+                Are you sure you want to delete <b>{serviceToDelete.title || serviceToDelete.name}</b>? This action cannot be undone and will remove this service from available appointments.
               </p>
             </div>
 
@@ -1202,6 +1178,7 @@ export const AdminServices = () => {
                 type="button"
                 className="admin-btn-secondary"
                 onClick={() => setServiceToDelete(null)}
+                disabled={isDeleting}
               >
                 Cancel
               </button>
@@ -1209,8 +1186,16 @@ export const AdminServices = () => {
                 type="button"
                 className="admin-btn-danger"
                 onClick={handleConfirmDelete}
+                disabled={isDeleting}
               >
-                Delete Service
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={15} className="button-spinner" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Delete Service</span>
+                )}
               </button>
             </div>
           </div>

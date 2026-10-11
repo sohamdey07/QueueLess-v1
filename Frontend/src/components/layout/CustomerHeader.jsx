@@ -1,19 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, Menu, User, Settings, LogOut } from 'lucide-react';
+import authApi from '../../services/api/auth.api.js';
+import tokenStorage from '../../services/storage/tokenStorage.js';
 import './CustomerHeader.css';
 
 export const CustomerHeader = ({ 
   title = 'Home', 
-  subtitle = "Welcome back, John! Here's your QueueLess dashboard.",
-  userName = 'John Doe',
-  userInitials = 'JD',
+  subtitle,
+  userName,
+  userInitials,
   onMenuToggle
 }) => {
+  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
+  const currentUser = tokenStorage.getUser();
+  const displayName = userName || currentUser?.name || 'Customer';
+  const displayInitials =
+    userInitials ||
+    (currentUser?.name
+      ? currentUser.name
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : 'CU');
+  const displaySubtitle =
+    subtitle || `Welcome back, ${displayName}! Here's your QueueLess dashboard.`;
+
   const profileRef = useRef(null);
   const notificationRef = useRef(null);
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      tokenStorage.clearAuth();
+    }
+    navigate('/login', { replace: true });
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -116,7 +144,7 @@ export const CustomerHeader = ({
                 <span>Account Settings</span>
               </button>
               <div className="dropdown-divider" />
-              <button type="button" className="dropdown-item text-danger">
+              <button type="button" className="dropdown-item text-danger" onClick={handleLogout}>
                 <LogOut size={15} />
                 <span>Log Out</span>
               </button>

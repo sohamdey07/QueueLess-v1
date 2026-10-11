@@ -1,19 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, Menu, User, Settings, LogOut, ShieldCheck } from 'lucide-react';
+import authApi from '../../../services/api/auth.api.js';
+import tokenStorage from '../../../services/storage/tokenStorage.js';
 import './AdminHeader.css';
 
 export const AdminHeader = ({ 
   title = 'Dashboard', 
   subtitle = 'Manage services, counters, staff, and real-time queues.',
-  userName = 'Admin User',
-  userInitials = 'AU',
+  userName,
+  userInitials,
   onMenuToggle
 }) => {
+  const navigate = useNavigate();
+  const currentUser = tokenStorage.getUser();
+  const activeAdminName = userName || currentUser?.name || 'Admin User';
+  const activeAdminInitials =
+    userInitials ||
+    (currentUser?.name
+      ? currentUser.name
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : 'AU');
+
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const profileRef = useRef(null);
   const notificationRef = useRef(null);
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      tokenStorage.clearAuth();
+    }
+    navigate('/login', { replace: true });
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -91,10 +119,10 @@ export const AdminHeader = ({
             className="admin-header-profile-btn"
             onClick={() => setProfileOpen(!profileOpen)}
             aria-expanded={profileOpen}
-            aria-label={`Admin user menu for ${userName}`}
+            aria-label={`Admin user menu for ${activeAdminName}`}
           >
             <div className="admin-profile-avatar-circle">
-              <span>{userInitials}</span>
+              <span>{activeAdminInitials}</span>
             </div>
           </button>
 
@@ -104,7 +132,7 @@ export const AdminHeader = ({
               <div className="admin-profile-dropdown-user-info">
                 <div className="admin-profile-dropdown-text">
                   <div className="admin-profile-name-row">
-                    <span className="admin-profile-dropdown-name">{userName}</span>
+                    <span className="admin-profile-dropdown-name">{activeAdminName}</span>
                     <ShieldCheck size={14} className="admin-shield-icon" />
                   </div>
                   <span className="admin-profile-dropdown-role">System Administrator</span>
@@ -120,7 +148,7 @@ export const AdminHeader = ({
                 <span>System Settings</span>
               </button>
               <div className="admin-dropdown-divider" />
-              <button type="button" className="admin-dropdown-item text-danger">
+              <button type="button" className="admin-dropdown-item text-danger" onClick={handleLogout}>
                 <LogOut size={15} />
                 <span>Log Out</span>
               </button>

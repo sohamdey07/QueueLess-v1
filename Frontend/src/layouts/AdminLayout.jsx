@@ -85,8 +85,6 @@ export const AdminLayout = ({ children }) => {
         <AdminHeader 
           title={currentMeta.title}
           subtitle={currentMeta.subtitle}
-          userName="Admin User"
-          userInitials="AU"
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
         />
 

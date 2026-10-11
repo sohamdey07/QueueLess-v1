@@ -1242,11 +1242,21 @@
   font-weight: 700;
   color: #FFFFFF;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 140px;
 }
 
-.admin-btn-primary:hover {
+.admin-btn-primary:hover:not(:disabled) {
   background: #1557D0;
+}
+
+.admin-btn-primary:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
 }
 
 .admin-btn-danger {
@@ -1260,10 +1270,36 @@
   color: #FFFFFF;
   cursor: pointer;
   transition: background 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.admin-btn-danger:hover {
+.admin-btn-danger:hover:not(:disabled) {
   background: #B91C1C;
+}
+
+.admin-btn-danger:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+/* Spinner Animation for Action Buttons */
+.button-spinner {
+  animation: adminSpin 0.8s linear infinite !important;
+  display: inline-block;
+  flex-shrink: 0;
+  transform-origin: center;
+}
+
+@keyframes adminSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Toast message */

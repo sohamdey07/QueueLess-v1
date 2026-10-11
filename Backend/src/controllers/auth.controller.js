@@ -172,10 +172,11 @@ export async function login(req,res,next){
 
         const accessToken = generateAccessToken({id:user._id, role:user.role,sessionId:newSession._id});
 
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: isProduction,
+            sameSite: isProduction ? "strict" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
@@ -223,10 +224,11 @@ export async function logout(req,res,next){
         await session.save();
 
         //delete the refresh token cookie
+        const isProduction = process.env.NODE_ENV === "production";
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict"
+            secure: isProduction,
+            sameSite: isProduction ? "strict" : "lax"
         });
 
         return successResponse(res,{
@@ -273,7 +275,7 @@ export async function rotateToken(req,res,next){
             });
         }
 
-        const user = await userModel.findById(session.userId).select("role");
+        const user = await userModel.findById(session.userId).select("name email role");
 
         if(!user){
             return errorResponse(res,{
@@ -294,10 +296,11 @@ export async function rotateToken(req,res,next){
         //generate new access token
         const accessToken = generateAccessToken({id:decoded.id, role:user.role, sessionId:session._id});
 
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: isProduction,
+            sameSite: isProduction ? "strict" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
@@ -305,7 +308,11 @@ export async function rotateToken(req,res,next){
             statusCode:200,
             message:"Token rotated successfully",
             data:{
-                accessToken:accessToken
+                accessToken:accessToken,
+                userId:user._id,
+                name:user.name,
+                email:user.email,
+                role:user.role
             }
         });
 
@@ -321,22 +328,3 @@ export async function rotateToken(req,res,next){
 
 
 
-
-
-
-
-
-
-
-//create refresh token and access token
-        // const refreshToken = generateRefreshToken({id:newUser._id, email:newUser.email});
-
-        // const hashedRefreshToken = hashedToken(refreshToken);
-
-        // //create a new session
-        // const newSession = await sessionModel.create({
-        //     userId:newUser._id,
-        //     refreshToken:hashedRefreshToken
-        // });
-
-        // const accessToken = generateAccessToken({id:newUser._id, email:newUser.email, sessionId:newSession._id});

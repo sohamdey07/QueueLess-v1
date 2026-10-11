@@ -14,7 +14,7 @@ const generateAccessToken = (payload) => {
 
 const generateRefreshToken = (payload) => {
     return jwt.sign(
-        payload,
+        { ...payload, nonce: crypto.randomUUID() },
         config.refreshTokenSecret,
         {
             expiresIn: "7d"

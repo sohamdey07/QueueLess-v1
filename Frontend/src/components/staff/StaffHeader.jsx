@@ -1,17 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, User, LogOut, ShieldCheck, ChevronDown, Bell } from 'lucide-react';
+import authApi from '../../services/api/auth.api.js';
+import tokenStorage from '../../services/storage/tokenStorage.js';
 import logoImg from '../../assets/images/logo/logo.png';
 import './StaffHeader.css';
 
 export const StaffHeader = ({
-  staffName = 'Arindam',
-  staffFullName = 'Arindam Mukherjee',
+  staffName,
+  staffFullName,
   counterName = 'Counter 2',
   role = 'Queue Manager / Staff'
 }) => {
+  const navigate = useNavigate();
+  const currentUser = tokenStorage.getUser();
+  const activeStaffFullName = staffFullName || currentUser?.name || 'Staff Member';
+  const activeStaffName = staffName || (currentUser?.name ? currentUser.name.split(' ')[0] : 'Staff');
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      tokenStorage.clearAuth();
+    }
+    navigate('/login', { replace: true });
+  };
 
   // Live real-time clock ticker
   useEffect(() => {
@@ -93,10 +110,10 @@ export const StaffHeader = ({
             className="staff-avatar-btn"
             onClick={() => setProfileOpen(!profileOpen)}
             aria-expanded={profileOpen}
-            aria-label={`Staff profile for ${staffName}`}
+            aria-label={`Staff profile for ${activeStaffName}`}
           >
             <div className="staff-avatar-circle">
-              <span>{staffName.charAt(0).toUpperCase()}</span>
+              <span>{activeStaffName.charAt(0).toUpperCase()}</span>
             </div>
           </button>
 
@@ -105,10 +122,10 @@ export const StaffHeader = ({
             <div className="staff-profile-dropdown">
               <div className="staff-profile-header">
                 <div className="staff-dropdown-avatar">
-                  <span>{staffName.charAt(0).toUpperCase()}</span>
+                  <span>{activeStaffName.charAt(0).toUpperCase()}</span>
                 </div>
                 <div className="staff-dropdown-details">
-                  <span className="staff-dropdown-name">{staffFullName}</span>
+                  <span className="staff-dropdown-name">{activeStaffFullName}</span>
                   <span className="staff-dropdown-counter">{counterName} • Active</span>
                   <span className="staff-dropdown-role">{role}</span>
                 </div>
@@ -122,7 +139,7 @@ export const StaffHeader = ({
               <button 
                 type="button" 
                 className="staff-dropdown-item staff-logout-item"
-                onClick={() => setProfileOpen(false)}
+                onClick={handleLogout}
               >
                 <LogOut size={16} />
                 <span>Sign Out</span>

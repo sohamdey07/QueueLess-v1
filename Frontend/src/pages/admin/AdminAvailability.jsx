@@ -7,12 +7,11 @@ import {
   ListFilter, 
   Layers, 
   Users, 
+  ChevronUp,
   ChevronDown, 
-  ChevronUp, 
-  ChevronLeft,
-  ChevronRight,
+  ChevronLeft, 
+  ChevronRight, 
   Settings, 
-  Sparkles, 
   RotateCcw, 
   Search, 
   Check, 
@@ -21,28 +20,14 @@ import {
   Edit3, 
   CheckCircle2, 
   AlertTriangle, 
-  Activity, 
-  ShieldCheck, 
-  Eye, 
-  HeartPulse, 
-  FileText,
-  Filter,
-  Plus
+  Filter, 
+  Plus,
+  Loader2
 } from 'lucide-react';
 import availabilityUiImg from '../../assets/images/UI/availability.png';
+import serviceApi from '../../services/api/service.api';
+import availabilityApi from '../../services/api/availability.api';
 import './AdminAvailability.css';
-
-// Pre-defined Services List matching QueueLess services with all-purpose Layers icon
-const serviceOptions = [
-  { id: 'srv-1', title: 'General Consultation', code: 'GEN-01', status: 'Active', icon: Layers },
-  { id: 'srv-2', title: 'Blood Test & Diagnostics', code: 'DIAG-01', status: 'Active', icon: Layers },
-  { id: 'srv-3', title: 'Vaccination & Immunization', code: 'VAC-01', status: 'Active', icon: Layers },
-  { id: 'srv-4', title: 'Follow-up Consultation', code: 'FOL-01', status: 'Active', icon: Layers },
-  { id: 'srv-5', title: 'Dental Checkup & Cleaning', code: 'DEN-01', status: 'Active', icon: Layers },
-  { id: 'srv-6', title: 'Eye & Vision Checkup', code: 'EYE-01', status: 'Active', icon: Layers },
-  { id: 'srv-7', title: 'Physiotherapy & Rehab', code: 'PHY-01', status: 'Active', icon: Layers },
-  { id: 'srv-8', title: 'Dermatology & Skin Care', code: 'DERM-01', status: 'Active', icon: Layers },
-];
 
 // Helper to format Date string to "08 Oct 2026 (Wednesday)"
 const formatDateDisplay = (dateStr) => {
@@ -61,174 +46,13 @@ const formatDateDisplay = (dateStr) => {
   return `${dayFormatted} ${monthName} ${dateObj.getFullYear()} (${dayName})`;
 };
 
-// Initial Mock Availability Records (15 Dummy Records)
-const initialAvailabilities = [
-  {
-    id: 'avail-1',
-    serviceId: 'srv-1',
-    serviceTitle: 'General Consultation',
-    serviceCode: 'GEN-01',
-    date: '2026-10-08',
-    capacity: 20,
-    bookedCount: 14,
-    status: 'OPEN',
-    createdAt: '2026-10-01T09:00:00Z',
-  },
-  {
-    id: 'avail-2',
-    serviceId: 'srv-5',
-    serviceTitle: 'Dental Checkup & Cleaning',
-    serviceCode: 'DEN-01',
-    date: '2026-10-08',
-    capacity: 15,
-    bookedCount: 15,
-    status: 'FULL',
-    createdAt: '2026-10-01T09:15:00Z',
-  },
-  {
-    id: 'avail-3',
-    serviceId: 'srv-3',
-    serviceTitle: 'Vaccination & Immunization',
-    serviceCode: 'VAC-01',
-    date: '2026-10-09',
-    capacity: 30,
-    bookedCount: 8,
-    status: 'OPEN',
-    createdAt: '2026-10-02T10:00:00Z',
-  },
-  {
-    id: 'avail-4',
-    serviceId: 'srv-2',
-    serviceTitle: 'Blood Test & Diagnostics',
-    serviceCode: 'DIAG-01',
-    date: '2026-10-09',
-    capacity: 25,
-    bookedCount: 20,
-    status: 'OPEN',
-    createdAt: '2026-10-02T10:30:00Z',
-  },
-  {
-    id: 'avail-5',
-    serviceId: 'srv-7',
-    serviceTitle: 'Physiotherapy & Rehab',
-    serviceCode: 'PHY-01',
-    date: '2026-10-10',
-    capacity: 10,
-    bookedCount: 0,
-    status: 'CLOSED',
-    createdAt: '2026-10-03T11:00:00Z',
-  },
-  {
-    id: 'avail-6',
-    serviceId: 'srv-6',
-    serviceTitle: 'Eye & Vision Checkup',
-    serviceCode: 'EYE-01',
-    date: '2026-10-12',
-    capacity: 18,
-    bookedCount: 6,
-    status: 'OPEN',
-    createdAt: '2026-10-04T11:30:00Z',
-  },
-  {
-    id: 'avail-7',
-    serviceId: 'srv-8',
-    serviceTitle: 'Follow-up Consultation',
-    serviceCode: 'FOL-01',
-    date: '2026-10-12',
-    capacity: 12,
-    bookedCount: 12,
-    status: 'FULL',
-    createdAt: '2026-10-05T08:30:00Z',
-  },
-  {
-    id: 'avail-8',
-    serviceId: 'srv-7',
-    serviceTitle: 'Dermatology & Skin Care',
-    serviceCode: 'DERM-01',
-    date: '2026-10-13',
-    capacity: 22,
-    bookedCount: 15,
-    status: 'OPEN',
-    createdAt: '2026-10-05T09:00:00Z',
-  },
-  {
-    id: 'avail-9',
-    serviceId: 'srv-1',
-    serviceTitle: 'General Consultation',
-    serviceCode: 'GEN-01',
-    date: '2026-10-14',
-    capacity: 25,
-    bookedCount: 19,
-    status: 'OPEN',
-    createdAt: '2026-10-06T09:30:00Z',
-  },
-  {
-    id: 'avail-10',
-    serviceId: 'srv-2',
-    serviceTitle: 'Blood Test & Diagnostics',
-    serviceCode: 'DIAG-01',
-    date: '2026-10-14',
-    capacity: 20,
-    bookedCount: 20,
-    status: 'FULL',
-    createdAt: '2026-10-06T10:00:00Z',
-  },
-  {
-    id: 'avail-11',
-    serviceId: 'srv-3',
-    serviceTitle: 'Vaccination & Immunization',
-    serviceCode: 'VAC-01',
-    date: '2026-10-15',
-    capacity: 15,
-    bookedCount: 3,
-    status: 'OPEN',
-    createdAt: '2026-10-07T10:15:00Z',
-  },
-  {
-    id: 'avail-12',
-    serviceId: 'srv-5',
-    serviceTitle: 'Dental Checkup & Cleaning',
-    serviceCode: 'DEN-01',
-    date: '2026-10-15',
-    capacity: 12,
-    bookedCount: 0,
-    status: 'CLOSED',
-    createdAt: '2026-10-07T10:45:00Z',
-  },
-  {
-    id: 'avail-13',
-    serviceId: 'srv-6',
-    serviceTitle: 'Eye & Vision Checkup',
-    serviceCode: 'EYE-01',
-    date: '2026-10-16',
-    capacity: 16,
-    bookedCount: 10,
-    status: 'OPEN',
-    createdAt: '2026-10-08T08:15:00Z',
-  },
-  {
-    id: 'avail-14',
-    serviceId: 'srv-7',
-    serviceTitle: 'Physiotherapy & Rehab',
-    serviceCode: 'PHY-01',
-    date: '2026-10-17',
-    capacity: 14,
-    bookedCount: 8,
-    status: 'OPEN',
-    createdAt: '2026-10-08T09:00:00Z',
-  },
-  {
-    id: 'avail-15',
-    serviceId: 'srv-4',
-    serviceTitle: 'Follow-up Consultation',
-    serviceCode: 'FOL-01',
-    date: '2026-10-18',
-    capacity: 20,
-    bookedCount: 20,
-    status: 'FULL',
-    createdAt: '2026-10-08T11:00:00Z',
-  },
-];
+const getTodayDateString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export const AdminAvailability = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -269,8 +93,9 @@ export const AdminAvailability = () => {
   }, [activeTab]);
 
   // Form State
-  const [selectedService, setSelectedService] = useState(serviceOptions[0]);
-  const [selectedDate, setSelectedDate] = useState('2026-10-08');
+  const [servicesList, setServicesList] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(getTodayDateString());
   const [capacity, setCapacity] = useState(20);
   const [status, setStatus] = useState('OPEN'); // 'OPEN' | 'FULL' | 'CLOSED'
 
@@ -280,9 +105,72 @@ export const AdminAvailability = () => {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
 
-  // Existing Availabilities List & Pagination State
+  // Existing Availabilities List, Loading & Pagination State
   const ITEMS_PER_PAGE = 10;
-  const [availabilities, setAvailabilities] = useState(initialAvailabilities);
+  const [availabilities, setAvailabilities] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [availabilityToDelete, setAvailabilityToDelete] = useState(null);
+
+  // Load Services from Backend
+  const loadServices = async () => {
+    try {
+      const res = await serviceApi.getAllServices();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      const normalized = list.map((s) => ({
+        id: s._id || s.id,
+        _id: s._id || s.id,
+        title: s.name,
+        name: s.name,
+        code: s.code || 'SRV',
+        status: s.isActive !== false ? 'Active' : 'Inactive',
+        icon: Layers,
+      }));
+      setServicesList(normalized);
+      if (normalized.length > 0 && !selectedService) {
+        setSelectedService(normalized[0]);
+      }
+    } catch (err) {
+      console.error('Failed to load services in availability:', err);
+    }
+  };
+
+  // Load Availabilities from Backend
+  const loadAvailabilities = async () => {
+    try {
+      setIsLoading(true);
+      const res = await availabilityApi.getAllAvailabilities();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      const normalized = list.map((item) => {
+        const srv = typeof item.serviceId === 'object' && item.serviceId !== null ? item.serviceId : null;
+        return {
+          id: item._id || item.id,
+          _id: item._id || item.id,
+          serviceId: srv?._id || srv?.id || item.serviceId,
+          serviceTitle: srv?.name || srv?.title || 'Unknown Service',
+          serviceCode: srv?.code || 'SRV',
+          date: item.date,
+          capacity: item.capacity,
+          bookedCount: item.bookedCount || 0,
+          status: item.status || 'OPEN',
+          createdAt: item.createdAt,
+        };
+      });
+      setAvailabilities(normalized);
+    } catch (err) {
+      console.error('Failed to load availabilities from server:', err);
+      showToast(err.message || 'Failed to load availabilities');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadServices();
+    loadAvailabilities();
+  }, []);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'open' | 'full' | 'closed'
   const [currentPage, setCurrentPage] = useState(1);
@@ -350,16 +238,16 @@ export const AdminAvailability = () => {
 
   // Handle Form Reset / Clear
   const handleClearForm = () => {
-    setSelectedService(serviceOptions[0]);
-    setSelectedDate('2026-10-08');
+    setSelectedService(servicesList[0] || null);
+    setSelectedDate(getTodayDateString());
     setCapacity(20);
     setStatus('OPEN');
     setEditingId(null);
     showToast('Availability form cleared');
   };
 
-  // Handle Save Availability
-  const handleSaveAvailability = (e) => {
+  // Handle Save Availability (Create or Update on Backend)
+  const handleSaveAvailability = async (e) => {
     e.preventDefault();
     if (!selectedService) {
       showToast('Please select a service');
@@ -371,95 +259,86 @@ export const AdminAvailability = () => {
     }
 
     const finalCapacity = Number(capacity) || 20;
+    const srvId = selectedService._id || selectedService.id;
 
-    if (editingId) {
-      // Update existing record
-      setAvailabilities((prev) =>
-        prev.map((item) =>
-          item.id === editingId
-            ? {
-                ...item,
-                serviceId: selectedService.id,
-                serviceTitle: selectedService.title,
-                serviceCode: selectedService.code,
-                date: selectedDate,
-                capacity: finalCapacity,
-                status: status,
-              }
-            : item
-        )
-      );
-      showToast(`Updated availability for ${selectedService.title}`);
-      setEditingId(null);
-    } else {
-      // Check if availability for this service and date already exists
-      const existing = availabilities.find(
-        (a) => a.serviceId === selectedService.id && a.date === selectedDate
-      );
-
-      if (existing) {
-        // Update existing instead of creating duplicate
-        setAvailabilities((prev) =>
-          prev.map((item) =>
-            item.id === existing.id
-              ? { ...item, capacity: finalCapacity, status: status }
-              : item
-          )
-        );
-        showToast(`Updated existing availability for ${selectedDate}`);
-      } else {
-        // Create new
-        const newRecord = {
-          id: `avail-${Date.now()}`,
-          serviceId: selectedService.id,
-          serviceTitle: selectedService.title,
-          serviceCode: selectedService.code,
+    setIsSubmitting(true);
+    try {
+      if (editingId) {
+        // Update existing availability
+        await availabilityApi.updateAvailability(editingId, {
+          serviceId: srvId,
           date: selectedDate,
           capacity: finalCapacity,
-          bookedCount: 0,
           status: status,
-          createdAt: new Date().toISOString(),
-        };
-        setAvailabilities((prev) => [newRecord, ...prev]);
-        showToast(`Availability added for ${selectedService.title}`);
+        });
+        showToast(`Updated availability for ${selectedService.title || selectedService.name}`);
+        setEditingId(null);
+      } else {
+        // Create new availability on server
+        await availabilityApi.createAvailability(srvId, {
+          date: selectedDate,
+          capacity: finalCapacity,
+          status: status,
+        });
+        showToast(`Availability added for ${selectedService.title || selectedService.name}`);
       }
-    }
 
-    // Switch to Existing view to show newly added item
-    setTimeout(() => {
-      setActiveTab('existing');
-    }, 600);
+      await loadAvailabilities();
+      // Switch to Existing view to show newly saved item
+      setTimeout(() => {
+        setActiveTab('existing');
+      }, 500);
+    } catch (err) {
+      console.error('Failed to save availability:', err);
+      showToast(err.message || 'Failed to save availability');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Quick edit existing record
   const handleEditRecord = (record) => {
-    const srv = serviceOptions.find((s) => s.id === record.serviceId) || serviceOptions[0];
+    const srv = servicesList.find((s) => (s._id || s.id) === record.serviceId) || servicesList[0] || record;
     setSelectedService(srv);
     setSelectedDate(record.date);
     setCapacity(record.capacity);
     setStatus(record.status);
-    setEditingId(record.id);
+    setEditingId(record._id || record.id);
     setActiveTab('add');
     showToast(`Editing ${record.serviceTitle} (${record.date})`);
   };
 
-  // Delete record
-  const handleDeleteRecord = (id) => {
-    setAvailabilities((prev) => prev.filter((a) => a.id !== id));
-    showToast('Availability deleted successfully');
+  // Confirm delete on backend
+  const handleConfirmDelete = async () => {
+    if (!availabilityToDelete) return;
+    setIsDeleting(true);
+    try {
+      const targetId = availabilityToDelete._id || availabilityToDelete.id;
+      await availabilityApi.deleteAvailability(targetId);
+      showToast('Availability deleted successfully');
+      setAvailabilityToDelete(null);
+      await loadAvailabilities();
+    } catch (err) {
+      console.error('Failed to delete availability:', err);
+      showToast(err.message || 'Failed to delete availability');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
-  // Toggle record status (OPEN <-> CLOSED)
-  const handleToggleStatus = (id) => {
-    setAvailabilities((prev) =>
-      prev.map((a) => {
-        if (a.id === id) {
-          const nextStatus = a.status?.toUpperCase() === 'OPEN' ? 'CLOSED' : 'OPEN';
-          return { ...a, status: nextStatus };
-        }
-        return a;
-      })
-    );
+  // Toggle record status (OPEN <-> CLOSED) on backend
+  const handleToggleStatus = async (record) => {
+    try {
+      const nextStatus = record.status?.toUpperCase() === 'OPEN' ? 'CLOSED' : 'OPEN';
+      await availabilityApi.updateAvailability(record._id || record.id, {
+        status: nextStatus,
+      });
+      showToast(`Status updated to ${nextStatus}`);
+      await loadAvailabilities();
+    } catch (err) {
+      console.error('Failed to toggle status:', err);
+      showToast(err.message || 'Failed to update status');
+    }
   };
 
   // Reset page when filter or search changes
@@ -470,10 +349,12 @@ export const AdminAvailability = () => {
   // Filtered availabilities for the list tab
   const filteredAvailabilities = useMemo(() => {
     return availabilities.filter((item) => {
-      const matchesSearch =
-        item.serviceTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.serviceCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.date.includes(searchQuery);
+      const title = (item.serviceTitle || '').toLowerCase();
+      const code = (item.serviceCode || '').toLowerCase();
+      const date = item.date || '';
+      const q = searchQuery.toLowerCase();
+
+      const matchesSearch = title.includes(q) || code.includes(q) || date.includes(q);
 
       const matchesStatus =
         statusFilter === 'all' ||
@@ -511,7 +392,7 @@ export const AdminAvailability = () => {
             onClick={() => setActiveTab('add')}
           >
             <CalendarPlus size={18} className="tab-btn-icon" />
-            <span>Add / Edit Availability</span>
+            <span>{editingId ? 'Edit Availability' : 'Add Availability'}</span>
           </button>
 
           <button
@@ -544,560 +425,638 @@ export const AdminAvailability = () => {
                   />
                 </div>
 
-              <h3 className="avail-left-heading">Add Service Availability</h3>
-              <p className="avail-left-subheading">
-                Select a service, choose the date, set the capacity and status for that day.
-              </p>
+                <h3 className="avail-left-heading">Add Service Availability</h3>
+                <p className="avail-left-subheading">
+                  Select a service, choose the date, set the capacity and status for that day.
+                </p>
 
-              {/* Guidance Feature List */}
-              <div className="avail-guidance-list">
-                <div className="avail-guidance-item">
-                  <div className="guidance-icon-bubble bubble-green">
-                    <Calendar size={18} />
+                {/* Guidance Feature List */}
+                <div className="avail-guidance-list">
+                  <div className="avail-guidance-item">
+                    <div className="guidance-icon-bubble bubble-green">
+                      <Calendar size={18} />
+                    </div>
+                    <div className="guidance-text-block">
+                      <h4 className="guidance-title">Set slots for a specific date</h4>
+                      <p className="guidance-desc">Define how many appointments can be booked.</p>
+                    </div>
                   </div>
-                  <div className="guidance-text-block">
-                    <h4 className="guidance-title">Set slots for a specific date</h4>
-                    <p className="guidance-desc">Define how many appointments can be booked.</p>
-                  </div>
-                </div>
 
-                <div className="avail-guidance-item">
-                  <div className="guidance-icon-bubble bubble-purple">
-                    <Settings size={18} />
+                  <div className="avail-guidance-item">
+                    <div className="guidance-icon-bubble bubble-purple">
+                      <Settings size={18} />
+                    </div>
+                    <div className="guidance-text-block">
+                      <h4 className="guidance-title">Control service availability</h4>
+                      <p className="guidance-desc">OPEN, FULL or CLOSED status.</p>
+                    </div>
                   </div>
-                  <div className="guidance-text-block">
-                    <h4 className="guidance-title">Control service availability</h4>
-                    <p className="guidance-desc">OPEN, FULL or CLOSED status.</p>
-                  </div>
-                </div>
 
-                <div className="avail-guidance-item">
-                  <div className="guidance-icon-bubble bubble-blue">
-                    <Users size={18} />
-                  </div>
-                  <div className="guidance-text-block">
-                    <h4 className="guidance-title">Keep your queue organized</h4>
-                    <p className="guidance-desc">Manage availability for each service easily.</p>
+                  <div className="avail-guidance-item">
+                    <div className="guidance-icon-bubble bubble-blue">
+                      <Users size={18} />
+                    </div>
+                    <div className="guidance-text-block">
+                      <h4 className="guidance-title">Keep your queue organized</h4>
+                      <p className="guidance-desc">Manage availability for each service easily.</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* RIGHT PORTION: The Availability Configuration Form */}
-            <div className="admin-avail-right-form-panel">
-              {/* Form Section Header */}
-              <div className="admin-avail-form-header">
-                <div className="avail-header-badge-icon">
-                  <CalendarPlus size={22} />
-                </div>
-                <div>
-                  <h3 className="avail-form-title">
-                    {editingId ? 'Edit Availability' : 'Add Availability'}
-                  </h3>
-                  <p className="avail-form-subtitle">
-                    Fill in the details below to set availability for a service on a specific date.
-                  </p>
-                </div>
-              </div>
-
-              <form onSubmit={handleSaveAvailability} className="avail-interactive-form">
-                
-                {/* Field 1: Select Service */}
-                <div className="avail-form-group" ref={serviceDropdownRef}>
-                  <label className="avail-field-label">
-                    Select Service <span className="avail-required-star">*</span>
-                  </label>
-                  
-                  <div
-                    className="avail-custom-selector-box"
-                    onClick={() => setIsServiceDropdownOpen((prev) => !prev)}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="avail-selector-left-content">
-                      <Layers size={18} className="selector-icon-blue" />
-                      <span className="selector-text-title">{selectedService.title}</span>
-                      <span className="selector-status-tag">Active</span>
-                    </div>
-                    <ChevronDown
-                      size={17}
-                      className={`selector-chevron ${isServiceDropdownOpen ? 'rotated' : ''}`}
-                    />
+              {/* RIGHT PORTION: The Availability Configuration Form */}
+              <div className="admin-avail-right-form-panel">
+                {/* Form Section Header */}
+                <div className="admin-avail-form-header">
+                  <div className="avail-header-badge-icon">
+                    <CalendarPlus size={22} />
                   </div>
-
-                  {/* Service Dropdown Menu */}
-                  {isServiceDropdownOpen && (
-                    <div className="avail-floating-dropdown-menu">
-                      {serviceOptions.map((srv) => {
-                        const IconComponent = srv.icon;
-                        const isSelected = selectedService.id === srv.id;
-                        return (
-                          <div
-                            key={srv.id}
-                            className={`avail-dropdown-option ${isSelected ? 'selected' : ''}`}
-                            onClick={() => {
-                              setSelectedService(srv);
-                              setIsServiceDropdownOpen(false);
-                            }}
-                          >
-                            <div className="option-leading-content">
-                              <IconComponent size={16} className="option-icon" />
-                              <span className="option-title">{srv.title}</span>
-                              <span className="option-code-pill">{srv.code}</span>
-                            </div>
-                            <span className="selector-status-tag">Active</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Field 2: Select Date */}
-                <div className="avail-form-group" ref={datePickerRef}>
-                  <label className="avail-field-label">
-                    Select Date <span className="avail-required-star">*</span>
-                  </label>
-
-                  <div
-                    className="avail-custom-selector-box"
-                    onClick={() => {
-                      setIsDatePickerOpen((prev) => !prev);
-                      if (dateInputRef.current) {
-                        try {
-                          dateInputRef.current.showPicker();
-                        } catch (e) {
-                          // Fallback for browsers that don't support showPicker()
-                        }
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="avail-selector-left-content">
-                      <Calendar size={18} className="selector-icon-slate" />
-                      <span className="selector-text-title">
-                        {formatDateDisplay(selectedDate)}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      size={17}
-                      className={`selector-chevron ${isDatePickerOpen ? 'rotated' : ''}`}
-                    />
+                  <div>
+                    <h3 className="avail-form-title">
+                      {editingId ? 'Edit Availability' : 'Add Availability'}
+                    </h3>
+                    <p className="avail-form-subtitle">
+                      Fill in the details below to set availability for a service on a specific date.
+                    </p>
                   </div>
-
-                  {/* Hidden Native Date Input for cross-browser picking */}
-                  <input
-                    type="date"
-                    ref={dateInputRef}
-                    className="avail-native-date-input"
-                    value={selectedDate}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setSelectedDate(e.target.value);
-                        setIsDatePickerOpen(false);
-                      }
-                    }}
-                  />
                 </div>
 
-                {/* Row: Field 3 (Capacity) & Field 4 (Status) */}
-                <div className="avail-form-two-col-row">
-                  
-                  {/* Field 3: Capacity */}
-                  <div className="avail-form-group flex-1">
+                <form onSubmit={handleSaveAvailability} className="avail-interactive-form">
+                  {/* Field 1: Select Service */}
+                  <div className="avail-form-group" ref={serviceDropdownRef}>
                     <label className="avail-field-label">
-                      Capacity <span className="avail-required-star">*</span>
-                    </label>
-
-                    <div className="avail-capacity-input-container">
-                      <div className="capacity-input-leading">
-                        <Users size={18} className="selector-icon-slate" />
-                        <input
-                          type="number"
-                          min="1"
-                          max="999"
-                          required
-                          className="avail-capacity-num-field"
-                          value={capacity}
-                          onChange={handleCapacityChange}
-                          onBlur={handleCapacityBlur}
-                        />
-                      </div>
-
-                      {/* Stepper Buttons (Up & Down Arrows) */}
-                      <div className="avail-stepper-arrow-column">
-                        <button
-                          type="button"
-                          className="capacity-step-arrow up"
-                          onClick={handleIncreaseCapacity}
-                          aria-label="Increase capacity"
-                        >
-                          <ChevronUp size={13} strokeWidth={2.6} />
-                        </button>
-                        <button
-                          type="button"
-                          className="capacity-step-arrow down"
-                          onClick={handleDecreaseCapacity}
-                          disabled={Number(capacity) <= 1}
-                          aria-label="Decrease capacity"
-                        >
-                          <ChevronDown size={13} strokeWidth={2.6} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Field 4: Status */}
-                  <div className="avail-form-group flex-1" ref={statusDropdownRef}>
-                    <label className="avail-field-label">
-                      Status <span className="avail-required-star">*</span>
+                      Select Service <span className="avail-required-star">*</span>
                     </label>
 
                     <div
                       className="avail-custom-selector-box"
-                      onClick={() => setIsStatusDropdownOpen((prev) => !prev)}
+                      onClick={() => setIsServiceDropdownOpen((prev) => !prev)}
                       role="button"
                       tabIndex={0}
                     >
                       <div className="avail-selector-left-content">
-                        <span
-                          className={`avail-status-dot ${
-                            status?.toUpperCase() === 'OPEN'
-                              ? 'dot-green'
-                              : status?.toUpperCase() === 'FULL'
-                              ? 'dot-orange'
-                              : 'dot-red'
-                          }`}
-                        />
-                        <span className="selector-text-title">{status}</span>
+                        <Layers size={18} className="selector-icon-blue" />
+                        <span className="selector-text-title">
+                          {selectedService ? (selectedService.title || selectedService.name) : 'Select a service'}
+                        </span>
+                        <span className="selector-status-tag">Active</span>
                       </div>
                       <ChevronDown
                         size={17}
-                        className={`selector-chevron ${isStatusDropdownOpen ? 'rotated' : ''}`}
+                        className={`selector-chevron ${isServiceDropdownOpen ? 'rotated' : ''}`}
                       />
                     </div>
 
-                    {/* Status Dropdown Menu */}
-                    {isStatusDropdownOpen && (
-                      <div className="avail-floating-dropdown-menu status-menu">
-                        {[
-                          { val: 'OPEN', color: 'dot-green' },
-                          { val: 'FULL', color: 'dot-orange' },
-                          { val: 'CLOSED', color: 'dot-red' },
-                        ].map((st) => (
+                    {/* Service Dropdown Menu */}
+                    {isServiceDropdownOpen && (
+                      <div className="avail-floating-dropdown-menu">
+                        {servicesList.length > 0 ? (
+                          servicesList.map((srv) => {
+                            const IconComponent = srv.icon || Layers;
+                            const isSelected =
+                              selectedService &&
+                              (selectedService._id || selectedService.id) === (srv._id || srv.id);
+                            return (
+                              <div
+                                key={srv._id || srv.id}
+                                className={`avail-dropdown-option ${isSelected ? 'selected' : ''}`}
+                                onClick={() => {
+                                  setSelectedService(srv);
+                                  setIsServiceDropdownOpen(false);
+                                }}
+                              >
+                                <div className="option-leading-content">
+                                  <IconComponent size={16} className="option-icon" />
+                                  <span className="option-title">{srv.title || srv.name}</span>
+                                  <span className="option-code-pill">{srv.code}</span>
+                                </div>
+                                <span className="selector-status-tag">{srv.status || 'Active'}</span>
+                              </div>
+                            );
+                          })
+                        ) : (
                           <div
-                            key={st.val}
-                            className={`avail-dropdown-option ${status === st.val ? 'selected' : ''}`}
-                            onClick={() => {
-                              setStatus(st.val);
-                              setIsStatusDropdownOpen(false);
+                            style={{
+                              padding: '14px',
+                              textAlign: 'center',
+                              color: '#64748B',
+                              fontSize: '13px',
                             }}
                           >
-                            <div className="option-leading-content">
-                              <span className={`avail-status-dot ${st.color}`} />
-                              <span className="option-title">{st.val}</span>
-                            </div>
+                            No services available. Create a service in Service Management first.
                           </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Field 2: Select Date */}
+                  <div className="avail-form-group" ref={datePickerRef}>
+                    <label className="avail-field-label">
+                      Select Date <span className="avail-required-star">*</span>
+                    </label>
+
+                    <div
+                      className="avail-custom-selector-box"
+                      onClick={() => {
+                        setIsDatePickerOpen((prev) => !prev);
+                        if (dateInputRef.current) {
+                          try {
+                            dateInputRef.current.showPicker();
+                          } catch (e) {
+                            // Fallback for browsers that don't support showPicker()
+                          }
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="avail-selector-left-content">
+                        <Calendar size={18} className="selector-icon-slate" />
+                        <span className="selector-text-title">
+                          {formatDateDisplay(selectedDate)}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        size={17}
+                        className={`selector-chevron ${isDatePickerOpen ? 'rotated' : ''}`}
+                      />
+                    </div>
+
+                    {/* Hidden Native Date Input for cross-browser picking */}
+                    <input
+                      type="date"
+                      ref={dateInputRef}
+                      className="avail-native-date-input"
+                      value={selectedDate}
+                      min={getTodayDateString()}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setSelectedDate(e.target.value);
+                          setIsDatePickerOpen(false);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Row: Field 3 (Capacity) & Field 4 (Status) */}
+                  <div className="avail-form-two-col-row">
+                    {/* Field 3: Capacity */}
+                    <div className="avail-form-group flex-1">
+                      <label className="avail-field-label">
+                        Capacity <span className="avail-required-star">*</span>
+                      </label>
+
+                      <div className="avail-capacity-input-container">
+                        <div className="capacity-input-leading">
+                          <Users size={18} className="selector-icon-slate" />
+                          <input
+                            type="number"
+                            min="1"
+                            max="999"
+                            required
+                            className="avail-capacity-num-field"
+                            value={capacity}
+                            onChange={handleCapacityChange}
+                            onBlur={handleCapacityBlur}
+                          />
+                        </div>
+
+                        {/* Stepper Buttons (Up & Down Arrows) */}
+                        <div className="avail-stepper-arrow-column">
+                          <button
+                            type="button"
+                            className="capacity-step-arrow up"
+                            onClick={handleIncreaseCapacity}
+                            aria-label="Increase capacity"
+                          >
+                            <ChevronUp size={13} strokeWidth={2.6} />
+                          </button>
+                          <button
+                            type="button"
+                            className="capacity-step-arrow down"
+                            onClick={handleDecreaseCapacity}
+                            disabled={Number(capacity) <= 1}
+                            aria-label="Decrease capacity"
+                          >
+                            <ChevronDown size={13} strokeWidth={2.6} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Field 4: Status */}
+                    <div className="avail-form-group flex-1" ref={statusDropdownRef}>
+                      <label className="avail-field-label">
+                        Status <span className="avail-required-star">*</span>
+                      </label>
+
+                      <div
+                        className="avail-custom-selector-box"
+                        onClick={() => setIsStatusDropdownOpen((prev) => !prev)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <div className="avail-selector-left-content">
+                          <span
+                            className={`avail-status-dot ${
+                              status?.toUpperCase() === 'OPEN'
+                                ? 'dot-green'
+                                : status?.toUpperCase() === 'FULL'
+                                ? 'dot-orange'
+                                : 'dot-red'
+                            }`}
+                          />
+                          <span className="selector-text-title">{status}</span>
+                        </div>
+                        <ChevronDown
+                          size={17}
+                          className={`selector-chevron ${isStatusDropdownOpen ? 'rotated' : ''}`}
+                        />
+                      </div>
+
+                      {/* Status Dropdown Menu */}
+                      {isStatusDropdownOpen && (
+                        <div className="avail-floating-dropdown-menu status-menu">
+                          {[
+                            { val: 'OPEN', color: 'dot-green' },
+                            { val: 'FULL', color: 'dot-orange' },
+                            { val: 'CLOSED', color: 'dot-red' },
+                          ].map((st) => (
+                            <div
+                              key={st.val}
+                              className={`avail-dropdown-option ${status === st.val ? 'selected' : ''}`}
+                              onClick={() => {
+                                setStatus(st.val);
+                                setIsStatusDropdownOpen(false);
+                              }}
+                            >
+                              <div className="option-leading-content">
+                                <span className={`avail-status-dot ${st.color}`} />
+                                <span className="option-title">{st.val}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Form Footer Action Buttons */}
+                  <div className="avail-form-footer-action-bar">
+                    <div className="footer-left-buttons">
+                      <button
+                        type="button"
+                        className="avail-btn-clear"
+                        onClick={handleClearForm}
+                        disabled={isSubmitting}
+                      >
+                        <RotateCcw size={14} />
+                        <span>Clear Form</span>
+                      </button>
+                    </div>
+
+                    <div className="footer-right-buttons">
+                      <button
+                        type="button"
+                        className="avail-btn-cancel"
+                        onClick={() => {
+                          handleClearForm();
+                          setActiveTab('existing');
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </button>
+
+                      <button type="submit" className="avail-btn-submit" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 size={16} className="button-spinner" />
+                            <span>{editingId ? 'Updating...' : 'Saving...'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <CalendarCheck size={16} />
+                            <span>{editingId ? 'Update Availability' : 'Save Availability'}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          ) : (
+            /* EXISTING AVAILABILITY TAB CONTENT */
+            <div className="admin-avail-existing-content">
+              {/* Filter and Search Bar */}
+              <div className="existing-controls-bar">
+                <div className="existing-search-input-wrapper">
+                  <Search size={16} className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search by service name, code, or date..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="existing-search-field"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="search-clear-btn"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="existing-filters-group">
+                  {/* Status Filter Dropdown */}
+                  <div className="status-filter-dropdown-wrapper" ref={statusFilterRef}>
+                    <button
+                      type="button"
+                      className={`status-filter-toggle-btn ${statusFilter !== 'all' ? 'active' : ''}`}
+                      onClick={() => setIsStatusFilterOpen((prev) => !prev)}
+                      aria-haspopup="listbox"
+                      aria-expanded={isStatusFilterOpen}
+                    >
+                      <Filter size={14} className="filter-btn-icon" />
+                      <span>
+                        {statusFilter === 'all'
+                          ? 'All Status'
+                          : statusFilter.toUpperCase()}
+                      </span>
+                      <ChevronDown
+                        size={14}
+                        className={`filter-btn-chevron ${isStatusFilterOpen ? 'rotated' : ''}`}
+                      />
+                    </button>
+
+                    {isStatusFilterOpen && (
+                      <div className="status-filter-menu" role="listbox">
+                        {[
+                          { id: 'all', label: 'All Status' },
+                          { id: 'open', label: 'OPEN', dotClass: 'dot-green' },
+                          { id: 'full', label: 'FULL', dotClass: 'dot-orange' },
+                          { id: 'closed', label: 'CLOSED', dotClass: 'dot-red' },
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={`status-filter-option ${statusFilter === item.id ? 'selected' : ''}`}
+                            onClick={() => {
+                              setStatusFilter(item.id);
+                              setIsStatusFilterOpen(false);
+                            }}
+                          >
+                            <div className="status-option-label">
+                              {item.dotClass && (
+                                <span className={`status-dot-mini ${item.dotClass}`} />
+                              )}
+                              <span>{item.label}</span>
+                            </div>
+                            {statusFilter === item.id && (
+                              <Check size={14} className="option-check-icon" />
+                            )}
+                          </button>
                         ))}
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Form Footer Action Buttons */}
-                <div className="avail-form-footer-action-bar">
-                  <div className="footer-left-buttons">
+                  <button
+                    type="button"
+                    className="add-new-quick-btn"
+                    onClick={() => {
+                      handleClearForm();
+                      setActiveTab('add');
+                    }}
+                  >
+                    <Plus size={16} strokeWidth={2.4} />
+                    <span>Add Availability</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Loading State or Table of Availabilities */}
+              {isLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px', gap: '14px' }}>
+                  <Loader2 size={36} color="#1D68F2" className="button-spinner" />
+                  <span style={{ fontSize: '14px', color: '#64748B', fontWeight: 600 }}>Loading availability slots...</span>
+                </div>
+              ) : filteredAvailabilities.length > 0 ? (
+                <div className="avail-table-responsive-wrapper">
+                  <table className="avail-data-table">
+                    <thead>
+                      <tr>
+                        <th className="th-service">Service Name & Code</th>
+                        <th className="th-date">Date</th>
+                        <th className="th-capacity">Capacity / Booked</th>
+                        <th className="th-status">Status</th>
+                        <th className="th-actions">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedAvailabilities.map((item) => {
+                        const booked = item.bookedCount || 0;
+                        const percent = Math.min(100, Math.round((booked / item.capacity) * 100));
+                        return (
+                          <tr key={item.id} className="avail-table-row">
+                            <td className="cell-service">
+                              <div className="service-cell-inner">
+                                <div className="service-cell-icon-box">
+                                  <Layers size={16} />
+                                </div>
+                                <div>
+                                  <div className="service-cell-title">{item.serviceTitle}</div>
+                                  <span className="service-cell-code">{item.serviceCode}</span>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="cell-date">
+                              <div className="date-cell-badge">
+                                <span>{formatDateDisplay(item.date)}</span>
+                              </div>
+                            </td>
+
+                            <td className="cell-capacity">
+                              <div className="capacity-bar-wrapper">
+                                <div className="capacity-text-row">
+                                  <span className="booked-count-bold">{booked}</span>
+                                  <span className="capacity-total">/ {item.capacity} slots</span>
+                                  <span className="capacity-percentage">({percent}%)</span>
+                                </div>
+                                <div className="capacity-progress-track">
+                                  <div
+                                    className={`capacity-progress-fill ${
+                                      percent >= 100 ? 'fill-full' : 'fill-normal'
+                                    }`}
+                                    style={{ width: `${percent}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="cell-status">
+                              <span
+                                className={`status-pill ${
+                                  item.status?.toUpperCase() === 'OPEN'
+                                    ? 'status-open'
+                                    : item.status?.toUpperCase() === 'FULL'
+                                    ? 'status-full'
+                                    : 'status-closed'
+                                }`}
+                                onClick={() => handleToggleStatus(item)}
+                                title="Click to toggle OPEN / CLOSED"
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <span className="status-dot-mini" />
+                                <span>{item.status}</span>
+                              </span>
+                            </td>
+
+                            <td className="cell-actions">
+                              <div className="row-action-buttons">
+                                <button
+                                  type="button"
+                                  className="action-icon-btn edit"
+                                  onClick={() => handleEditRecord(item)}
+                                  title="Edit Availability"
+                                >
+                                  <Edit3 size={15} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="action-icon-btn delete"
+                                  onClick={() => setAvailabilityToDelete(item)}
+                                  title="Delete Availability"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="avail-empty-state-card">
+                  <CalendarPlus size={44} className="empty-state-icon" />
+                  <h4 className="empty-state-title">No Service Availability Found</h4>
+                  <p className="empty-state-desc">
+                    {searchQuery || statusFilter !== 'all'
+                      ? 'No records match your active search and filter criteria.'
+                      : 'Get started by configuring availability for your clinic services.'}
+                  </p>
+                  <button
+                    type="button"
+                    className="empty-state-action-btn"
+                    onClick={() => {
+                      handleClearForm();
+                      setActiveTab('add');
+                    }}
+                  >
+                    <Plus size={16} />
+                    <span>Create New Availability</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Table Footer Count & Pagination */}
+              {!isLoading && filteredAvailabilities.length > 0 && (
+                <div className="avail-table-footer">
+                  <span className="footer-count-text">
+                    Showing {startIndex + 1} to{' '}
+                    {Math.min(startIndex + ITEMS_PER_PAGE, filteredAvailabilities.length)} of{' '}
+                    {filteredAvailabilities.length} availability records
+                  </span>
+
+                  <div className="table-footer-pagination">
                     <button
                       type="button"
-                      className="avail-btn-clear"
-                      onClick={handleClearForm}
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Previous Page"
                     >
-                      <RotateCcw size={14} />
-                      <span>Clear Form</span>
+                      <ChevronLeft size={16} />
                     </button>
-                  </div>
 
-                  <div className="footer-right-buttons">
+                    <div className="pagination-numbers">
+                      {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pg) => (
+                        <button
+                          key={pg}
+                          type="button"
+                          className={`page-num-btn ${currentPage === pg ? 'active' : ''}`}
+                          onClick={() => setCurrentPage(pg)}
+                        >
+                          {pg}
+                        </button>
+                      ))}
+                    </div>
+
                     <button
                       type="button"
-                      className="avail-btn-cancel"
-                      onClick={() => {
-                        handleClearForm();
-                        setActiveTab('existing');
-                      }}
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next Page"
                     >
-                      Cancel
-                    </button>
-
-                    <button type="submit" className="avail-btn-submit">
-                      <CalendarCheck size={16} />
-                      <span>{editingId ? 'Update Availability' : 'Save Availability'}</span>
+                      <ChevronRight size={16} />
                     </button>
                   </div>
                 </div>
-              </form>
-            </div>
-          </div>
-        ) : (
-          /* EXISTING AVAILABILITY TAB CONTENT */
-          <div className="admin-avail-existing-content">
-          {/* Filter and Search Bar */}
-          <div className="existing-controls-bar">
-            <div className="existing-search-input-wrapper">
-              <Search size={16} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search by service name, code, or date..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="existing-search-field"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="search-clear-btn"
-                  onClick={() => setSearchQuery('')}
-                >
-                  <X size={14} />
-                </button>
               )}
             </div>
+          )}
+        </div>
+      </div>
 
-            <div className="existing-filters-group">
-              {/* Status Filter Dropdown */}
-              <div className="status-filter-dropdown-wrapper" ref={statusFilterRef}>
-                <button
-                  type="button"
-                  className={`status-filter-toggle-btn ${statusFilter !== 'all' ? 'active' : ''}`}
-                  onClick={() => setIsStatusFilterOpen((prev) => !prev)}
-                  aria-haspopup="listbox"
-                  aria-expanded={isStatusFilterOpen}
-                >
-                  <Filter size={14} className="filter-btn-icon" />
-                  <span>
-                    {statusFilter === 'all'
-                      ? 'All Status'
-                      : statusFilter.toUpperCase()}
-                  </span>
-                  <ChevronDown
-                    size={14}
-                    className={`filter-btn-chevron ${isStatusFilterOpen ? 'rotated' : ''}`}
-                  />
-                </button>
-
-                {isStatusFilterOpen && (
-                  <div className="status-filter-menu" role="listbox">
-                    {[
-                      { id: 'all', label: 'All Status' },
-                      { id: 'open', label: 'OPEN', dotClass: 'dot-green' },
-                      { id: 'full', label: 'FULL', dotClass: 'dot-orange' },
-                      { id: 'closed', label: 'CLOSED', dotClass: 'dot-red' },
-                    ].map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={`status-filter-option ${statusFilter === item.id ? 'selected' : ''}`}
-                        onClick={() => {
-                          setStatusFilter(item.id);
-                          setIsStatusFilterOpen(false);
-                        }}
-                      >
-                        <div className="status-option-label">
-                          {item.dotClass && (
-                            <span className={`status-dot-mini ${item.dotClass}`} />
-                          )}
-                          <span>{item.label}</span>
-                        </div>
-                        {statusFilter === item.id && (
-                          <Check size={14} className="option-check-icon" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
+      {/* Delete Confirmation Modal */}
+      {availabilityToDelete && (
+        <div className="avail-modal-backdrop" onClick={() => !isDeleting && setAvailabilityToDelete(null)}>
+          <div className="avail-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="avail-modal-header-icon">
+              <AlertTriangle size={24} color="#DC2626" />
+            </div>
+            <h3 className="avail-modal-title">Delete Availability Slot</h3>
+            <p className="avail-modal-desc">
+              Are you sure you want to delete availability for <b>{availabilityToDelete.serviceTitle}</b> on{' '}
+              <b>{availabilityToDelete.date}</b>? Patients will no longer be able to book for this day.
+            </p>
+            <div className="avail-modal-actions">
               <button
                 type="button"
-                className="add-new-quick-btn"
-                onClick={() => {
-                  handleClearForm();
-                  setActiveTab('add');
-                }}
+                className="avail-modal-btn-cancel"
+                onClick={() => setAvailabilityToDelete(null)}
+                disabled={isDeleting}
               >
-                <Plus size={16} strokeWidth={2.4} />
-                <span>Add Availability</span>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="avail-modal-btn-delete"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={16} className="button-spinner" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Delete Availability</span>
+                )}
               </button>
             </div>
           </div>
-
-          {/* Table of Availabilities */}
-          {filteredAvailabilities.length > 0 ? (
-            <div className="avail-table-responsive-wrapper">
-              <table className="avail-data-table">
-                <thead>
-                  <tr>
-                    <th className="th-service">Service Name & Code</th>
-                    <th className="th-date">Date</th>
-                    <th className="th-capacity">Capacity / Booked</th>
-                    <th className="th-status">Status</th>
-                    <th className="th-actions">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedAvailabilities.map((item) => {
-                    const booked = item.bookedCount || 0;
-                    const percent = Math.min(100, Math.round((booked / item.capacity) * 100));
-                    return (
-                      <tr key={item.id} className="avail-table-row">
-                        <td className="cell-service">
-                          <div className="service-cell-inner">
-                            <div className="service-cell-icon-box">
-                              <Layers size={16} />
-                            </div>
-                            <div>
-                              <div className="service-cell-title">{item.serviceTitle}</div>
-                              <span className="service-cell-code">{item.serviceCode}</span>
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="cell-date">
-                          <div className="date-cell-badge">
-                            <span>{formatDateDisplay(item.date)}</span>
-                          </div>
-                        </td>
-
-                        <td className="cell-capacity">
-                          <div className="capacity-bar-wrapper">
-                            <div className="capacity-text-row">
-                              <span className="booked-count-bold">{booked}</span>
-                              <span className="capacity-total">/ {item.capacity} slots</span>
-                              <span className="capacity-percentage">({percent}%)</span>
-                            </div>
-                            <div className="capacity-progress-track">
-                              <div
-                                className={`capacity-progress-fill ${
-                                  percent >= 100 ? 'fill-full' : 'fill-normal'
-                                }`}
-                                style={{ width: `${percent}%` }}
-                              />
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="cell-status">
-                          <span
-                            className={`status-pill ${
-                              item.status?.toUpperCase() === 'OPEN'
-                                ? 'status-open'
-                                : item.status?.toUpperCase() === 'FULL'
-                                ? 'status-full'
-                                : 'status-closed'
-                            }`}
-                          >
-                            <span className="status-dot-mini" />
-                            {item.status}
-                          </span>
-                        </td>
-
-                        <td className="cell-actions">
-                          <div className="row-action-buttons">
-                            <button
-                              type="button"
-                              className="action-icon-btn edit"
-                              onClick={() => handleEditRecord(item)}
-                              title="Edit Availability"
-                            >
-                              <Edit3 size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              className="action-icon-btn delete"
-                              onClick={() => handleDeleteRecord(item.id)}
-                              title="Delete Availability"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="avail-empty-state-card">
-              <CalendarPlus size={44} className="empty-state-icon" />
-              <h4 className="empty-state-title">No Service Availability Found</h4>
-              <p className="empty-state-desc">
-                {searchQuery || statusFilter !== 'all'
-                  ? 'No records match your active search and filter criteria.'
-                  : 'Get started by configuring availability for your clinic services.'}
-              </p>
-              <button
-                type="button"
-                className="empty-state-action-btn"
-                onClick={() => {
-                  handleClearForm();
-                  setActiveTab('add');
-                }}
-              >
-                <Plus size={16} />
-                <span>Create New Availability</span>
-              </button>
-            </div>
-          )}
-
-          {/* Table Footer Count & Pagination */}
-          {filteredAvailabilities.length > 0 && (
-            <div className="avail-table-footer">
-              <span className="footer-count-text">
-                Showing {startIndex + 1} to{' '}
-                {Math.min(startIndex + ITEMS_PER_PAGE, filteredAvailabilities.length)} of{' '}
-                {filteredAvailabilities.length} availability records
-              </span>
-
-              <div className="table-footer-pagination">
-                <button
-                  type="button"
-                  className="pagination-step-btn"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    className={`pagination-num-btn ${currentPage === pageNum ? 'active' : ''}`}
-                    onClick={() => setCurrentPage(pageNum)}
-                  >
-                    {pageNum}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  className="pagination-step-btn"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  aria-label="Next page"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
-        </div>
-      </div>
     </div>
   );
 };

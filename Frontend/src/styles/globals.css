@@ -82,3 +82,22 @@ img {
   box-shadow: var(--shadow-card-hover);
   border-color: var(--color-border-hover);
 }
+
+/* Global Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin,
+.animate-spin,
+.button-spinner {
+  animation: spin 0.85s linear infinite !important;
+  display: inline-block;
+  transform-origin: center;
+  flex-shrink: 0;
+}

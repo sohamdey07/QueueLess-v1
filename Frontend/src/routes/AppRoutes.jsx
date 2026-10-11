@@ -22,52 +22,91 @@ import LoginScreen from '../pages/auth/LoginScreen';
 import OtpVerificationScreen from '../pages/auth/OtpVerificationScreen';
 
 import UnderDevelopment from '../pages/customer/UnderDevelopment';
+import { ProtectedRoute, PublicOnlyRoute, getDestinationForRole } from './ProtectedRoute';
+import tokenStorage from '../services/storage/tokenStorage';
+
+const RootRedirect = () => {
+  const isAuth = tokenStorage.isAuthenticated();
+  if (isAuth) {
+    const role = tokenStorage.getUserRole();
+    return <Navigate to={getDestinationForRole(role)} replace />;
+  }
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  return <Navigate to={isMobile ? '/login' : '/onboarding'} replace />;
+};
+
+const OnboardingRoute = () => {
+  const isAuth = tokenStorage.isAuthenticated();
+  if (isAuth) {
+    const role = tokenStorage.getUserRole();
+    return <Navigate to={getDestinationForRole(role)} replace />;
+  }
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  if (isMobile) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <OnboardingScreen />;
+};
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Auth Routes */}
-      <Route path="/login" element={<LoginScreen initialTab="login" />} />
-      <Route path="/register" element={<LoginScreen initialTab="register" />} />
+      {/* Auth Routes (Only accessible when not logged in) */}
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute>
+            <LoginScreen initialTab="login" />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicOnlyRoute>
+            <LoginScreen initialTab="register" />
+          </PublicOnlyRoute>
+        }
+      />
       <Route path="/verify-otp" element={<OtpVerificationScreen />} />
       <Route path="/verify-account" element={<Navigate to="/verify-otp" replace />} />
       <Route path="/auth" element={<Navigate to="/login" replace />} />
 
-      {/* Onboarding Screen Route (on mobile screen, onboarding screens will not appear, direct login screen will appear) */}
-      <Route
-        path="/onboarding"
-        element={
-          typeof window !== 'undefined' && window.innerWidth <= 768 ? (
-            <Navigate to="/login" replace />
-          ) : (
-            <OnboardingScreen />
-          )
-        }
-      />
+      {/* Onboarding Screen Route */}
+      <Route path="/onboarding" element={<OnboardingRoute />} />
 
-      {/* Default entry point: Mobile goes directly to Login, Desktop goes to Onboarding */}
-      <Route
-        path="/"
-        element={
-          <Navigate
-            to={typeof window !== 'undefined' && window.innerWidth <= 768 ? '/login' : '/onboarding'}
-            replace
-          />
-        }
-      />
+      {/* Default entry point */}
+      <Route path="/" element={<RootRedirect />} />
 
       {/* Standalone Fullscreen TV Display Screen */}
       <Route path="tv-display" element={<TvDisplay />} />
 
-      {/* Staff Portal Management Routes */}
-      <Route path="/staff" element={<StaffLayout />}>
+      {/* Staff Portal Management Routes (strictly STAFF only) */}
+      <Route
+        path="/staff"
+        element={
+          <ProtectedRoute allowedRoles={['STAFF']}>
+            <StaffLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<StaffDashboard />} />
         <Route path="dashboard" element={<StaffDashboard />} />
       </Route>
       <Route path="/staff-portal" element={<Navigate to="/staff" replace />} />
 
-      {/* Admin Portal Management Routes */}
-      <Route path="/admin" element={<AdminLayout />}>
+      {/* Admin Portal Management Routes (strictly ADMIN only) */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<AdminDashboard />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="options" element={<AdminDashboard />} />
@@ -87,17 +126,24 @@ export const AppRoutes = () => {
       </Route>
       <Route path="/admin-portal" element={<Navigate to="/admin/dashboard" replace />} />
 
-      {/* Main Customer Layout with routes */}
-      <Route element={<CustomerLayout />}>
+      {/* Main Customer Layout with routes (strictly CUSTOMER only) */}
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={['CUSTOMER']}>
+            <CustomerLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="home" element={<CustomerHome />} />
         <Route path="book-appointment" element={<BookAppointment />} />
         <Route path="join-queue" element={<JoinQueue />} />
         <Route path="virtual-queue" element={<VirtualQueue />} />
         <Route path="my-bookings" element={<MyBookings />} />
         <Route path="appointment-history" element={<AppointmentHistory />} />
-        {/* Pages which are not available show Under Development */}
-        <Route path="*" element={<UnderDevelopment />} />
       </Route>
+
+      {/* Fallback for any other unmatched URL */}
+      <Route path="*" element={<RootRedirect />} />
     </Routes>
   );
 };

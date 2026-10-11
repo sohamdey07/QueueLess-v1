@@ -30,17 +30,8 @@ import {
 import counterUiImg from '../../assets/images/UI/counter.png';
 import './AdminCounter.css';
 
-// Pre-defined Services List matching QueueLess system
-const SERVICES_LIST = [
-  { id: 'srv-1', title: 'General Consultation', code: 'GEN-01', status: 'Active', icon: Layers },
-  { id: 'srv-2', title: 'Blood Test & Diagnostics', code: 'DIAG-01', status: 'Active', icon: Layers },
-  { id: 'srv-3', title: 'Vaccination & Immunization', code: 'VAC-01', status: 'Active', icon: Layers },
-  { id: 'srv-4', title: 'Dental Checkup & Cleaning', code: 'DEN-01', status: 'Active', icon: Layers },
-  { id: 'srv-5', title: 'Eye & Vision Checkup', code: 'EYE-01', status: 'Active', icon: Layers },
-  { id: 'srv-6', title: 'Physiotherapy & Rehab', code: 'PHY-01', status: 'Active', icon: Layers },
-  { id: 'srv-7', title: 'Dermatology & Skin Care', code: 'DERM-01', status: 'Active', icon: Layers },
-  { id: 'srv-8', title: 'Follow-up Consultation', code: 'FOL-01', status: 'Active', icon: Layers },
-];
+import counterApi from '../../services/api/counter.api';
+import serviceApi from '../../services/api/service.api';
 
 // Pre-defined Staff Members matching Manage Users seed data
 const STAFF_LIST = [
@@ -54,204 +45,7 @@ const STAFF_LIST = [
   { id: 'staff-8', name: 'Mitali Singh', email: 'mitali.singh@qless.com', status: 'Inactive', role: 'Staff' },
 ];
 
-// Initial Counter Seed Data (15 Dummy Counters)
-const INITIAL_COUNTERS = [
-  {
-    id: 'cnt-1',
-    name: 'Counter 1',
-    code: 'CNT-01',
-    serviceId: 'srv-1',
-    serviceTitle: 'General Consultation',
-    serviceCode: 'GEN-01',
-    staffId: 'staff-1',
-    staffName: 'Rohan Das',
-    staffEmail: 'rohan.das@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 08:30 AM',
-  },
-  {
-    id: 'cnt-2',
-    name: 'Counter 2',
-    code: 'CNT-02',
-    serviceId: 'srv-4',
-    serviceTitle: 'Dental Checkup & Cleaning',
-    serviceCode: 'DEN-01',
-    staffId: 'staff-3',
-    staffName: 'Souvik Roy',
-    staffEmail: 'souvik.roy@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 08:45 AM',
-  },
-  {
-    id: 'cnt-3',
-    name: 'Counter 3',
-    code: 'CNT-03',
-    serviceId: 'srv-2',
-    serviceTitle: 'Blood Test & Diagnostics',
-    serviceCode: 'DIAG-01',
-    staffId: 'staff-4',
-    staffName: 'Priya Shah',
-    staffEmail: 'priya.shah@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 09:00 AM',
-  },
-  {
-    id: 'cnt-4',
-    name: 'Counter 4',
-    code: 'CNT-04',
-    serviceId: 'srv-3',
-    serviceTitle: 'Vaccination & Immunization',
-    serviceCode: 'VAC-01',
-    staffId: 'staff-2',
-    staffName: 'Ananya Sen',
-    staffEmail: 'ananya.sen@qless.com',
-    status: 'Inactive',
-    assignedAt: 'Yesterday, 04:15 PM',
-  },
-  {
-    id: 'cnt-5',
-    name: 'Counter 5',
-    code: 'CNT-05',
-    serviceId: 'srv-5',
-    serviceTitle: 'Eye & Vision Checkup',
-    serviceCode: 'EYE-01',
-    staffId: 'staff-6',
-    staffName: 'Neha Verma',
-    staffEmail: 'neha.verma@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 09:15 AM',
-  },
-  {
-    id: 'cnt-6',
-    name: 'Counter 6',
-    code: 'CNT-06',
-    serviceId: 'srv-8',
-    serviceTitle: 'Follow-up Consultation',
-    serviceCode: 'FOL-01',
-    staffId: 'staff-7',
-    staffName: 'Karan Tiwari',
-    staffEmail: 'karan.tiwari@qless.com',
-    status: 'Inactive',
-    assignedAt: 'Yesterday, 05:00 PM',
-  },
-  {
-    id: 'cnt-7',
-    name: 'Counter 7',
-    code: 'CNT-07',
-    serviceId: 'srv-7',
-    serviceTitle: 'Dermatology & Skin Care',
-    serviceCode: 'DERM-01',
-    staffId: 'staff-5',
-    staffName: 'Arjun Mehta',
-    staffEmail: 'arjun.mehta@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 09:30 AM',
-  },
-  {
-    id: 'cnt-8',
-    name: 'Counter 8',
-    code: 'CNT-08',
-    serviceId: 'srv-9',
-    serviceTitle: 'Account Assistance',
-    serviceCode: 'ACC-01',
-    staffId: 'staff-8',
-    staffName: 'Sneha Roy',
-    staffEmail: 'sneha.roy@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 09:45 AM',
-  },
-  {
-    id: 'cnt-9',
-    name: 'Counter 9',
-    code: 'CNT-09',
-    serviceId: 'srv-10',
-    serviceTitle: 'Document Verification',
-    serviceCode: 'DOC-01',
-    staffId: 'staff-9',
-    staffName: 'Debanjan Roy',
-    staffEmail: 'debanjan.roy@qless.com',
-    status: 'Inactive',
-    assignedAt: 'Yesterday, 03:30 PM',
-  },
-  {
-    id: 'cnt-10',
-    name: 'Counter 10',
-    code: 'CNT-10',
-    serviceId: 'srv-6',
-    serviceTitle: 'Physiotherapy & Rehab',
-    serviceCode: 'PHY-01',
-    staffId: 'staff-3',
-    staffName: 'Souvik Roy',
-    staffEmail: 'souvik.roy@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 10:00 AM',
-  },
-  {
-    id: 'cnt-11',
-    name: 'Counter 11',
-    code: 'CNT-11',
-    serviceId: 'srv-1',
-    serviceTitle: 'General Consultation',
-    serviceCode: 'GEN-01',
-    staffId: 'staff-2',
-    staffName: 'Ananya Sen',
-    staffEmail: 'ananya.sen@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 10:15 AM',
-  },
-  {
-    id: 'cnt-12',
-    name: 'Counter 12',
-    code: 'CNT-12',
-    serviceId: 'srv-2',
-    serviceTitle: 'Blood Test & Diagnostics',
-    serviceCode: 'DIAG-01',
-    staffId: 'staff-4',
-    staffName: 'Priya Shah',
-    staffEmail: 'priya.shah@qless.com',
-    status: 'Inactive',
-    assignedAt: 'Yesterday, 02:00 PM',
-  },
-  {
-    id: 'cnt-13',
-    name: 'Counter 13',
-    code: 'CNT-13',
-    serviceId: 'srv-4',
-    serviceTitle: 'Dental Checkup & Cleaning',
-    serviceCode: 'DEN-01',
-    staffId: 'staff-1',
-    staffName: 'Rohan Das',
-    staffEmail: 'rohan.das@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 10:45 AM',
-  },
-  {
-    id: 'cnt-14',
-    name: 'Counter 14',
-    code: 'CNT-14',
-    serviceId: 'srv-5',
-    serviceTitle: 'Eye & Vision Checkup',
-    serviceCode: 'EYE-01',
-    staffId: 'staff-6',
-    staffName: 'Neha Verma',
-    staffEmail: 'neha.verma@qless.com',
-    status: 'Active',
-    assignedAt: 'Today, 11:00 AM',
-  },
-  {
-    id: 'cnt-15',
-    name: 'Counter 15',
-    code: 'CNT-15',
-    serviceId: 'srv-3',
-    serviceTitle: 'Vaccination & Immunization',
-    serviceCode: 'VAC-01',
-    staffId: 'staff-7',
-    staffName: 'Karan Tiwari',
-    staffEmail: 'karan.tiwari@qless.com',
-    status: 'Inactive',
-    assignedAt: 'Today, 11:15 AM',
-  },
-];
+const INITIAL_COUNTERS = [];
 
 export const AdminCounter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -261,7 +55,63 @@ export const AdminCounter = () => {
   const [activeTab, setActiveTab] = useState(initialTab);
 
   // Counters State
-  const [counters, setCounters] = useState(INITIAL_COUNTERS);
+  const [counters, setCounters] = useState([]);
+  const [servicesList, setServicesList] = useState([]);
+  const [isLoadingCounters, setIsLoadingCounters] = useState(true);
+
+  const loadServices = async () => {
+    try {
+      const res = await serviceApi.getAllServices();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      const normalized = list.map(s => ({
+        id: s._id || s.id,
+        _id: s._id || s.id,
+        title: s.name,
+        name: s.name,
+        code: s.code,
+        status: s.isActive !== false ? 'Active' : 'Inactive',
+        icon: Layers
+      }));
+      setServicesList(normalized);
+      if (normalized.length > 0 && !selectedService) {
+        setSelectedService(normalized[0]);
+      }
+    } catch (e) {
+      console.error('Failed to load services in counters:', e);
+    }
+  };
+
+  const loadCounters = async () => {
+    try {
+      setIsLoadingCounters(true);
+      const res = await counterApi.getAllCounters();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      const normalized = list.map(c => ({
+        id: c._id || c.id,
+        _id: c._id || c.id,
+        name: c.name,
+        code: c.code,
+        serviceId: c.serviceId?._id || c.serviceId || '',
+        serviceTitle: c.serviceId?.name || 'General Service',
+        serviceCode: c.serviceId?.code || 'GEN-01',
+        staffId: c.assignedStaffId?._id || c.assignedStaffId || '',
+        staffName: c.assignedStaffId?.name || 'Unassigned Staff',
+        staffEmail: c.assignedStaffId?.email || 'staff@qless.com',
+        status: c.isActive !== false ? 'Active' : 'Inactive',
+        assignedAt: 'Active',
+      }));
+      setCounters(normalized);
+    } catch (e) {
+      console.error('Failed to load counters:', e);
+    } finally {
+      setIsLoadingCounters(false);
+    }
+  };
+
+  useEffect(() => {
+    loadServices();
+    loadCounters();
+  }, []);
 
   // Edit / Modify State
   const [editingId, setEditingId] = useState(null);
@@ -269,7 +119,7 @@ export const AdminCounter = () => {
   // Form Fields State
   const [counterName, setCounterName] = useState('');
   const [counterCode, setCounterCode] = useState('');
-  const [selectedService, setSelectedService] = useState(SERVICES_LIST[0]);
+  const [selectedService, setSelectedService] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState(STAFF_LIST[0]);
   const [counterStatus, setCounterStatus] = useState('Active'); // 'Active' or 'Inactive'
 
@@ -337,7 +187,7 @@ export const AdminCounter = () => {
   const handleClearForm = () => {
     setCounterName('');
     setCounterCode('');
-    setSelectedService(SERVICES_LIST[0]);
+    setSelectedService(servicesList[0] || null);
     setSelectedStaff(STAFF_LIST[0]);
     setCounterStatus('Active');
     setEditingId(null);
@@ -349,7 +199,7 @@ export const AdminCounter = () => {
     setCounterName(counter.name);
     setCounterCode(counter.code);
 
-    const srv = SERVICES_LIST.find((s) => s.id === counter.serviceId) || {
+    const srv = servicesList.find((s) => (s._id || s.id) === (counter.serviceId?._id || counter.serviceId)) || {
       id: counter.serviceId,
       title: counter.serviceTitle,
       code: counter.serviceCode,
@@ -373,7 +223,7 @@ export const AdminCounter = () => {
   };
 
   // Save / Update Counter
-  const handleSaveCounter = (e) => {
+  const handleSaveCounter = async (e) => {
     e.preventDefault();
 
     if (!counterName.trim()) {
@@ -386,57 +236,51 @@ export const AdminCounter = () => {
       return;
     }
 
-    if (editingId) {
-      // Modify Existing Counter
-      setCounters((prev) =>
-        prev.map((c) =>
-          c.id === editingId
-            ? {
-                ...c,
-                name: counterName.trim(),
-                code: counterCode.trim().toUpperCase(),
-                serviceId: selectedService.id,
-                serviceTitle: selectedService.title,
-                serviceCode: selectedService.code,
-                staffId: selectedStaff.id,
-                staffName: selectedStaff.name,
-                staffEmail: selectedStaff.email,
-                status: counterStatus,
-              }
-            : c
-        )
-      );
-      showToast(`Counter "${counterName.trim()}" updated successfully!`);
-    } else {
-      // Create New Counter
-      const newCounter = {
-        id: `cnt-${Date.now()}`,
-        name: counterName.trim(),
-        code: counterCode.trim().toUpperCase(),
-        serviceId: selectedService.id,
-        serviceTitle: selectedService.title,
-        serviceCode: selectedService.code,
-        staffId: selectedStaff.id,
-        staffName: selectedStaff.name,
-        staffEmail: selectedStaff.email,
-        status: counterStatus,
-        assignedAt: 'Just now',
-      };
-      setCounters((prev) => [newCounter, ...prev]);
-      showToast(`Counter "${counterName.trim()}" created and assigned successfully!`);
+    if (!selectedService || (!selectedService._id && !selectedService.id)) {
+      showToast('Please create and select a service first.');
+      return;
     }
 
-    handleClearForm();
-    setActiveTab('assigned');
-    setSearchParams({ tab: 'assigned' });
+    try {
+      if (editingId) {
+        await counterApi.updateCounter(editingId, {
+          name: counterName.trim(),
+          code: counterCode.trim().toUpperCase(),
+          serviceId: selectedService._id || selectedService.id,
+          isActive: counterStatus === 'Active',
+        });
+        showToast('Counter "' + counterName.trim() + '" updated successfully!');
+      } else {
+        await counterApi.createCounter({
+          name: counterName.trim(),
+          code: counterCode.trim().toUpperCase(),
+          serviceId: selectedService._id || selectedService.id,
+          assignedStaffId: selectedStaff?.id || selectedStaff?._id || undefined,
+        });
+        showToast('Counter "' + counterName.trim() + '" created successfully!');
+      }
+      await loadCounters();
+      handleClearForm();
+      setActiveTab('assigned');
+      setSearchParams({ tab: 'assigned' });
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Failed to save counter.');
+    }
   };
 
   // Confirm Delete Handler
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!counterToDelete) return;
-    setCounters((prev) => prev.filter((c) => c.id !== counterToDelete.id));
-    showToast(`Counter "${counterToDelete.name}" deleted.`);
-    setCounterToDelete(null);
+    try {
+      await counterApi.deleteCounter(counterToDelete.id || counterToDelete._id);
+      showToast('Counter "' + counterToDelete.name + '" deleted successfully.');
+      setCounterToDelete(null);
+      await loadCounters();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Failed to delete counter.');
+    }
   };
 
   // Reset page when filter or search changes
@@ -661,7 +505,7 @@ export const AdminCounter = () => {
                     {/* Service Dropdown Menu */}
                     {isServiceDropdownOpen && (
                       <div className="counter-floating-dropdown-menu">
-                        {SERVICES_LIST.map((srv) => {
+                        {(servicesList.length > 0 ? servicesList : [{ id: "none", title: "No services available", code: "N/A", icon: Layers }]).map((srv) => {
                           const isSelected = selectedService.id === srv.id;
                           return (
                             <div

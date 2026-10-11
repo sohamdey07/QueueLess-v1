@@ -21,13 +21,16 @@ const serviceFields = {
 	description: z
 		.string()
 		.trim()
-		.max(200, "Description cannot exceed 200 characters")
-		.optional(),
+		.max(1000, "Description cannot exceed 1000 characters")
+		.optional()
+		.or(z.literal("")),
 
 	imageUrl: z
 		.string()
-		.url("Invalid image URL")
-		.optional(),
+		.trim()
+		.optional()
+		.nullable()
+		.or(z.literal("")),
 
 	service_time: z
 		.string()
@@ -46,7 +49,9 @@ const serviceFields = {
 		.int("Capacity must be a whole number")
 		.min(1, "Capacity must be at least 1"),
 
-	isActive: z.boolean().optional()
+	isActive: z
+		.union([z.boolean(), z.string().transform((val) => val === "true" || val === "1")])
+		.optional()
 };
 
 const createServiceSchema = z.object({

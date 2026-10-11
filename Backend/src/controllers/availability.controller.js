@@ -2,19 +2,91 @@ import availabilityModel from "../models/dailyAvailability.model.js";
 import serviceModel from "../models/service.model.js";
 import queueModel from "../models/queue.model.js";
 
-import { successResponse, errorResponse} from "../utils/apiResponse.js";
+import { successResponse, errorResponse } from "../utils/apiResponse.js";
 import { isValidDateString, isPastDate } from "../utils/date.js";
 
 import mongoose from "mongoose";
 
+// Get all availabilities (with optional serviceId, date, status filters)
+export async function getAllAvailabilities(req, res, next) {
+    try {
+        const { serviceId, date, status } = req.query;
+        const filter = {};
 
-//create availability function
+        if (serviceId) {
+            filter.serviceId = serviceId;
+        }
+        if (date) {
+            filter.date = date;
+        }
+        if (status) {
+            filter.status = status.toUpperCase();
+        }
+
+        const availabilities = await availabilityModel
+            .find(filter)
+            .populate("serviceId", "name code service_time duration isActive")
+            .sort({ date: 1, createdAt: -1 });
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Availabilities fetched successfully",
+            data: availabilities
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+// Get availability for a specific service
+export async function getAvailability(req, res, next) {
+    try {
+        const { serviceId } = req.params;
+        const { date } = req.query;
+
+        const service = await serviceModel.findById(serviceId);
+
+        if (!service) {
+            return errorResponse(res, {
+                statusCode: 404,
+                message: "Service not found"
+            });
+        }
+
+        const query = { serviceId };
+        if (date) {
+            query.date = date;
+        }
+
+        const availability = await availabilityModel
+            .find(query)
+            .populate("serviceId", "name code service_time duration isActive")
+            .sort({ date: 1 });
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Availability fetched successfully",
+            data: availability
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+// Create availability function
 export async function createAvailability(req, res, next) {
     const session = await mongoose.startSession();
 
     try {
-        const { serviceId } = req.params;
-        const { date, capacity } = req.body;
+        const effectiveServiceId = req.params.serviceId || req.body.serviceId;
+        const { date, capacity, status } = req.body;
+
+        if (!effectiveServiceId) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "Service ID is required"
+            });
+        }
 
         // Date validation
         if (!isValidDateString(date)) {
@@ -33,7 +105,7 @@ export async function createAvailability(req, res, next) {
         }
 
         // Check service exists
-        const service = await serviceModel.findById(serviceId);
+        const service = await serviceModel.findById(effectiveServiceId);
 
         if (!service) {
             return errorResponse(res, {
@@ -43,62 +115,63 @@ export async function createAvailability(req, res, next) {
         }
 
         // Check duplicate availability
-        const existingAvailability =
-            await availabilityModel.findOne({
-                serviceId,
-                date
-            });
+        const existingAvailability = await availabilityModel.findOne({
+            serviceId: effectiveServiceId,
+            date
+        });
 
         if (existingAvailability) {
             return errorResponse(res, {
-                statusCode: 400,
-                message:
-                    "Availability for this service on the specified date already exists"
+                statusCode: 409,
+                message: "Availability for this service on the specified date already exists"
             });
         }
 
         let newAvailability;
 
         await session.withTransaction(async () => {
-
-            // Create availability
-            const [availability] =
-                await availabilityModel.create(
-                    [
-                        {
-                            serviceId,
-                            date,
-                            capacity,
-                            bookedCount: 0,
-                            status: "OPEN"
-                        }
-                    ],
-                    { session }
-                );
-
-            newAvailability = availability;
-
-            // Create queue for this service + date
-            await queueModel.create(
+            const [availability] = await availabilityModel.create(
                 [
                     {
-                        serviceId,
+                        serviceId: effectiveServiceId,
                         date,
-                        currentToken: 0,
-                        nextToken: 1,
-                        status: "ACTIVE"
+                        capacity: Number(capacity),
+                        bookedCount: 0,
+                        status: status ? status.toUpperCase() : "OPEN"
                     }
                 ],
                 { session }
             );
+
+            newAvailability = availability;
+
+            // Ensure queue exists for this service + date
+            const existingQueue = await queueModel.findOne({ serviceId: effectiveServiceId, date }).session(session);
+            if (!existingQueue) {
+                await queueModel.create(
+                    [
+                        {
+                            serviceId: effectiveServiceId,
+                            date,
+                            currentToken: 0,
+                            nextToken: 1,
+                            status: "ACTIVE"
+                        }
+                    ],
+                    { session }
+                );
+            }
         });
+
+        const populated = await availabilityModel
+            .findById(newAvailability._id)
+            .populate("serviceId", "name code service_time duration isActive");
 
         return successResponse(res, {
             statusCode: 201,
             message: "Availability created successfully",
-            data: newAvailability
+            data: populated || newAvailability
         });
-
     } catch (error) {
         next(error);
     } finally {
@@ -106,16 +179,13 @@ export async function createAvailability(req, res, next) {
     }
 }
 
-//update availability function
-export async function updateAvailability(req, res,next) {
-    try{
-        
+// Update availability function
+export async function updateAvailability(req, res, next) {
+    try {
         const { availabilityId } = req.params;
-        const { date, capacity, status } = req.body;
+        const { date, capacity, status, serviceId } = req.body;
 
-        const availability = await availabilityModel.findById(
-            availabilityId
-        );
+        const availability = await availabilityModel.findById(availabilityId);
 
         if (!availability) {
             return errorResponse(res, {
@@ -132,9 +202,20 @@ export async function updateAvailability(req, res,next) {
             });
         }
 
-        // If date is being changed
-        if (date !== undefined) {
+        // If serviceId is being updated
+        if (serviceId !== undefined && serviceId !== availability.serviceId.toString()) {
+            const service = await serviceModel.findById(serviceId);
+            if (!service) {
+                return errorResponse(res, {
+                    statusCode: 404,
+                    message: "Selected service not found"
+                });
+            }
+            availability.serviceId = serviceId;
+        }
 
+        // If date is being changed
+        if (date !== undefined && date !== availability.date) {
             if (!isValidDateString(date)) {
                 return errorResponse(res, {
                     statusCode: 400,
@@ -167,46 +248,50 @@ export async function updateAvailability(req, res,next) {
         }
 
         // Update capacity only if provided
-        if (capacity !== undefined && capacity < availability.bookedCount) {
-            return errorResponse(res, {
-                statusCode: 400,
-                message: `Capacity cannot be less than the current booked count.`
-            });
-        }
-
-        if (capacity !== undefined && capacity >= availability.bookedCount) {
-            availability.capacity = capacity;
-
-            if(availability.bookedCount === availability.capacity){
-                availability.status = "FULL";
+        if (capacity !== undefined) {
+            const numCapacity = Number(capacity);
+            if (numCapacity < availability.bookedCount) {
+                return errorResponse(res, {
+                    statusCode: 400,
+                    message: `Capacity (${numCapacity}) cannot be less than the current booked count (${availability.bookedCount}).`
+                });
             }
-            if(availability.bookedCount < availability.capacity)
-            {
-                availability.status = "OPEN";
+
+            availability.capacity = numCapacity;
+
+            if (status === undefined) {
+                if (availability.bookedCount >= availability.capacity) {
+                    availability.status = "FULL";
+                } else if (availability.status === "FULL") {
+                    availability.status = "OPEN";
+                }
             }
         }
 
         // Update status only if provided
         if (status !== undefined) {
-            availability.status = status;
+            availability.status = status.toUpperCase();
         }
 
         await availability.save();
 
+        const populated = await availabilityModel
+            .findById(availability._id)
+            .populate("serviceId", "name code service_time duration isActive");
+
         return successResponse(res, {
             statusCode: 200,
             message: "Availability updated successfully",
-            data: availability
+            data: populated || availability
         });
-    }
-    catch (error) {
+    } catch (error) {
         next(error);
     }
 }
 
-//delete availability function
-export async function deleteAvailability(req, res,next) {
-    try{
+// Delete availability function
+export async function deleteAvailability(req, res, next) {
+    try {
         const { availabilityId } = req.params;
 
         const availability = await availabilityModel.findById(availabilityId);
@@ -218,6 +303,13 @@ export async function deleteAvailability(req, res,next) {
             });
         }
 
+        if (availability.bookedCount > 0) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: `Cannot delete availability with ${availability.bookedCount} active booking(s).`
+            });
+        }
+
         await availabilityModel.findByIdAndDelete(availabilityId);
 
         return successResponse(res, {
@@ -225,42 +317,7 @@ export async function deleteAvailability(req, res,next) {
             message: "Availability deleted successfully",
             data: availability
         });
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-//get availability function
-export async function getAvailability(req, res,next) {
-    try{
-        const { serviceId } = req.params;
-
-        const service = await serviceModel.findById(serviceId);
-
-        if (!service) {
-            return errorResponse(res, {
-                statusCode: 404,
-                message: "Service not found"
-            });
-        }
-        
-        const availability = await availabilityModel.find({ serviceId }).sort({ date: 1 });
-
-        if (availability.length === 0) {
-            return errorResponse(res, {
-                statusCode: 404,
-                message: "No availability found for this service"
-            });
-        }
-
-        return successResponse(res, {
-            statusCode: 200,
-            message: "Availability fetched successfully",
-            data: availability
-        });
-    }
-    catch (error) {
+    } catch (error) {
         next(error);
     }
 }

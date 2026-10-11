@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import logoImg from '../../assets/images/logo/logo.png';
 import loginHeroImg from '../../assets/images/UI/login.webp';
+import authApi from '../../services/api/auth.api.js';
+import apiClient from '../../services/api/apiClient.js';
 import './LoginScreen.css';
 
 export const LoginScreen = ({ initialTab = 'login' }) => {
@@ -106,29 +108,43 @@ export const LoginScreen = ({ initialTab = 'login' }) => {
     setIsLoading(true);
 
     try {
-      const endpoint = activeTab === 'register' ? '/api/v1/auth/register' : '/api/v1/auth/login';
-      const payload =
-        activeTab === 'register'
-          ? {
-              name: formData.name.trim(),
-              email: formData.email.trim().toLowerCase(),
-              password: formData.password,
-            }
-          : {
-              email: formData.email.trim().toLowerCase(),
-              password: formData.password,
-            };
+      if (activeTab === 'login') {
+        // Connect directly to backend auth controller login function
+        const response = await authApi.login({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+        if (response?.success && response?.data) {
+          const userRole = (response.data.role || 'CUSTOMER').toUpperCase();
+          const targetPortal = getDestinationForRole(userRole);
+          const portalName =
+            userRole === 'ADMIN'
+              ? 'Admin Portal'
+              : userRole === 'STAFF'
+              ? 'Staff Portal'
+              : 'Customer Portal';
 
-      const data = await response.json();
+          showToast(`Logged in successfully! Redirecting to ${portalName}...`, 'success');
+          setTimeout(() => {
+            navigate(targetPortal, { replace: true });
+          }, 800);
+          return;
+        } else {
+          showToast(response?.message || 'Invalid email or password.', 'warning');
+        }
+      } else {
+        // Registration flow
+        const response = await apiClient('/auth/register', {
+          method: 'POST',
+          body: {
+            name: formData.name.trim(),
+            email: formData.email.trim().toLowerCase(),
+            password: formData.password,
+          },
+        });
 
-      if (response.ok && data.success) {
-        if (activeTab === 'register') {
+        if (response?.success) {
           showToast('Verification code sent! Please verify your account.', 'info');
           setTimeout(() => {
             navigate(`/verify-otp?email=${encodeURIComponent(formData.email.trim())}`, {
@@ -136,47 +152,13 @@ export const LoginScreen = ({ initialTab = 'login' }) => {
             });
           }, 800);
         } else {
-          const userRole = data.data?.role || (formData.email.includes('admin') ? 'ADMIN' : formData.email.includes('staff') ? 'STAFF' : 'CUSTOMER');
-          localStorage.setItem('userRole', userRole);
-          localStorage.setItem('currentUser', JSON.stringify(data.data || { email: formData.email, role: userRole }));
-          const targetPortal = getDestinationForRole(userRole);
-          const portalName = userRole === 'ADMIN' ? 'Admin Portal' : userRole === 'STAFF' ? 'Staff Portal' : 'Customer Portal';
-          showToast(`Logged in successfully! Redirecting to ${portalName}...`, 'success');
-          setTimeout(() => {
-            navigate(targetPortal);
-          }, 900);
+          showToast(response?.message || 'Registration failed.', 'warning');
         }
-      } else {
-        const errMsg = data?.message || (activeTab === 'register' ? 'Registration failed' : 'Invalid credentials');
-        showToast(errMsg, 'warning');
       }
     } catch (err) {
-      console.warn('Backend offline or network error, logging in locally:', err);
-      if (activeTab === 'register') {
-        showToast('Verification code sent! Please verify your account.', 'info');
-        setTimeout(() => {
-          navigate(`/verify-otp?email=${encodeURIComponent(formData.email.trim())}`, {
-            state: { email: formData.email.trim() }
-          });
-        }, 800);
-      } else {
-        const emailLower = formData.email.toLowerCase();
-        const detectedRole = emailLower.includes('admin')
-          ? 'ADMIN'
-          : emailLower.includes('staff')
-          ? 'STAFF'
-          : 'CUSTOMER';
-
-        localStorage.setItem('userRole', detectedRole);
-        localStorage.setItem('currentUser', JSON.stringify({ email: formData.email, role: detectedRole }));
-        const targetPortal = getDestinationForRole(detectedRole);
-        const portalName = detectedRole === 'ADMIN' ? 'Admin Portal' : detectedRole === 'STAFF' ? 'Staff Portal' : 'Customer Portal';
-
-        showToast(`Logged in successfully as ${detectedRole}! Redirecting to ${portalName}...`, 'success');
-        setTimeout(() => {
-          navigate(targetPortal);
-        }, 900);
-      }
+      console.error('Authentication error:', err);
+      const errMsg = err?.message || 'Login failed. Please check your credentials and try again.';
+      showToast(errMsg, 'warning');
     } finally {
       setIsLoading(false);
     }

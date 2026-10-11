@@ -711,6 +711,12 @@
   box-shadow: none;
 }
 
+.avail-btn-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .avail-btn-clear {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
@@ -1458,4 +1464,128 @@
   .admin-avail-left-panel {
     padding: 20px 14px;
   }
+}
+
+/* ==========================================================================
+   Delete Confirmation Modal
+   ========================================================================== */
+
+.avail-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: availModalFade 0.2s ease-out;
+}
+
+@keyframes availModalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.avail-modal-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 28px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 40px -8px rgba(15, 23, 42, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  animation: availModalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes availModalScale {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.avail-modal-header-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: #DC2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.avail-modal-title {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 8px 0;
+}
+
+.avail-modal-desc {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: #64748B;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.avail-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.avail-modal-btn-cancel {
+  flex: 1;
+  height: 42px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  color: #475569;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.avail-modal-btn-cancel:hover:not(:disabled) {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.avail-modal-btn-delete {
+  flex: 1;
+  height: 42px;
+  background: #DC2626;
+  border: none;
+  border-radius: 10px;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.avail-modal-btn-delete:hover:not(:disabled) {
+  background: #B91C1C;
+}
+
+.avail-modal-btn-delete:disabled,
+.avail-modal-btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

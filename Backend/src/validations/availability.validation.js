@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 const createAvailabilitySchema = z.object({
+    serviceId: z
+        .string()
+        .optional(),
+
     date: z
         .string()
         .regex(
@@ -9,24 +13,38 @@ const createAvailabilitySchema = z.object({
         ),
 
     capacity: z
+        .coerce
         .number({
             error: "Capacity must be a number"
         })
         .int("Capacity must be an integer")
-        .min(1, "Capacity must be at least 1")
+        .min(1, "Capacity must be at least 1"),
+
+    status: z
+        .enum(
+            ["OPEN", "CLOSED", "FULL"],
+            {
+                error: "Status must be OPEN, CLOSED, or FULL"
+            }
+        )
+        .optional()
 });
 
-
 const updateAvailabilitySchema = z.object({
-     date: z
+    serviceId: z
+        .string()
+        .optional(),
+
+    date: z
         .string()
         .regex(
             /^\d{4}-\d{2}-\d{2}$/,
             "Date must be in YYYY-MM-DD format"
         )
         .optional(),
-        
+
     capacity: z
+        .coerce
         .number({
             error: "Capacity must be a number"
         })
@@ -44,20 +62,17 @@ const updateAvailabilitySchema = z.object({
         .optional()
 });
 
-
 const availabilityParamsSchema = z.object({
     availabilityId: z
         .string()
         .min(1, "Availability ID is required")
 });
 
-
 const serviceAvailabilityParamsSchema = z.object({
     serviceId: z
         .string()
-        .min(1, "Service ID is required")
+        .optional()
 });
-
 
 export {
     createAvailabilitySchema,

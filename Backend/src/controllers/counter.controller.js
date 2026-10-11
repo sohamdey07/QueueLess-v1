@@ -1,5 +1,6 @@
 import counterModel from '../models/counter.model.js';
 import userModel from '../models/user.model.js';
+import serviceModel from '../models/service.model.js';
 import { successResponse,errorResponse } from '../utils/apiResponse.js';
 
 
@@ -16,7 +17,7 @@ async function validateStaff(staffId) {
 // Create counter
 export async function addCounter(req, res, next) {
     try {
-        const { name, code, assignedStaffId } = req.body;
+        const { name, code, assignedStaffId,serviceId } = req.body;
 
         const normalizedCode = code.toUpperCase();
 
@@ -53,11 +54,21 @@ export async function addCounter(req, res, next) {
                 });
             }
         }
+        if(serviceId){
+            const service = await serviceModel.findById(serviceId);
+            if(!service){
+                return errorResponse(res,{
+                    statusCode: 404,
+                    message: "Service not found"
+                })
+            }
+        }
 
         const newCounter = await counterModel.create({
             name,
             code: normalizedCode,
-            assignedStaffId: assignedStaffId || null
+            assignedStaffId: assignedStaffId,
+            serviceId:serviceId
         });
 
         return successResponse(res, {
@@ -73,21 +84,16 @@ export async function addCounter(req, res, next) {
 //function to get all counters
 export async function getAllCounters(req, res, next) {
     try{
-        const counters = await counterModel.find().populate('assignedStaffId', 'name email role');
-        if (!counters || counters.length === 0) {
-            return errorResponse(res,
-            {
-                statusCode: 404,
-                message: "No counters found"
-            })
-        }
+        const counters = await counterModel.find()
+            .populate('assignedStaffId', 'name email role')
+            .populate('serviceId', 'name code');
         
         return successResponse(res,
         {
             statusCode: 200,
-            message: "Counters retrieved successfully",
-            data: counters
-        })
+            message: counters.length === 0 ? "No counters found" : "Counters retrieved successfully",
+            data: counters || []
+        });
     }
     catch (error) {
         next(error);
