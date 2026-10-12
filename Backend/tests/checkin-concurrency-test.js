@@ -8,10 +8,31 @@ import { performance } from "perf_hooks";
 
 const BASE_URL = "http://localhost:3000";
 
-const ACCESS_TOKEN = "your_access_token_here"; // Replace with a valid access token from your authentication system
+const ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhYmJlY2IzODZkZTEyNGI3MGRmNjFjYyIsInJvbGUiOiJDVVNUT01FUiIsInNlc3Npb25JZCI6IjZhY2M4MTZkNGRjYmU5ZmFjYjE4ZjA5ZiIsImlhdCI6MTc5MTc4NzM3MywiZXhwIjoxNzkxNzg4MjczfQ.wshTpDR5kKtN-wLU0264EkRYwUnhXzbKS2MCaLkEmlk"; // Replace with a valid access token from your authentication system
 
 // Maximum 100 appointments
-const APPOINTMENT_IDS = ["your_appointment_id_1", "your_appointment_id_2"]; // Replace with valid appointment IDs from your database
+const APPOINTMENT_IDS = [
+    "QL-20261012-033C0B",
+    "QL-20261012-65B4EC",
+    "QL-20261012-1B2A6A",
+    "QL-20261012-B5C70B",
+    "QL-20261012-6C093A",
+    "QL-20261012-6A57FA",
+    "QL-20261012-6CA106",
+    "QL-20261012-0C8A0D",
+    "QL-20261012-78116C",
+    "QL-20261012-4394EC",
+    "QL-20261012-C3B7E3",
+    "QL-20261012-CC408E",
+    "QL-20261012-A0D986",
+    "QL-20261012-ACF465",
+    "QL-20261012-E60F6F",
+    "QL-20261012-837EF0",
+    "QL-20261012-B147D8",
+    "QL-20261012-DDE69F",
+    "QL-20261012-BAD38E",
+    "QL-20261012-014259"
+]; // Replace with valid appointment IDs from your database
 
 const TOTAL_REQUESTS = APPOINTMENT_IDS.length;
 

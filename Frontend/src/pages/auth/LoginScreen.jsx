@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Mail,
   Lock,
@@ -11,7 +11,6 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
-import logoImg from '../../assets/images/logo/logo.png';
 import loginHeroImg from '../../assets/images/UI/login.webp';
 import authApi from '../../services/api/auth.api.js';
 import apiClient from '../../services/api/apiClient.js';
@@ -21,9 +20,10 @@ export const LoginScreen = ({ initialTab = 'login' }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine starting tab from prop or query param (?tab=register or ?verified=true)
+  // Determine starting tab from prop or query param (?tab=register or ?verified=true or ?reset=success)
   const searchParams = new URLSearchParams(location.search);
   const isVerifiedParam = searchParams.get('verified') === 'true';
+  const isResetSuccessParam = searchParams.get('reset') === 'true' || searchParams.get('reset') === 'success';
   const initialEmail = searchParams.get('email') || '';
   const defaultTab = isVerifiedParam ? 'login' : searchParams.get('tab') || initialTab;
 
@@ -42,12 +42,14 @@ export const LoginScreen = ({ initialTab = 'login' }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Notify user if redirected after successful OTP verification
+  // Notify user if redirected after successful OTP verification or password reset
   useEffect(() => {
     if (isVerifiedParam) {
       showToast('Account verified successfully! You can now log in.', 'success');
+    } else if (isResetSuccessParam) {
+      showToast('Password reset successfully. Please login with your new password.', 'success');
     }
-  }, [isVerifiedParam]);
+  }, [isVerifiedParam, isResetSuccessParam]);
 
   const showToast = (text, type = 'info') => {
     setToastMessage({ text, type });
@@ -334,7 +336,10 @@ export const LoginScreen = ({ initialTab = 'login' }) => {
                   <button
                     type="button"
                     className="auth-forgot-password-link"
-                    onClick={() => showToast('Password reset link sent to your email!', 'info')}
+                    onClick={() => {
+                      const emailQuery = formData.email ? `?email=${encodeURIComponent(formData.email)}` : '';
+                      navigate(`/forgot-password${emailQuery}`);
+                    }}
                   >
                     Forgot Password?
                   </button>

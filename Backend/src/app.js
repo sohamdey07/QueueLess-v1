@@ -70,6 +70,15 @@ app.use("/api/v1/counters", counterRoutes);
 app.use("/api/v1/queue", queueRoutes);
 app.use("/api/v1/users", userRoutes);
 
+// Health check
+app.use("/api/v1/health", (req, res) => {
+    res.json({
+        status: "success",
+        message: "Server is healthy",
+        timestamp: new Date()
+    })
+})
+
 // Error handling middleware
 app.use(errorMiddleware);
 

@@ -377,12 +377,16 @@ export async function getTvDisplayOverview(req, res, next) {
                 const currentEntry = await queueEntryModel.findOne({
                     counterId: counter._id,
                     status: { $in: ["CALLED", "SERVING"] }
-                }).select("tokenNumber status");
+                })
+                .sort({ updatedAt: -1 })
+                .select("tokenNumber token status");
 
                 let nowServing = "—";
                 if (currentEntry) {
-                    nowServing = `${prefix}-${String(currentEntry.tokenNumber).padStart(3, "0")}`;
+                    nowServing = currentEntry.token || `${prefix}-${String(currentEntry.tokenNumber).padStart(3, "0")}`;
                 }
+
+                const status = currentEntry ? currentEntry.status : "IDLE";
 
                 // Get upcoming waiting tokens for this queue
                 let upcomingTokens = [];
@@ -409,6 +413,7 @@ export async function getTvDisplayOverview(req, res, next) {
                     serviceName: service.name || "Service",
                     tokenPrefix: prefix,
                     nowServing,
+                    status,
                     upcomingTokens,
                     colorTheme: colorThemes[idx % colorThemes.length],
                     queueId: queue?._id || null,

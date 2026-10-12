@@ -5,7 +5,6 @@ import {
   Plus,
   ListFilter,
   Layers,
-  Users,
   UserCheck,
   Search,
   Filter,
@@ -20,12 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Hash,
-  Tv,
-  Radio,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle
+  Radio
 } from 'lucide-react';
 import counterUiImg from '../../assets/images/UI/counter.png';
 import './AdminCounter.css';
@@ -66,8 +60,6 @@ export const AdminCounter = () => {
   const [servicesList, setServicesList] = useState([]);
   const [staffList, setStaffList] = useState([]);
   const [isLoadingCounters, setIsLoadingCounters] = useState(true);
-  const [isLoadingServices, setIsLoadingServices] = useState(true);
-  const [isLoadingStaff, setIsLoadingStaff] = useState(true);
 
   // Form Fields State
   const [editingId, setEditingId] = useState(null);
@@ -79,7 +71,6 @@ export const AdminCounter = () => {
 
   const loadServices = async () => {
     try {
-      setIsLoadingServices(true);
       const res = await serviceApi.getAllServices();
       const list = Array.isArray(res?.data) ? res.data : [];
       const normalized = list.map(s => ({
@@ -94,14 +85,11 @@ export const AdminCounter = () => {
       setServicesList(normalized);
     } catch (e) {
       console.error('Failed to load services in counters:', e);
-    } finally {
-      setIsLoadingServices(false);
     }
   };
 
   const loadStaff = async () => {
     try {
-      setIsLoadingStaff(true);
       const res = await counterApi.getStaffList();
       const list = Array.isArray(res?.data) ? res.data : [];
       const normalized = list.map(s => ({
@@ -115,8 +103,6 @@ export const AdminCounter = () => {
       setStaffList(normalized);
     } catch (e) {
       console.error('Failed to load staff in counters:', e);
-    } finally {
-      setIsLoadingStaff(false);
     }
   };
 

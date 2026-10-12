@@ -20,12 +20,28 @@ import AdminQueueLogs from '../pages/admin/AdminQueueLogs';
 import OnboardingScreen from '../pages/onboarding/OnboardingScreen';
 import LoginScreen from '../pages/auth/LoginScreen';
 import OtpVerificationScreen from '../pages/auth/OtpVerificationScreen';
+import ForgotPasswordScreen from '../pages/auth/ForgotPasswordScreen';
+import ResetPasswordScreen from '../pages/auth/ResetPasswordScreen';
 
 import UnderDevelopment from '../pages/customer/UnderDevelopment';
 import { ProtectedRoute, PublicOnlyRoute, getDestinationForRole } from './ProtectedRoute';
 import tokenStorage from '../services/storage/tokenStorage';
 
+const extractResetToken = () => {
+  if (typeof window === 'undefined') return null;
+  const pathMatch = window.location.pathname.match(/\/reset-password\/([^/?#]+)/i);
+  if (pathMatch && pathMatch[1]) return pathMatch[1];
+  const hashMatch = window.location.hash.match(/\/reset-password\/([^/?#]+)/i);
+  if (hashMatch && hashMatch[1]) return hashMatch[1];
+  return null;
+};
+
 const RootRedirect = () => {
+  const token = extractResetToken();
+  if (token) {
+    return <Navigate to={`/reset-password/${token}`} replace />;
+  }
+
   const isAuth = tokenStorage.isAuthenticated();
   if (isAuth) {
     const role = tokenStorage.getUserRole();
@@ -37,6 +53,11 @@ const RootRedirect = () => {
 };
 
 const OnboardingRoute = () => {
+  const token = extractResetToken();
+  if (token) {
+    return <Navigate to={`/reset-password/${token}`} replace />;
+  }
+
   const isAuth = tokenStorage.isAuthenticated();
   if (isAuth) {
     const role = tokenStorage.getUserRole();
@@ -49,6 +70,18 @@ const OnboardingRoute = () => {
   }
 
   return <OnboardingScreen />;
+};
+
+const ResetPasswordRouteWrapper = () => {
+  const token = extractResetToken();
+  if (token) {
+    return (
+      <PublicOnlyRoute>
+        <ResetPasswordScreen />
+      </PublicOnlyRoute>
+    );
+  }
+  return <Navigate to="/forgot-password" replace />;
 };
 
 export const AppRoutes = () => {
@@ -71,6 +104,31 @@ export const AppRoutes = () => {
           </PublicOnlyRoute>
         }
       />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicOnlyRoute>
+            <ForgotPasswordScreen />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/reset-password/:token"
+        element={
+          <PublicOnlyRoute>
+            <ResetPasswordScreen />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/reset-password/:resetToken"
+        element={
+          <PublicOnlyRoute>
+            <ResetPasswordScreen />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route path="/reset-password" element={<ResetPasswordRouteWrapper />} />
       <Route path="/verify-otp" element={<OtpVerificationScreen />} />
       <Route path="/verify-account" element={<Navigate to="/verify-otp" replace />} />
       <Route path="/auth" element={<Navigate to="/login" replace />} />

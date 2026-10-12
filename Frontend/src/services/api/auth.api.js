@@ -51,6 +51,60 @@ export const authApi = {
   rotateToken: async () => {
     return refreshAccessToken();
   },
+
+  /**
+   * Request password reset OTP
+   * Calls POST /api/v1/auth/forgot-password
+   */
+  forgotPassword: async (email) => {
+    return apiClient('/auth/forgot-password', {
+      method: 'POST',
+      body: {
+        email: email.trim().toLowerCase(),
+      },
+    });
+  },
+
+  /**
+   * Verify password reset OTP
+   * Calls POST /api/v1/auth/verify-reset-otp
+   */
+  verifyResetOtp: async ({ email, otp }) => {
+    return apiClient('/auth/verify-reset-otp', {
+      method: 'POST',
+      body: {
+        email: email.trim().toLowerCase(),
+        otp,
+      },
+    });
+  },
+
+  /**
+   * Verify password reset link token
+   * Calls POST /api/v1/auth/verify-reset-link
+   */
+  verifyResetLink: async (token) => {
+    return apiClient('/auth/verify-reset-link', {
+      method: 'POST',
+      body: {
+        token,
+      },
+    });
+  },
+
+  /**
+   * Complete password reset with reset authorization token
+   * Calls POST /api/v1/auth/reset-password
+   */
+  resetPassword: async ({ resetToken, newPassword }) => {
+    return apiClient('/auth/reset-password', {
+      method: 'POST',
+      body: {
+        resetToken,
+        newPassword,
+      },
+    });
+  },
 };
 
 export default authApi;

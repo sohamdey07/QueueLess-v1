@@ -73,12 +73,10 @@ export const AdminManageUsers = () => {
   // Main State for Members
   const [staffList, setStaffList] = useState([]);
   const [customerList, setCustomerList] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch users from backend
   const fetchUsers = async () => {
     try {
-      setIsLoading(true);
       const [staffRes, customerRes] = await Promise.allSettled([
         userApi.getStaffUsers(),
         userApi.getCustomerUsers(),
@@ -128,8 +126,6 @@ export const AdminManageUsers = () => {
     } catch (err) {
       console.error('Failed to load user directory:', err);
       showToast('Failed to load user directory');
-    } finally {
-      setIsLoading(false);
     }
   };
 

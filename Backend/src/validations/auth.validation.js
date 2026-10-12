@@ -57,10 +57,67 @@ const verifyAccountSchema = z.object({
             .string()
             .length(6, "OTP must be 6 characters")
     }),
-})
+});
+
+const forgotPasswordSchema = z.object({
+    body: z.object({
+        email: z
+            .string()
+            .trim()
+            .email("Invalid email address")
+            .transform((value) => value.toLowerCase())
+    })
+});
+
+const verifyResetOtpSchema = z.object({
+    body: z.object({
+        email: z
+            .string()
+            .trim()
+            .email("Invalid email address")
+            .transform((value) => value.toLowerCase()),
+
+        otp: z
+            .string()
+            .length(6, "OTP must be 6 characters")
+    })
+});
+
+const resetPasswordSchema = z.object({
+    body: z.object({
+        resetToken: z
+            .string()
+            .min(10, "Invalid reset token"),
+
+        newPassword: z
+            .string()
+            .min(6, "Password must be at least 6 characters")
+            .max(100, "Password cannot exceed 100 characters")
+    })
+});
+
+const verifyResetLinkSchema = z.object({
+    body: z.object({
+        token: z
+            .string()
+            .min(10, "Invalid reset link token")
+            .optional(),
+        resetToken: z
+            .string()
+            .min(10, "Invalid reset link token")
+            .optional()
+    }).refine((data) => data.token || data.resetToken, {
+        message: "Reset token is required",
+        path: ["token"]
+    })
+});
 
 export {
     registerSchema,
     loginSchema,
-    verifyAccountSchema
+    verifyAccountSchema,
+    forgotPasswordSchema,
+    verifyResetOtpSchema,
+    verifyResetLinkSchema,
+    resetPasswordSchema
 };

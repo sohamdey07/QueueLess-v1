@@ -16,9 +16,6 @@ import {
   Clock,
   Calendar,
   Hash,
-  Sparkles,
-  FileText,
-  Trash2,
   Loader2
 } from 'lucide-react';
 import AdminBanner from '../../components/admin/AdminBanner';

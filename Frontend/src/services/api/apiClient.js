@@ -95,7 +95,6 @@ export async function apiClient(endpoint, options = {}) {
     method = 'GET',
     body = null,
     headers = {},
-    requiresAuth = false,
     _retry = false,
     ...customConfig
   } = options;
@@ -163,22 +162,17 @@ export async function apiClient(endpoint, options = {}) {
       !isAuthEndpoint(formattedEndpoint) &&
       tokenStorage.isAuthenticated()
     ) {
-      try {
-        const newAccessToken = await refreshAccessToken();
-        if (newAccessToken) {
-          // Retry the original request with the fresh token
-          return await apiClient(endpoint, {
-            ...options,
-            _retry: true,
-            headers: {
-              ...headers,
-              Authorization: `Bearer ${newAccessToken}`,
-            },
-          });
-        }
-      } catch (refreshErr) {
-        // Refresh token itself failed/expired - propagate 401
-        throw refreshErr;
+      const newAccessToken = await refreshAccessToken();
+      if (newAccessToken) {
+        // Retry the original request with the fresh token
+        return await apiClient(endpoint, {
+          ...options,
+          _retry: true,
+          headers: {
+            ...headers,
+            Authorization: `Bearer ${newAccessToken}`,
+          },
+        });
       }
     }
 

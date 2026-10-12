@@ -1,9 +1,9 @@
-import {jest} from "@jest/globals";
+import { jest } from "@jest/globals";
 import request from "supertest";
 import mongoose from "mongoose";
 
 import app from "../src/app.js";
-import {connectDB} from "../src/config/db.js";
+import { connectDB } from "../src/config/db.js";
 
 import Queue from "../src/models/queue.model.js";
 import QueueEntry from "../src/models/queueEntry.model.js";
@@ -11,7 +11,7 @@ import Counter from "../src/models/counter.model.js";
 import User from "../src/models/user.model.js";
 
 import config from "../src/config/env.js";
-import {generateAccessToken} from "../src/utils/jwt.js";
+import { generateAccessToken } from "../src/utils/jwt.js";
 
 jest.setTimeout(30000);
 
@@ -31,9 +31,9 @@ describe("Staff queue concurrency", () => {
 
         const counters = await Counter.find({
             isActive: true,
-            assignedStaffId: {$ne: null}
+            assignedStaffId: { $ne: null }
         })
-            .sort({_id: 1})
+            .sort({ _id: 1 })
             .limit(2)
             .select("assignedStaffId");
 
@@ -44,8 +44,8 @@ describe("Staff queue concurrency", () => {
         }
 
         const staff = await User.find({
-            _id: {$in: counters.map((counter) => counter.assignedStaffId)},
-            role: {$in: ["STAFF", "ADMIN"]},
+            _id: { $in: counters.map((counter) => counter.assignedStaffId) },
+            role: { $in: ["STAFF", "ADMIN"] },
             isActive: true
         }).select("_id role email");
 
@@ -89,7 +89,7 @@ describe("Staff queue concurrency", () => {
             await QueueEntry.updateMany(
                 {
                     queueId,
-                    status: {$in: ["CALLED", "SERVING"]}
+                    status: { $in: ["CALLED", "SERVING"] }
                 },
                 {
                     $set: {

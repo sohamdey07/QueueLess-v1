@@ -279,18 +279,6 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
       });
   }, [mappedBookings, historyFilter, historySort]);
 
-  const completedCount = useMemo(() => {
-    return mappedBookings.filter((b) => (b.status || '').toUpperCase() === 'COMPLETED').length;
-  }, [mappedBookings]);
-
-  const cancelledCount = useMemo(() => {
-    return mappedBookings.filter((b) => (b.status || '').toUpperCase() === 'CANCELLED').length;
-  }, [mappedBookings]);
-
-  const noShowCount = useMemo(() => {
-    return mappedBookings.filter((b) => (b.status || '').toUpperCase() === 'NO_SHOW').length;
-  }, [mappedBookings]);
-
   const handleTabSwitch = (tab) => {
     setInternalTab(tab);
     if (tab === 'upcoming' && location.pathname !== '/my-bookings') {

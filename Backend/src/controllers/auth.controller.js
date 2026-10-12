@@ -1,17 +1,27 @@
 import userModel from "../models/user.model.js";
 import sessionModel from "../models/session.model.js";
 
+import config from "../config/env.js";
+import { redisClient } from "../config/redis.js";
 import {
     generateAccessToken,
     generateRefreshToken,
     verifyRefreshToken,
     hashedToken} from "../utils/jwt.js";
-import {generateOTP, getOtpHtml } from "../utils/mail.js";
+import {generateOTP, getOtpHtml, getPasswordResetOtpHtml, getPasswordResetEmailHtml } from "../utils/mail.js";
 import {hashPassword,comparePassword} from "../utils/password.js";
 import {successResponse,errorResponse} from "../utils/apiResponse.js";
 
 import {sendEmail} from "../services/mail.service.js";
-import { storeOTP,verifyOTP } from "../services/otp.service.js";
+import {
+    storeOTP,
+    verifyOTP,
+    storePasswordResetOTP,
+    verifyPasswordResetOTP,
+    createPasswordResetToken,
+    getPasswordResetTokenEmail,
+    deletePasswordResetToken
+} from "../services/otp.service.js";
 
 
 //Register a new user
@@ -323,7 +333,199 @@ export async function rotateToken(req,res,next){
 }
 
 
-//forgot password function
+// Forgot Password: generate & send both modern reset link and fallback OTP via Redis
+export async function forgotPasswordController(req, res, next) {
+    try {
+        const { email } = req.body;
+        const normalizedEmail = email ? email.trim().toLowerCase() : "";
+
+        // Check whether account exists and is active/verified
+        const user = await userModel.findOne({ email: normalizedEmail });
+
+        if (user && user.isVerified && user.isActive !== false) {
+            const otp = generateOTP();
+
+            // Store OTP in Redis with dedicated keys (ql:otp:password-reset:<email>, 5-min expiry)
+            const storeResult = await storePasswordResetOTP(normalizedEmail, otp);
+
+            // Generate temporary password-reset token (15-min expiry) for direct link
+            const resetToken = await createPasswordResetToken(normalizedEmail);
+            const clientUrl = (config.clientUrl || "http://localhost:5173").replace(/\/+$/, "");
+            const resetUrl = `${clientUrl}/#/reset-password/${resetToken}`;
+
+            // If not blocked by resend cooldown, send password reset link email
+            if (storeResult.success) {
+                await sendEmail(
+                    user.email,
+                    "Password Reset Request - QueueLess",
+                    `Reset your password: ${resetUrl}`,
+                    getPasswordResetEmailHtml({ resetUrl })
+                );
+            }
+        }
+
+        // Generic security response to prevent email enumeration
+        return successResponse(res, {
+            statusCode: 200,
+            message: "If an account exists with this email, a password reset link has been sent."
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+// Verify Reset Link: validates temporary reset token stored in Redis
+export async function verifyResetLinkController(req, res, next) {
+    try {
+        const token = req.body.token || req.body.resetToken;
+
+        if (!token) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "Password reset authorization token is required."
+            });
+        }
+
+        const email = await getPasswordResetTokenEmail(token);
+
+        if (!email) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "This password reset link is invalid or has expired. Please request a new one."
+            });
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Password reset link is valid.",
+            data: {
+                valid: true,
+                email,
+                resetToken: token
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+// Verify Reset OTP: validates against Redis, returns short-lived reset authorization token
+export async function verifyResetOtpController(req, res, next) {
+    try {
+        const { email, otp } = req.body;
+        const normalizedEmail = email ? email.trim().toLowerCase() : "";
+
+        const verifyResult = await verifyPasswordResetOTP(normalizedEmail, otp);
+
+        if (!verifyResult || !verifyResult.success) {
+            let message = "Invalid or expired OTP code.";
+            if (verifyResult?.reason === "MAX_ATTEMPTS") {
+                message = "Maximum verification attempts exceeded. Please request a new OTP.";
+            } else if (verifyResult?.reason === "OTP_EXPIRED") {
+                message = "OTP has expired. Please request a new one.";
+            } else if (verifyResult?.attemptsLeft !== undefined) {
+                message = `Invalid OTP code. ${verifyResult.attemptsLeft} attempt(s) remaining.`;
+            }
+
+            return errorResponse(res, {
+                statusCode: 400,
+                message
+            });
+        }
+
+        // Create temporary reset authorization token (10-15 min expiry)
+        const resetToken = await createPasswordResetToken(normalizedEmail);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "OTP verified successfully",
+            data: {
+                resetToken
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+// Reset Password: validates reset token against Redis, updates user password, revokes sessions
+export async function resetPasswordController(req, res, next) {
+    try {
+        const { resetToken, newPassword } = req.body;
+
+        if (!resetToken) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "Password reset authorization token is required."
+            });
+        }
+
+        // Validate reset token against Redis
+        const email = await getPasswordResetTokenEmail(resetToken);
+
+        if (!email) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "Invalid or expired password reset token. Please request a new OTP."
+            });
+        }
+
+        // Retrieve the associated user
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            return errorResponse(res, {
+                statusCode: 404,
+                message: "User account not found."
+            });
+        }
+
+        // Hash new password using existing password utility
+        const hashedPassword = await hashPassword(newPassword);
+
+        // Update password in database
+        user.password = hashedPassword;
+        await user.save();
+
+        // Revoke all existing active sessions / refresh tokens for that user
+        await sessionModel.updateMany(
+            { userId: user._id, revoke: false },
+            { revoke: true }
+        );
+
+        // Delete Redis reset token so it cannot be reused
+        await deletePasswordResetToken(resetToken, email);
+
+        // Delete any remaining OTP keys for this user
+        await redisClient.del(`ql:otp:password-reset:${email}`);
+        await redisClient.del(`ql:otp:attempts:password-reset:${email}`);
+        await redisClient.del(`ql:otp:cooldown:password-reset:${email}`);
+
+        // Clear refresh token cookie if any exists
+        const isProduction = process.env.NODE_ENV === "production";
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "strict" : "lax"
+        });
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Password reset successfully. Please login with your new password.",
+            data: {
+                success: true
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+// Aliases for convenience
+export const forgotPassword = forgotPasswordController;
+export const verifyResetLink = verifyResetLinkController;
+export const verifyResetOtp = verifyResetOtpController;
+export const resetPassword = resetPasswordController;
 
 
 

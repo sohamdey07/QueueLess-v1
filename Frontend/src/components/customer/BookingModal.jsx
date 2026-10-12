@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -57,17 +56,6 @@ const triggerCelebrationPoppers = () => {
   } catch (err) {
     console.warn('Poppers animation error:', err);
   }
-};
-
-/**
- * Helper to safely parse YYYY-MM-DD into a local Date without timezone offset shifts
- */
-const parseIsoDate = (dateStr) => {
-  if (!dateStr) return new Date();
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return new Date(dateStr);
-  const [year, month, day] = parts.map(Number);
-  return new Date(year, month - 1, day);
 };
 
 const getIsoDateString = (dateObj) => {
@@ -179,8 +167,6 @@ export const BookingModal = ({
   onClose,
   onBookingSuccess
 }) => {
-  const navigate = useNavigate();
-
   const [dbAvailabilities, setDbAvailabilities] = useState([]);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
   const [selectedDateStr, setSelectedDateStr] = useState('');

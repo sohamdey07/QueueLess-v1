@@ -49,5 +49,53 @@ export const rotateTokenLimiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
+//forgot password rate limiting middleware
+export const forgotPasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: {
+        statusCode: 429,
+        message: "Too many password reset requests from this IP, please try again after 15 minutes"
+    },
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+});
+
+//verify reset otp rate limiting middleware
+export const verifyResetOtpLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: {
+        statusCode: 429,
+        message: "Too many OTP verification attempts from this IP, please try again after 15 minutes"
+    },
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+});
+
+//verify reset link rate limiting middleware
+export const verifyResetLinkLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // Limit each IP to 20 requests per windowMs
+    message: {
+        statusCode: 429,
+        message: "Too many reset link verification attempts from this IP, please try again after 15 minutes"
+    },
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+});
+
+//reset password rate limiting middleware
+export const resetPasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: {
+        statusCode: 429,
+        message: "Too many password reset attempts from this IP, please try again after 15 minutes"
+    },
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+});
+
 
 

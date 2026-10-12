@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Maximize, Minimize, Radio } from 'lucide-react';
+import { Maximize, Minimize } from 'lucide-react';
 import logoImg from '../../assets/images/logo/logo.png';
 import queueApi from '../../services/api/queue.api';
-import { joinTvDisplay, leaveTvDisplay, onTvUpdated } from '../../services/socket/socketClient';
+import { connectSocket, joinTvDisplay, leaveTvDisplay, onTvUpdated } from '../../services/socket/socketClient';
 import './TvDisplay.css';
 
 export const TvDisplay = () => {
@@ -65,10 +65,29 @@ export const TvDisplay = () => {
     loadTvOverview(false);
   }, [loadTvOverview]);
 
-  // Socket.IO real-time channel subscription
+  // Socket.IO real-time channel subscription & event listeners
   useEffect(() => {
+    const s = connectSocket({ isTvDisplay: true });
+    if (s?.connected) {
+      setIsSocketLive(true);
+    }
+
+    const handleConnect = () => {
+      console.log('[TvDisplay] Socket connected');
+      setIsSocketLive(true);
+      joinTvDisplay();
+      loadTvOverview(true);
+    };
+
+    const handleDisconnect = () => {
+      console.log('[TvDisplay] Socket disconnected');
+      setIsSocketLive(false);
+    };
+
+    s?.on('connect', handleConnect);
+    s?.on('disconnect', handleDisconnect);
+
     joinTvDisplay();
-    setIsSocketLive(true);
 
     const unsubTv = onTvUpdated((payload) => {
       console.log('[TvDisplay] Real-time TV update received:', payload);
@@ -76,11 +95,56 @@ export const TvDisplay = () => {
       if (payload?.type === 'CUSTOMER_CALLED') {
         playCallChime();
       }
-      // Silently refresh counters and upcoming tokens in real-time
+
+      // Optimistically update counter status in local state for instantaneous 0ms feedback
+      if (payload?.type && (payload.counterId || payload.counterName)) {
+        setCounters((prevCounters) =>
+          prevCounters.map((cnt) => {
+            const matchesCounter =
+              (payload.counterId && (String(cnt.id) === String(payload.counterId) || String(cnt.counterId) === String(payload.counterId))) ||
+              (payload.counterName && cnt.counterName === payload.counterName);
+
+            if (!matchesCounter) return cnt;
+
+            const tokenStr =
+              payload.token ||
+              (payload.tokenNumber
+                ? `${cnt.tokenPrefix || 'T'}-${String(payload.tokenNumber).padStart(3, '0')}`
+                : cnt.nowServing);
+
+            if (payload.type === 'CUSTOMER_CALLED') {
+              return {
+                ...cnt,
+                status: 'CALLED',
+                nowServing: tokenStr
+              };
+            }
+            if (payload.type === 'SERVICE_STARTED') {
+              return {
+                ...cnt,
+                status: 'SERVING',
+                nowServing: tokenStr
+              };
+            }
+            if (payload.type === 'SERVICE_COMPLETED' || payload.type === 'CUSTOMER_SKIPPED') {
+              return {
+                ...cnt,
+                status: 'IDLE',
+                nowServing: '—'
+              };
+            }
+            return cnt;
+          })
+        );
+      }
+
+      // Silently refresh authoritative counters and upcoming tokens from backend
       loadTvOverview(true);
     });
 
     return () => {
+      s?.off('connect', handleConnect);
+      s?.off('disconnect', handleDisconnect);
       unsubTv();
       leaveTvDisplay();
     };
@@ -140,9 +204,9 @@ export const TvDisplay = () => {
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      document.documentElement.requestFullscreen().catch(() => { });
     } else if (document.exitFullscreen) {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
     }
   };
 
@@ -173,10 +237,10 @@ export const TvDisplay = () => {
       <header className="tv-header">
         <div className="tv-header-left">
           <div className="tv-brand-wrap">
-            <img 
-              src={logoImg} 
-              alt="QueueLess Logo" 
-              className="tv-brand-logo" 
+            <img
+              src={logoImg}
+              alt="QueueLess Logo"
+              className="tv-brand-logo"
             />
             <div className="tv-brand-text">
               <span className="tv-brand-queue">Queue</span>
@@ -188,35 +252,17 @@ export const TvDisplay = () => {
         </div>
 
         <div className="tv-header-right">
-          <div 
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: '#EFF6FF',
-              padding: '5px 12px',
-              borderRadius: '9999px',
-              fontSize: '12px',
-              fontWeight: 700,
-              color: '#1D68F2'
-            }}
-            title="Real-time live queue socket connected"
+          <div
+            className={`tv-header-live-badge ${isSocketLive ? 'live' : 'syncing'}`}
+            title={isSocketLive ? "Real-time updates active via Socket.IO" : "Connecting live sync..."}
           >
-            <span 
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                backgroundColor: '#10B981',
-                display: 'inline-block'
-              }} 
-            />
-            <span>LIVE</span>
+            <span className="tv-header-live-dot" />
+            <span>{isSocketLive ? 'LIVE' : 'SYNCING'}</span>
           </div>
           <span className="tv-header-date">{formatDate(currentTime)}</span>
           <span className="tv-header-time">{formatTime(currentTime)}</span>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="tv-fullscreen-btn"
             onClick={toggleFullscreen}
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
@@ -235,18 +281,32 @@ export const TvDisplay = () => {
             const upcomingList = Array.isArray(counter.upcomingTokens) ? counter.upcomingTokens : [];
             const displayTokens = upcomingList.slice(0, dynamicTokenCount);
 
+            const rawStatus = (counter.status || (counter.nowServing && counter.nowServing !== '—' ? 'SERVING' : 'IDLE')).toUpperCase();
+            const counterStatus = rawStatus === 'IN_SERVICE' ? 'SERVING' : rawStatus;
+
             return (
-              <section 
-                key={counter.id || counter.counterId || idx} 
+              <section
+                key={counter.id || counter.counterId || idx}
                 className={`tv-column theme-${theme}`}
                 aria-label={`${counter.serviceName} - ${counter.counterName}`}
               >
                 {/* Top Card: Now Serving */}
-                <div className={`tv-now-serving-card theme-${theme}`}>
+                <div className={`tv-now-serving-card theme-${theme} status-${counterStatus.toLowerCase()}`}>
                   <h2 className="tv-service-title">{counter.serviceName}</h2>
                   <div className={`tv-title-accent accent-${theme}`} />
-                  <span className="tv-now-serving-label">Now Serving</span>
-                  <div className="tv-now-serving-token">{counter.nowServing || '—'}</div>
+
+
+                  {/* Real-time Counter Status Pill matching Virtual Queue page */}
+                  <div className="tv-counter-status-wrap">
+                    <span className={`tv-counter-status ${counterStatus.toLowerCase()}`}>
+                      <span className="tv-status-dot" />
+                      <span>{counterStatus === 'SERVING' ? 'Serving' : counterStatus === 'CALLED' ? 'Called' : 'Idle'}</span>
+                    </span>
+                  </div>
+                  <div className={`tv-now-serving-token ${counterStatus === 'IDLE' ? 'token-idle' : ''} ${counterStatus === 'CALLED' ? 'token-called' : ''}`}>
+                    {counter.nowServing || '—'}
+                  </div>
+
                   <div className={`tv-counter-pill pill-${theme}`}>
                     {counter.counterName}
                   </div>
@@ -255,14 +315,14 @@ export const TvDisplay = () => {
                 {/* Bottom Card: Upcoming Tokens (Dynamically sized with no fixed max limit) */}
                 <div className="tv-upcoming-card">
                   <h3 className="tv-upcoming-header">Upcoming Tokens</h3>
-                  <div 
+                  <div
                     className="tv-upcoming-list"
                     ref={idx === 0 ? listMeasureRef : null}
                   >
                     {displayTokens.length > 0 ? (
                       displayTokens.map((token) => (
-                        <div 
-                          key={token} 
+                        <div
+                          key={token}
                           className={`tv-upcoming-item item-${theme}`}
                         >
                           {token}

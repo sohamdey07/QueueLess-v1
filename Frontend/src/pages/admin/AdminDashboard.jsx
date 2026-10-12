@@ -4,13 +4,8 @@ import {
   LayoutGrid,
   Users,
   Calendar,
-  CheckCircle2,
   ArrowUp,
   Layers,
-  Stethoscope,
-  Activity,
-  FlaskConical,
-  ShieldCheck,
   ChevronDown,
   ArrowRight,
   Settings,
@@ -18,7 +13,6 @@ import {
   Store,
   FileText,
   Plus,
-  Clock,
   BarChart3,
   Zap,
   TrendingUp,
@@ -62,7 +56,6 @@ export const AdminDashboard = () => {
     totalNoShowToday: 0,
     services: {},
   });
-  const [isLoading, setIsLoading] = useState(true);
 
   // Today's formatted display date
   const currentDisplayDate = new Intl.DateTimeFormat('en-GB', {
@@ -74,7 +67,6 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        setIsLoading(true);
         const [servicesRes, countersRes, staffRes, overviewRes] = await Promise.allSettled([
           serviceApi.getAllServices(),
           counterApi.getAllCounters(),
@@ -95,8 +87,6 @@ export const AdminDashboard = () => {
         }
       } catch (e) {
         console.error('Failed to load dashboard metrics:', e);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchStats();

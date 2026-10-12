@@ -35,7 +35,6 @@ export const VirtualQueue = ({
 
   const [liveData, setLiveData] = useState(stateData || null);
   const [todayBookedAppt, setTodayBookedAppt] = useState(null);
-  const [isLoading, setIsLoading] = useState(!stateData?.tokenNumber);
   const [isSocketLive, setIsSocketLive] = useState(false);
   const [calledAlert, setCalledAlert] = useState(null);
   const [isManualSyncing, setIsManualSyncing] = useState(false);
@@ -233,8 +232,6 @@ export const VirtualQueue = ({
       }
     } catch (err) {
       console.error('Failed to load virtual queue data:', err);
-    } finally {
-      setIsLoading(false);
     }
   }, [stateData, location.state]);
 

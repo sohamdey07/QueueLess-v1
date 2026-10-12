@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, User, LogOut, ShieldCheck, ChevronDown, Bell } from 'lucide-react';
+import { Calendar, LogOut, ShieldCheck } from 'lucide-react';
 import authApi from '../../services/api/auth.api.js';
 import tokenStorage from '../../services/storage/tokenStorage.js';
 import logoImg from '../../assets/images/logo/logo.png';

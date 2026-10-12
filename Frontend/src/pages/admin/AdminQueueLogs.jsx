@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Activity,
   Search,
-  Filter,
   Layers,
   RefreshCw,
   AlertCircle

@@ -16,9 +16,11 @@ export const OtpVerificationScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Read email from location state or query parameter (?email=...)
+  // Read email and mode from location state or query parameter (?email=...&mode=reset)
   const queryParams = new URLSearchParams(location.search);
   const emailParam = location.state?.email || queryParams.get('email') || 'your email';
+  const modeParam = location.state?.mode || queryParams.get('mode') || 'account';
+  const isResetMode = modeParam === 'reset' || modeParam === 'password-reset';
 
   // 6 OTP digit inputs
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
@@ -35,6 +37,13 @@ export const OtpVerificationScreen = () => {
       setToastMessage(null);
     }, 3500);
   };
+
+  // Redirect legacy reset-mode requests to forgot-password since recovery is link-based
+  useEffect(() => {
+    if (isResetMode) {
+      navigate('/forgot-password', { replace: true });
+    }
+  }, [isResetMode, navigate]);
 
   // Timer countdown for resending OTP
   useEffect(() => {
@@ -112,7 +121,6 @@ export const OtpVerificationScreen = () => {
     setResendTimer(30);
 
     try {
-      // If backend has resend or re-registers
       showToast(`A new 6-digit OTP has been sent to ${emailParam}`, 'info');
     } catch {
       showToast('New verification code sent!', 'info');
@@ -132,33 +140,30 @@ export const OtpVerificationScreen = () => {
     setIsLoading(true);
 
     try {
+      // Standard Account Verification flow
       const response = await fetch('/api/v1/auth/verify-account', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: emailParam.toLowerCase().trim(),
-          otp: fullOtp,
-        }),
-      });
+            email: emailParam.toLowerCase().trim(),
+            otp: fullOtp,
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (response.ok && data.success) {
-        showToast('Account verified successfully! You can now log in.', 'success');
-        setTimeout(() => {
-          navigate(`/login?email=${encodeURIComponent(emailParam)}&verified=true`);
-        }, 1200);
-      } else {
-        const errMsg = data?.message || 'Invalid or expired OTP code. Please check and try again.';
-        showToast(errMsg, 'warning');
-      }
+        if (response.ok && data.success) {
+          showToast('Account verified successfully! You can now log in.', 'success');
+          setTimeout(() => {
+            navigate(`/login?email=${encodeURIComponent(emailParam)}&verified=true`);
+          }, 1200);
+        } else {
+          const errMsg = data?.message || 'Invalid or expired OTP code. Please check and try again.';
+          showToast(errMsg, 'warning');
+        }
     } catch (err) {
-      // Graceful local test fallback
-      console.warn('Backend offline or network error, verifying locally:', err);
-      showToast('Account verified successfully! Redirecting to login...', 'success');
-      setTimeout(() => {
-        navigate(`/login?email=${encodeURIComponent(emailParam)}&verified=true`);
-      }, 1100);
+      console.warn('Error during OTP verification:', err);
+      showToast('Unable to complete verification. Please try again.', 'warning');
     } finally {
       setIsLoading(false);
     }
@@ -204,7 +209,9 @@ export const OtpVerificationScreen = () => {
               <div className="otp-icon-badge">
                 <Mail size={24} className="otp-badge-icon" />
               </div>
-              <h1 className="otp-main-title">Verify Your Account</h1>
+              <h1 className="otp-main-title">
+                Verify Your Account
+              </h1>
               <p className="otp-sub-title">
                 We've sent a 6-digit verification code to
               </p>
