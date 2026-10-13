@@ -247,6 +247,9 @@ export const AdminServices = () => {
     setFormEndTime('05:00 PM');
     setSelectedFile(null);
     setImageFileName('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setFormData({
       title: '',
       name: '',
@@ -258,7 +261,7 @@ export const AdminServices = () => {
       status: 'active',
       isActive: true,
       capacity: 10,
-      image: availableImages[0].img,
+      image: '',
     });
     setIsModalOpen(true);
   };
@@ -517,123 +520,126 @@ export const AdminServices = () => {
           )}
         </div>
 
-        {/* Filter 1: Sort by Date (Older, Newer) */}
-        <div className="admin-toolbar-filter-group" ref={dateDropdownRef}>
-          <button
-            type="button"
-            className={`admin-toolbar-dropdown-btn ${isDateDropdownOpen ? 'active' : ''}`}
-            onClick={() => {
-              setIsDateDropdownOpen((prev) => !prev);
-              setIsActivenessDropdownOpen(false);
-            }}
-            aria-haspopup="listbox"
-            aria-expanded={isDateDropdownOpen}
-            aria-label="Sort by date"
-          >
-            <ArrowUpDown size={14} className="filter-select-icon" />
-            <span>{dateSort === 'newer' ? 'Sort by Date: Newer' : 'Sort by Date: Older'}</span>
-            <ChevronDown size={14} className={`filter-select-chevron ${isDateDropdownOpen ? 'open' : ''}`} />
-          </button>
+        {/* Filters Row: Filter 1 & Filter 2 */}
+        <div className="admin-toolbar-filters-row">
+          {/* Filter 1: Sort by Date (Older, Newer) */}
+          <div className="admin-toolbar-filter-group admin-toolbar-filter-date" ref={dateDropdownRef}>
+            <button
+              type="button"
+              className={`admin-toolbar-dropdown-btn ${isDateDropdownOpen ? 'active' : ''}`}
+              onClick={() => {
+                setIsDateDropdownOpen((prev) => !prev);
+                setIsActivenessDropdownOpen(false);
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={isDateDropdownOpen}
+              aria-label="Sort by date"
+            >
+              <ArrowUpDown size={14} className="filter-select-icon" />
+              <span>{dateSort === 'newer' ? 'Sort by Date: Newer' : 'Sort by Date: Older'}</span>
+              <ChevronDown size={14} className={`filter-select-chevron ${isDateDropdownOpen ? 'open' : ''}`} />
+            </button>
 
-          {isDateDropdownOpen && (
-            <div className="admin-toolbar-dropdown-menu" role="listbox">
-              <button
-                type="button"
-                role="option"
-                aria-selected={dateSort === 'newer'}
-                className={`admin-dropdown-menu-item ${dateSort === 'newer' ? 'selected' : ''}`}
-                onClick={() => {
-                  setDateSort('newer');
-                  setIsDateDropdownOpen(false);
-                }}
-              >
-                <span>Sort by Date: Newer</span>
-                {dateSort === 'newer' && <Check size={14} className="dropdown-check-icon" />}
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={dateSort === 'older'}
-                className={`admin-dropdown-menu-item ${dateSort === 'older' ? 'selected' : ''}`}
-                onClick={() => {
-                  setDateSort('older');
-                  setIsDateDropdownOpen(false);
-                }}
-              >
-                <span>Sort by Date: Older</span>
-                {dateSort === 'older' && <Check size={14} className="dropdown-check-icon" />}
-              </button>
-            </div>
-          )}
-        </div>
+            {isDateDropdownOpen && (
+              <div className="admin-toolbar-dropdown-menu" role="listbox">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={dateSort === 'newer'}
+                  className={`admin-dropdown-menu-item ${dateSort === 'newer' ? 'selected' : ''}`}
+                  onClick={() => {
+                    setDateSort('newer');
+                    setIsDateDropdownOpen(false);
+                  }}
+                >
+                  <span>Sort by Date: Newer</span>
+                  {dateSort === 'newer' && <Check size={14} className="dropdown-check-icon" />}
+                </button>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={dateSort === 'older'}
+                  className={`admin-dropdown-menu-item ${dateSort === 'older' ? 'selected' : ''}`}
+                  onClick={() => {
+                    setDateSort('older');
+                    setIsDateDropdownOpen(false);
+                  }}
+                >
+                  <span>Sort by Date: Older</span>
+                  {dateSort === 'older' && <Check size={14} className="dropdown-check-icon" />}
+                </button>
+              </div>
+            )}
+          </div>
 
-        {/* Filter 2: Activeness (All, Active, Inactive) */}
-        <div className="admin-toolbar-filter-group" ref={activenessDropdownRef}>
-          <button
-            type="button"
-            className={`admin-toolbar-dropdown-btn ${isActivenessDropdownOpen ? 'active' : ''}`}
-            onClick={() => {
-              setIsActivenessDropdownOpen((prev) => !prev);
-              setIsDateDropdownOpen(false);
-            }}
-            aria-haspopup="listbox"
-            aria-expanded={isActivenessDropdownOpen}
-            aria-label="Filter by activeness"
-          >
-            <Activity size={14} className="filter-select-icon" />
-            <span>
-              {activenessFilter === 'all'
-                ? 'Activeness: All'
-                : activenessFilter === 'active'
-                ? 'Activeness: Active'
-                : 'Activeness: Inactive'}
-            </span>
-            <ChevronDown size={14} className={`filter-select-chevron ${isActivenessDropdownOpen ? 'open' : ''}`} />
-          </button>
+          {/* Filter 2: Activeness (All, Active, Inactive) */}
+          <div className="admin-toolbar-filter-group admin-toolbar-filter-activeness" ref={activenessDropdownRef}>
+            <button
+              type="button"
+              className={`admin-toolbar-dropdown-btn ${isActivenessDropdownOpen ? 'active' : ''}`}
+              onClick={() => {
+                setIsActivenessDropdownOpen((prev) => !prev);
+                setIsDateDropdownOpen(false);
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={isActivenessDropdownOpen}
+              aria-label="Filter by activeness"
+            >
+              <Activity size={14} className="filter-select-icon" />
+              <span>
+                {activenessFilter === 'all'
+                  ? 'Activeness: All'
+                  : activenessFilter === 'active'
+                  ? 'Activeness: Active'
+                  : 'Activeness: Inactive'}
+              </span>
+              <ChevronDown size={14} className={`filter-select-chevron ${isActivenessDropdownOpen ? 'open' : ''}`} />
+            </button>
 
-          {isActivenessDropdownOpen && (
-            <div className="admin-toolbar-dropdown-menu" role="listbox">
-              <button
-                type="button"
-                role="option"
-                aria-selected={activenessFilter === 'all'}
-                className={`admin-dropdown-menu-item ${activenessFilter === 'all' ? 'selected' : ''}`}
-                onClick={() => {
-                  setActivenessFilter('all');
-                  setIsActivenessDropdownOpen(false);
-                }}
-              >
-                <span>Activeness: All</span>
-                {activenessFilter === 'all' && <Check size={14} className="dropdown-check-icon" />}
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={activenessFilter === 'active'}
-                className={`admin-dropdown-menu-item ${activenessFilter === 'active' ? 'selected' : ''}`}
-                onClick={() => {
-                  setActivenessFilter('active');
-                  setIsActivenessDropdownOpen(false);
-                }}
-              >
-                <span>Activeness: Active</span>
-                {activenessFilter === 'active' && <Check size={14} className="dropdown-check-icon" />}
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={activenessFilter === 'inactive'}
-                className={`admin-dropdown-menu-item ${activenessFilter === 'inactive' ? 'selected' : ''}`}
-                onClick={() => {
-                  setActivenessFilter('inactive');
-                  setIsActivenessDropdownOpen(false);
-                }}
-              >
-                <span>Activeness: Inactive</span>
-                {activenessFilter === 'inactive' && <Check size={14} className="dropdown-check-icon" />}
-              </button>
-            </div>
-          )}
+            {isActivenessDropdownOpen && (
+              <div className="admin-toolbar-dropdown-menu" role="listbox">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={activenessFilter === 'all'}
+                  className={`admin-dropdown-menu-item ${activenessFilter === 'all' ? 'selected' : ''}`}
+                  onClick={() => {
+                    setActivenessFilter('all');
+                    setIsActivenessDropdownOpen(false);
+                  }}
+                >
+                  <span>Activeness: All</span>
+                  {activenessFilter === 'all' && <Check size={14} className="dropdown-check-icon" />}
+                </button>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={activenessFilter === 'active'}
+                  className={`admin-dropdown-menu-item ${activenessFilter === 'active' ? 'selected' : ''}`}
+                  onClick={() => {
+                    setActivenessFilter('active');
+                    setIsActivenessDropdownOpen(false);
+                  }}
+                >
+                  <span>Activeness: Active</span>
+                  {activenessFilter === 'active' && <Check size={14} className="dropdown-check-icon" />}
+                </button>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={activenessFilter === 'inactive'}
+                  className={`admin-dropdown-menu-item ${activenessFilter === 'inactive' ? 'selected' : ''}`}
+                  onClick={() => {
+                    setActivenessFilter('inactive');
+                    setIsActivenessDropdownOpen(false);
+                  }}
+                >
+                  <span>Activeness: Inactive</span>
+                  {activenessFilter === 'inactive' && <Check size={14} className="dropdown-check-icon" />}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Action Button: Add Service */}
@@ -987,11 +993,45 @@ export const AdminServices = () => {
                           Upload from Device
                         </span>
                         {imageFileName ? (
-                          <span className="admin-image-file-badge" title={imageFileName}>
-                            {imageFileName}
-                          </span>
+                          <div className="admin-image-badge-wrap">
+                            <span className="admin-image-file-badge" title={imageFileName}>
+                              {imageFileName}
+                            </span>
+                            <button
+                              type="button"
+                              className="admin-image-clear-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedFile(null);
+                                setImageFileName('');
+                                setFormData((prev) => ({ ...prev, image: '' }));
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                              }}
+                              title="Remove selected image"
+                              aria-label="Remove image"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
                         ) : formData.image ? (
-                          <span className="admin-image-hint-badge">Active Preview</span>
+                          <div className="admin-image-badge-wrap">
+                            <span className="admin-image-hint-badge">Active Preview</span>
+                            <button
+                              type="button"
+                              className="admin-image-clear-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedFile(null);
+                                setImageFileName('');
+                                setFormData((prev) => ({ ...prev, image: '' }));
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                              }}
+                              title="Remove selected image"
+                              aria-label="Remove image"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
                         ) : null}
                       </div>
 
@@ -1074,18 +1114,34 @@ export const AdminServices = () => {
                                 key={idx}
                                 className={`admin-preset-sample-card ${isSelected ? 'selected' : ''}`}
                                 onClick={() => {
-                                  setSelectedFile(null);
-                                  setFormData({ ...formData, image: imgOpt.img });
-                                  setImageFileName('');
+                                  if (isSelected) {
+                                    setSelectedFile(null);
+                                    setFormData((prev) => ({ ...prev, image: '' }));
+                                    setImageFileName('');
+                                    if (fileInputRef.current) fileInputRef.current.value = '';
+                                  } else {
+                                    setSelectedFile(null);
+                                    setFormData((prev) => ({ ...prev, image: imgOpt.img }));
+                                    setImageFileName('');
+                                    if (fileInputRef.current) fileInputRef.current.value = '';
+                                  }
                                 }}
-                                title={`Select ${imgOpt.label}`}
+                                title={isSelected ? `Deselect ${imgOpt.label}` : `Select ${imgOpt.label}`}
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' || e.key === ' ') {
-                                    setSelectedFile(null);
-                                    setFormData({ ...formData, image: imgOpt.img });
-                                    setImageFileName('');
+                                    if (isSelected) {
+                                      setSelectedFile(null);
+                                      setFormData((prev) => ({ ...prev, image: '' }));
+                                      setImageFileName('');
+                                      if (fileInputRef.current) fileInputRef.current.value = '';
+                                    } else {
+                                      setSelectedFile(null);
+                                      setFormData((prev) => ({ ...prev, image: imgOpt.img }));
+                                      setImageFileName('');
+                                      if (fileInputRef.current) fileInputRef.current.value = '';
+                                    }
                                   }
                                 }}
                               >

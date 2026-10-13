@@ -5,7 +5,8 @@ export const emitQueueUpdated = (queueId, data = {}) => {
         const io = getIO();
         const qIdStr = String(queueId);
 
-        io.to(`queue:${qIdStr}`).emit("queue:updated", {
+        // Broadcast to all connected clients (customers, staff, admins)
+        io.emit("queue:updated", {
             queueId: qIdStr,
             ...data
         });

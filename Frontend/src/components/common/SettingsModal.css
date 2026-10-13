@@ -1,0 +1,118 @@
+/* ==========================================================================
+   Settings Modal Styles - QueueLess Pop-up Dialog
+   ========================================================================== */
+
+/* Security Header Banner */
+.settings-security-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border: 1px solid #BFDBFE;
+  border-radius: 18px;
+  margin-bottom: 40px;
+}
+
+.settings-security-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  color: #1D68F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px -2px rgba(29, 104, 242, 0.15);
+}
+
+.settings-key-icon {
+  color: #1D68F2;
+}
+
+.settings-security-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-security-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.settings-security-desc {
+  font-size: 13px;
+  color: #475569;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Settings Form */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.settings-eye-btn {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  padding: 6px;
+  margin-right: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.settings-eye-btn:hover {
+  color: #1E293B;
+  background-color: #F1F5F9;
+}
+
+/* Requirement Indicators */
+.settings-requirement-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.requirement-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+  transition: color 0.15s ease;
+}
+
+.requirement-indicator.valid {
+  color: #059669;
+}
+
+.requirement-indicator.invalid {
+  color: #DC2626;
+}
+
+.mini-bullet {
+  font-size: 16px;
+  line-height: 1;
+}
+
+@media (max-width: 580px) {
+  .settings-security-card {
+    flex-direction: column;
+    text-align: center;
+  }
+}

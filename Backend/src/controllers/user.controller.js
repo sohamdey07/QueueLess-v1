@@ -1,6 +1,6 @@
 import userModel from "../models/user.model.js";
 import counterModel from "../models/counter.model.js";
-import { hashPassword } from "../utils/password.js";
+import { hashPassword, comparePassword } from "../utils/password.js";
 import { successResponse, errorResponse } from "../utils/apiResponse.js";
 
 // GET /api/v1/users - List users with optional role, status, and search filters (Admin only)
@@ -44,7 +44,8 @@ export async function getAllUsers(req, res, next) {
 export async function getUserById(req, res, next) {
     try {
         const { userId } = req.params;
-        const user = await userModel.findById(userId).select("-password");
+        const targetUserId = (userId === "me" || userId === "current") ? req.user.id : userId;
+        const user = await userModel.findById(targetUserId).select("-password");
 
         if (!user) {
             return errorResponse(res, {
@@ -77,8 +78,9 @@ export async function updateUser(req, res, next) {
         const { userId } = req.params;
         const currentUserId = req.user.id;
         const currentUserRole = req.user.role;
+        const targetUserId = (userId === "me" || userId === "current") ? currentUserId : userId;
 
-        const user = await userModel.findById(userId);
+        const user = await userModel.findById(targetUserId);
         if (!user) {
             return errorResponse(res, {
                 statusCode: 404,
@@ -90,7 +92,7 @@ export async function updateUser(req, res, next) {
         const isAdmin = currentUserRole === "ADMIN";
 
         // Admin has full control over all users
-        if (isAdmin) {
+        if (isAdmin && !isSelf) {
             const { name, email, phone, isActive, password } = req.body;
 
             if (name !== undefined && name.trim()) {
@@ -123,7 +125,15 @@ export async function updateUser(req, res, next) {
             }
 
             if (password && password.trim().length >= 6) {
-                user.password = await hashPassword(password.trim());
+                const newPass = password.trim();
+                const isSame = await comparePassword(newPass, user.password);
+                if (isSame) {
+                    return errorResponse(res, {
+                        statusCode: 400,
+                        message: "Both passwords are the same, cannot change/modify."
+                    });
+                }
+                user.password = await hashPassword(newPass);
             }
 
             await user.save();
@@ -138,9 +148,11 @@ export async function updateUser(req, res, next) {
             });
         }
 
-        // Customer self-update: can update name, email, password, and phone number
-        if (isSelf && currentUserRole === "CUSTOMER") {
-            const { name, email, phone, password } = req.body;
+        // Self-update for Staff, Customer, and Admin self:
+        // Users can update their name and phone number only; email address cannot be changed.
+        // Users can also update their password in the Settings popup.
+        if (isSelf) {
+            const { name, phone, currentPassword, password } = req.body;
 
             if (name !== undefined && name.trim()) {
                 user.name = name.trim();
@@ -150,25 +162,36 @@ export async function updateUser(req, res, next) {
                 user.phone = phone.trim();
             }
 
-            if (email !== undefined && email.trim()) {
-                const normalizedEmail = email.trim().toLowerCase();
-                if (normalizedEmail !== user.email) {
-                    const existing = await userModel.findOne({
-                        email: normalizedEmail,
-                        _id: { $ne: user._id }
+            if (password !== undefined && String(password).trim()) {
+                const newPass = String(password).trim();
+                if (newPass.length < 6) {
+                    return errorResponse(res, {
+                        statusCode: 400,
+                        message: "Password must be at least 6 characters long"
                     });
-                    if (existing) {
+                }
+
+                // If currentPassword is provided, verify it against existing user.password
+                if (currentPassword) {
+                    const isCurrentValid = await comparePassword(String(currentPassword).trim(), user.password);
+                    if (!isCurrentValid) {
                         return errorResponse(res, {
-                            statusCode: 409,
-                            message: "Email address is already in use by another account"
+                            statusCode: 400,
+                            message: "Current password is incorrect. Please verify."
                         });
                     }
-                    user.email = normalizedEmail;
                 }
-            }
 
-            if (password && password.trim().length >= 6) {
-                user.password = await hashPassword(password.trim());
+                // Check if new password is identical to the current password
+                const isSamePassword = await comparePassword(newPass, user.password);
+                if (isSamePassword) {
+                    return errorResponse(res, {
+                        statusCode: 400,
+                        message: "Both passwords are the same, cannot change/modify."
+                    });
+                }
+
+                user.password = await hashPassword(newPass);
             }
 
             await user.save();
@@ -179,30 +202,6 @@ export async function updateUser(req, res, next) {
             return successResponse(res, {
                 statusCode: 200,
                 message: "Profile updated successfully",
-                data: sanitized
-            });
-        }
-
-        // Staff self-update: staff can only update their password and add/modify their phone number
-        if (isSelf && currentUserRole === "STAFF") {
-            const { phone, password } = req.body;
-
-            if (phone !== undefined) {
-                user.phone = phone.trim();
-            }
-
-            if (password && password.trim().length >= 6) {
-                user.password = await hashPassword(password.trim());
-            }
-
-            await user.save();
-
-            const sanitized = user.toObject();
-            delete sanitized.password;
-
-            return successResponse(res, {
-                statusCode: 200,
-                message: "Staff profile updated successfully",
                 data: sanitized
             });
         }

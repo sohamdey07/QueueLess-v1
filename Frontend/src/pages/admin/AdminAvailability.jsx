@@ -341,6 +341,17 @@ export const AdminAvailability = () => {
     }
   };
 
+  // Prevent background scrolling when delete confirmation modal is open
+  useEffect(() => {
+    if (availabilityToDelete) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow || 'unset';
+      };
+    }
+  }, [availabilityToDelete]);
+
   // Reset page when filter or search changes
   useEffect(() => {
     setCurrentPage(1);

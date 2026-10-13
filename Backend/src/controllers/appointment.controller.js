@@ -609,7 +609,7 @@ export async function getTodayAppointmentsOverview(req, res, next) {
                 serviceStatsMap[srvId].served += 1;
             } else if (["BOOKED", "CHECKED_IN", "IN_SERVICE"].includes(appt.status)) {
                 serviceStatsMap[srvId].waiting += 1;
-            } else if (appt.status === "NO_SHOW") {
+            } else if (appt.status === "NO_SHOW" || appt.status === "SKIPPED") {
                 serviceStatsMap[srvId].noShow += 1;
             }
         });

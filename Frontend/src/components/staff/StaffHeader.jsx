@@ -1,25 +1,41 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, LogOut, ShieldCheck } from 'lucide-react';
+import { Calendar, LogOut, ShieldCheck, User, Settings, Maximize, Minimize } from 'lucide-react';
 import authApi from '../../services/api/auth.api.js';
 import tokenStorage from '../../services/storage/tokenStorage.js';
 import logoImg from '../../assets/images/logo/logo.png';
+import CommonAvatar from '../common/CommonAvatar';
+import ProfileModal from '../common/ProfileModal';
+import SettingsModal from '../common/SettingsModal';
+import UserMenuDropdown from '../common/UserMenuDropdown';
 import './StaffHeader.css';
 
 export const StaffHeader = ({
   staffName,
   staffFullName,
   counterName = 'Counter 2',
-  role = 'Queue Manager / Staff'
+  role = 'Queue Manager'
 }) => {
   const navigate = useNavigate();
-  const currentUser = tokenStorage.getUser();
-  const activeStaffFullName = staffFullName || currentUser?.name || 'Staff Member';
-  const activeStaffName = staffName || (currentUser?.name ? currentUser.name.split(' ')[0] : 'Staff');
+  const [currentUser, setCurrentUser] = useState(() => tokenStorage.getUser());
+
+  const activeStaffFullName = currentUser?.name || staffFullName || 'Staff Member';
+  const activeStaffName = currentUser?.name ? currentUser.name.split(' ')[0] : (staffName || 'Staff');
 
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const profileRef = useRef(null);
+
+  const handleCloseProfileModal = useCallback(() => {
+    setIsProfileModalOpen(false);
+  }, []);
+
+  const handleCloseSettingsModal = useCallback(() => {
+    setIsSettingsModalOpen(false);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -29,6 +45,13 @@ export const StaffHeader = ({
     }
     navigate('/login', { replace: true });
   };
+
+  const handleProfileUpdated = useCallback((updatedData) => {
+    setCurrentUser((prev) => ({
+      ...prev,
+      ...updatedData
+    }));
+  }, []);
 
   // Live real-time clock ticker
   useEffect(() => {
@@ -70,85 +93,122 @@ export const StaffHeader = ({
     return `${hours}:${minutes} ${ampm}`;
   };
 
+  // Listen for fullscreen change
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
   return (
-    <header className="staff-header">
-      {/* Left: Brand Logo & Name matching customer portal */}
-      <div className="staff-header-left">
-        <div className="staff-brand-container">
-          <img 
-            src={logoImg} 
-            alt="QueueLess Logo" 
-            className="staff-header-logo" 
-          />
-          <div className="staff-brand-text">
-            <span className="brand-queue">Queue</span>
-            <span className="brand-less">Less</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Right: Date, Time & Profile */}
-      <div className="staff-header-right">
-        {/* Calendar & Time Widget */}
-        <div className="staff-datetime-widget">
-          <div className="staff-datetime-icon-wrap">
-            <Calendar size={20} className="staff-datetime-icon" />
-          </div>
-          <div className="staff-datetime-info">
-            <span className="staff-date-text">{formatDate(currentTime)}</span>
-            <span className="staff-time-text">{formatTime(currentTime)}</span>
-          </div>
-        </div>
-
-        {/* Subtle Vertical Divider */}
-        <div className="staff-header-divider" />
-
-        {/* Staff Profile Avatar */}
-        <div className="staff-profile-wrap" ref={profileRef}>
-          <button 
-            type="button" 
-            className="staff-avatar-btn"
-            onClick={() => setProfileOpen(!profileOpen)}
-            aria-expanded={profileOpen}
-            aria-label={`Staff profile for ${activeStaffName}`}
-          >
-            <div className="staff-avatar-circle">
-              <span>{activeStaffName.charAt(0).toUpperCase()}</span>
+    <>
+      <header className="staff-header">
+        {/* Left: Brand Logo & Name matching customer portal */}
+        <div className="staff-header-left">
+          <div className="staff-brand-container">
+            <img 
+              src={logoImg} 
+              alt="QueueLess Logo" 
+              className="staff-header-logo" 
+            />
+            <div className="staff-brand-text">
+              <span className="brand-queue">Queue</span>
+              <span className="brand-less">Less</span>
             </div>
+          </div>
+        </div>
+
+        {/* Right: Date, Time & Profile */}
+        <div className="staff-header-right">
+          {/* Calendar & Time Widget */}
+          <div className="staff-datetime-widget">
+            <div className="staff-datetime-icon-wrap">
+              <Calendar size={20} className="staff-datetime-icon" />
+            </div>
+            <div className="staff-datetime-info">
+              <span className="staff-date-text">{formatDate(currentTime)}</span>
+              <span className="staff-time-text">{formatTime(currentTime)}</span>
+            </div>
+          </div>
+
+          {/* Fullscreen Button matching TV Display */}
+          <button
+            type="button"
+            className="staff-fullscreen-btn"
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            aria-label="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
           </button>
 
-          {/* Profile Dropdown */}
-          {profileOpen && (
-            <div className="staff-profile-dropdown">
-              <div className="staff-profile-header">
-                <div className="staff-dropdown-avatar">
-                  <span>{activeStaffName.charAt(0).toUpperCase()}</span>
-                </div>
-                <div className="staff-dropdown-details">
-                  <span className="staff-dropdown-name">{activeStaffFullName}</span>
-                  <span className="staff-dropdown-counter">{counterName} • Active</span>
-                  <span className="staff-dropdown-role">{role}</span>
-                </div>
-              </div>
-              <div className="staff-dropdown-divider" />
-              <div className="staff-dropdown-item">
-                <ShieldCheck size={16} />
-                <span>Duty Mode: Active</span>
-              </div>
-              <div className="staff-dropdown-divider" />
-              <button 
-                type="button" 
-                className="staff-dropdown-item staff-logout-item"
-                onClick={handleLogout}
-              >
-                <LogOut size={16} />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          )}
+          {/* Subtle Vertical Divider */}
+          <div className="staff-header-divider" />
+
+          {/* Staff Profile Avatar */}
+          <div className="staff-profile-wrap" ref={profileRef}>
+            <button 
+              type="button" 
+              className="staff-avatar-btn"
+              onClick={() => setProfileOpen(!profileOpen)}
+              aria-expanded={profileOpen}
+              aria-label={`Staff profile for ${activeStaffName}`}
+            >
+              <CommonAvatar 
+                size={42} 
+                showRing={true} 
+                showStatusDot={true} 
+                isActive={true} 
+                alt={`Avatar for ${activeStaffName}`} 
+              />
+            </button>
+
+            {/* Universal User Dropdown */}
+            <UserMenuDropdown
+              isOpen={profileOpen}
+              userName={activeStaffFullName}
+              userRole={role}
+              isActive={true}
+              onManageAccount={() => {
+                setProfileOpen(false);
+                setIsProfileModalOpen(true);
+              }}
+              onChangePassword={() => {
+                setProfileOpen(false);
+                setIsSettingsModalOpen(true);
+              }}
+              onSignOut={handleLogout}
+            />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Profile Details Pop-up Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={handleCloseProfileModal}
+        onProfileUpdated={handleProfileUpdated}
+        roleLabel={role}
+      />
+
+      {/* Account Settings / Change Password Pop-up Modal */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={handleCloseSettingsModal}
+      />
+    </>
   );
 };
 

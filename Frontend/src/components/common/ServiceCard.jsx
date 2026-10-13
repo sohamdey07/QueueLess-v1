@@ -10,7 +10,8 @@ import {
   XCircle,
   MoreVertical,
   Pencil,
-  Trash2
+  Trash2,
+  Hash
 } from 'lucide-react';
 import './ServiceCard.css';
 
@@ -76,6 +77,7 @@ export const ServiceCard = ({
   const {
     title,
     name,
+    code,
     description = '',
     duration,
     schedule,
@@ -94,6 +96,7 @@ export const ServiceCard = ({
   const displayImage = image || imageUrl;
   const displaySchedule = schedule || availability;
   const displayDuration = typeof duration === 'number' ? `${duration} mins` : duration;
+  const displayCode = code || service?.code || service?.serviceCode || '';
   const isInactive = status === 'inactive' || service.status === 'inactive';
   const isBookingMode = Boolean(appointmentDate || appointmentId || onJoinQueue || onCancel);
   const effectiveStatus = status || (isBookingMode ? 'Booked' : null);
@@ -259,11 +262,21 @@ export const ServiceCard = ({
           </div>
         ) : (
           <>
-            {/* Duration between description and service timing */}
-            {(isAdmin || status === 'active' || status === 'inactive') && displayDuration && (
-              <div className="ql-service-duration-pill" aria-label={`Duration: ${displayDuration}`}>
-                <Clock size={13.5} strokeWidth={2.2} className="ql-duration-pill-icon" />
-                <span>Duration: {String(displayDuration).replace(/^duration:\s*/i, '')}</span>
+            {/* Meta Row: Duration and Service Code in the same row */}
+            {(isAdmin || status === 'active' || status === 'inactive') && (displayDuration || displayCode) && (
+              <div className="ql-service-meta-row">
+                {displayDuration && (
+                  <div className="ql-service-duration-pill" aria-label={`Duration: ${displayDuration}`}>
+                    <Clock size={13.5} strokeWidth={2.2} className="ql-duration-pill-icon" />
+                    <span>Duration: {String(displayDuration).replace(/^duration:\s*/i, '')}</span>
+                  </div>
+                )}
+                {displayCode && (
+                  <div className="ql-service-code-pill" aria-label={`Service Code: ${displayCode}`}>
+                    <Hash size={13.5} strokeWidth={2.2} className="ql-code-pill-icon" />
+                    <span>Code: {String(displayCode).replace(/^code:\s*/i, '')}</span>
+                  </div>
+                )}
               </div>
             )}
 

@@ -911,30 +911,126 @@
 
 @media (max-width: 768px) {
   .admin-queue-logs-page {
-    padding: 0 16px 24px 16px;
+    padding: 0 14px 24px 14px;
     gap: 14px;
   }
-}
 
-@media (max-width: 600px) {
   .queue-logs-metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .queue-metric-card {
+    padding: 14px 14px;
+    border-radius: 14px;
+  }
+
+  .metric-value {
+    font-size: 22px;
+  }
+
+  .metric-subtext {
+    display: none;
+  }
+
+  /* Filters card on mobile */
+  .queue-logs-filters-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px 12px;
+    border-radius: 14px;
   }
 
   .filter-item-wrapper {
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
+    width: 100%;
+  }
+
+  .filter-dropdown-relative {
+    width: 100%;
   }
 
   .filter-dropdown-button {
-    max-width: 100%;
+    width: 100%;
     min-width: 100%;
+    justify-content: space-between;
+    height: 42px;
+  }
+
+  .filter-search-box {
+    width: 100%;
+    min-width: 100%;
+    height: 42px;
+  }
+
+  /* Mobile Dropdowns */
+  .filter-popover-menu.service-popover,
+  .filter-popover-menu.date-popover {
+    max-width: calc(100vw - 32px) !important;
+    width: 100% !important;
+    z-index: 1000 !important;
+    max-height: 250px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+  }
+
+  .filter-popover-item {
+    min-height: 40px;
+    padding: 10px 12px;
+  }
+
+  /* Table optimizations for mobile */
+  .queue-logs-table-card {
+    border-radius: 14px;
+  }
+
+  .queue-logs-table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .queue-logs-data-table {
+    min-width: 820px;
+  }
+
+  .queue-logs-data-table th {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  .queue-logs-data-table td {
+    padding: 10px 12px;
+    font-size: 12px;
   }
 
   .queue-logs-table-footer {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 12px;
+  }
+
+  .table-footer-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 540px) {
+  .admin-queue-logs-page {
+    padding: 0 10px 20px 10px;
+  }
+
+  .queue-logs-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }
 

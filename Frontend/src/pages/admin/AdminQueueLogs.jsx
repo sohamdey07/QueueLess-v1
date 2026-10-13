@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import queueApi from '../../services/api/queue.api';
 import serviceApi from '../../services/api/service.api';
+import { onQueueUpdated } from '../../services/socket/socketClient';
 import './AdminQueueLogs.css';
 
 const ITEMS_PER_PAGE = 10;
@@ -145,6 +146,17 @@ export const AdminQueueLogs = () => {
 
   useEffect(() => {
     loadQueueLogs();
+
+    // Listen for live queue updates (e.g. CUSTOMER_SKIPPED, CUSTOMER_CALLED)
+    const unsubscribe = onQueueUpdated(() => {
+      loadQueueLogs();
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, [loadQueueLogs]);
 
   // Close dropdowns on outside click or Escape
@@ -204,9 +216,14 @@ export const AdminQueueLogs = () => {
       // Timestamps
       const joinedAt = formatTime(item.joinedAt);
       const servedAt = formatTime(item.servingAt || item.calledAt);
-      const noShowAt = item.status === 'NO_SHOW'
+      const isNoShowOrSkipped =
+        item.status === 'NO_SHOW' ||
+        item.status === 'SKIPPED' ||
+        appointment?.status === 'NO_SHOW' ||
+        appointment?.status === 'SKIPPED';
+      const noShowAt = isNoShowOrSkipped
         ? formatTime(appointment?.noShowAt || item.updatedAt)
-        : formatTime(appointment?.noShowAt);
+        : '—';
       const completedAt = formatTime(item.completedAt || appointment?.completedAt);
 
       // Counter
@@ -214,16 +231,23 @@ export const AdminQueueLogs = () => {
 
       // Status
       let normalizedStatus = 'Waiting';
-      if (item.status === 'COMPLETED') normalizedStatus = 'Completed';
-      else if (item.status === 'NO_SHOW') normalizedStatus = 'No Show';
-      else if (item.status === 'SERVING') normalizedStatus = 'Serving';
-      else if (item.status === 'CALLED') normalizedStatus = 'Called';
-      else if (item.status === 'SKIPPED') normalizedStatus = 'Skipped';
-      else if (item.status === 'WAITING') normalizedStatus = 'Waiting';
+      if (item.status === 'COMPLETED' || appointment?.status === 'COMPLETED') {
+        normalizedStatus = 'Completed';
+      } else if (isNoShowOrSkipped) {
+        normalizedStatus = (item.status === 'SKIPPED' || appointment?.status === 'SKIPPED') ? 'Skipped' : 'No Show';
+      } else if (item.status === 'SERVING' || appointment?.status === 'IN_SERVICE') {
+        normalizedStatus = 'Serving';
+      } else if (item.status === 'CALLED') {
+        normalizedStatus = 'Called';
+      } else if (item.status === 'WAITING' || appointment?.status === 'CHECKED_IN' || appointment?.status === 'BOOKED') {
+        normalizedStatus = 'Waiting';
+      }
 
       return {
         id: item._id,
         rawStatus: item.status,
+        appointmentStatus: appointment?.status || null,
+        isNoShow: isNoShowOrSkipped,
         status: normalizedStatus,
         tokenNo,
         tokenNumber: item.tokenNumber,
@@ -262,7 +286,15 @@ export const AdminQueueLogs = () => {
     const totalTokens = formattedLogs.length;
     const completed = formattedLogs.filter((l) => l.status === 'Completed').length;
     const waiting = formattedLogs.filter((l) => l.status === 'Waiting').length;
-    const noShow = formattedLogs.filter((l) => l.status === 'No Show').length;
+    const noShow = formattedLogs.filter((l) =>
+      l.isNoShow ||
+      l.status === 'No Show' ||
+      l.status === 'Skipped' ||
+      l.rawStatus === 'NO_SHOW' ||
+      l.rawStatus === 'SKIPPED' ||
+      l.appointmentStatus === 'NO_SHOW' ||
+      l.appointmentStatus === 'SKIPPED'
+    ).length;
 
     return {
       totalTokens,

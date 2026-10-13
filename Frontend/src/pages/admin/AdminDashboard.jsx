@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -16,36 +16,50 @@ import {
   BarChart3,
   Zap,
   TrendingUp,
-  History
+  History,
+  Activity
 } from 'lucide-react';
 import AdminBanner from '../../components/admin/AdminBanner';
 import serviceApi from '../../services/api/service.api';
 import counterApi from '../../services/api/counter.api';
 import appointmentApi from '../../services/api/appointment.api';
+import queueApi from '../../services/api/queue.api';
 import './AdminDashboard.css';
 
-// Chart Data (Hourly Distribution for 8 Oct 2026)
+// Chart Data (Hourly Distribution Points)
 const chartTimePoints = [
   '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM'
 ];
 
-const chartData = [
-  { time: '8 AM', total: 8, served: 2, waiting: 5, noShow: 1 },
-  { time: '9 AM', total: 13, served: 7, waiting: 7, noShow: 2 },
-  { time: '10 AM', total: 20, served: 13, waiting: 8, noShow: 2 },
-  { time: '11 AM', total: 25, served: 18, waiting: 8, noShow: 3 },
-  { time: '12 PM', total: 35, served: 25, waiting: 13, noShow: 5 },
-  { time: '1 PM', total: 42, served: 25, waiting: 15, noShow: 5 },
-  { time: '2 PM', total: 46, served: 30, waiting: 13, noShow: 3 },
-  { time: '3 PM', total: 45, served: 32, waiting: 17, noShow: 4 },
-  { time: '4 PM', total: 40, served: 27, waiting: 14, noShow: 3 },
-  { time: '5 PM', total: 34, served: 20, waiting: 10, noShow: 2 },
-  { time: '6 PM', total: 20, served: 14, waiting: 6, noShow: 1 },
-];
+// Helper to generate today + past 6 days (7 options)
+const generatePastDaysOptions = () => {
+  const options = [];
+  const now = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const isoDate = `${year}-${month}-${day}`;
+    const formatted = d.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+    let label = formatted;
+    if (i === 0) {
+      label = `Today (${formatted})`;
+    } else if (i === 1) {
+      label = `Yesterday (${formatted})`;
+    }
+    options.push({ value: isoDate, label, formatted });
+  }
+  return options;
+};
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [selectedTimeframe, setSelectedTimeframe] = useState('Day');
   const [liveServices, setLiveServices] = useState([]);
   const [liveCounters, setLiveCounters] = useState([]);
   const [liveStaff, setLiveStaff] = useState([]);
@@ -56,6 +70,17 @@ export const AdminDashboard = () => {
     totalNoShowToday: 0,
     services: {},
   });
+
+  // Date filter options for Queue Trends (Today + past 6 days)
+  const trendDateOptions = useMemo(() => generatePastDaysOptions(), []);
+  const [selectedTrendDate, setSelectedTrendDate] = useState(() => trendDateOptions[0]?.value || '');
+  const [trendData, setTrendData] = useState([]);
+  const [isTrendsLoading, setIsTrendsLoading] = useState(false);
+  const [activeChartPoint, setActiveChartPoint] = useState(null);
+
+  // Recent 5 activities state
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [isActivitiesLoading, setIsActivitiesLoading] = useState(false);
 
   // Today's formatted display date
   const currentDisplayDate = new Intl.DateTimeFormat('en-GB', {
@@ -89,20 +114,79 @@ export const AdminDashboard = () => {
         console.error('Failed to load dashboard metrics:', e);
       }
     };
+
+    const fetchActivities = async () => {
+      setIsActivitiesLoading(true);
+      try {
+        const res = await queueApi.getRecentActivities();
+        if (Array.isArray(res?.data)) {
+          setRecentActivities(res.data);
+        } else {
+          setRecentActivities([]);
+        }
+      } catch (e) {
+        console.error('Failed to load recent activities:', e);
+        setRecentActivities([]);
+      } finally {
+        setIsActivitiesLoading(false);
+      }
+    };
+
     fetchStats();
+    fetchActivities();
   }, []);
-  const [activeChartPoint, setActiveChartPoint] = useState(null);
+
+  // Fetch queue trends whenever selectedTrendDate changes
+  useEffect(() => {
+    let isCurrent = true;
+    const fetchTrends = async () => {
+      if (!selectedTrendDate) return;
+      setIsTrendsLoading(true);
+      try {
+        const res = await queueApi.getQueueTrends(selectedTrendDate);
+        if (isCurrent && Array.isArray(res?.data?.hourlyData)) {
+          setTrendData(res.data.hourlyData);
+        }
+      } catch (err) {
+        console.error('Failed to load queue trends for date:', selectedTrendDate, err);
+        if (isCurrent) {
+          setTrendData(chartTimePoints.map((time) => ({ time, total: 0, served: 0, waiting: 0, noShow: 0 })));
+        }
+      } finally {
+        if (isCurrent) {
+          setIsTrendsLoading(false);
+        }
+      }
+    };
+
+    fetchTrends();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedTrendDate]);
 
   // Quick Action Handler
   const handleQuickAction = (route) => {
     navigate(route);
   };
 
+  // Active chart dataset & dynamic Y scale
+  const currentChartData = useMemo(() => {
+    if (trendData.length > 0) return trendData;
+    return chartTimePoints.map((time) => ({ time, total: 0, served: 0, waiting: 0, noShow: 0 }));
+  }, [trendData]);
+
+  const chartMaxY = useMemo(() => {
+    const maxVal = Math.max(...currentChartData.map((d) => d.total || 0), 0);
+    return Math.max(50, Math.ceil(maxVal / 10) * 10);
+  }, [currentChartData]);
+
   // Helper to generate smooth SVG path from data series
-  const getSvgPath = (key, width = 940, height = 200, maxY = 50) => {
-    const points = chartData.map((d, index) => {
-      const x = (index / (chartData.length - 1)) * width;
-      const y = height - (d[key] / maxY) * height;
+  const getSvgPath = (key, width = 940, height = 200, maxY = chartMaxY) => {
+    const points = currentChartData.map((d, index) => {
+      const x = (index / (currentChartData.length - 1)) * width;
+      const y = height - ((d[key] || 0) / maxY) * height;
       return { x, y };
     });
 
@@ -114,7 +198,7 @@ export const AdminDashboard = () => {
       const p0 = i > 0 ? points[i - 1] : points[i];
       const p1 = points[i];
       const p2 = points[i + 1];
-      const p3 = i != points.length - 2 ? points[i + 2] : p2;
+      const p3 = i !== points.length - 2 ? points[i + 2] : p2;
 
       const cp1x = p1.x + (p2.x - p0.x) / 6;
       const cp1y = p1.y + (p2.y - p0.y) / 6;
@@ -126,8 +210,9 @@ export const AdminDashboard = () => {
     return d;
   };
 
-  const getSvgAreaPath = (key, width = 940, height = 200, maxY = 50) => {
+  const getSvgAreaPath = (key, width = 940, height = 200, maxY = chartMaxY) => {
     const linePath = getSvgPath(key, width, height, maxY);
+    if (!linePath) return '';
     return `${linePath} L ${width} ${height} L 0 ${height} Z`;
   };
 
@@ -213,33 +298,53 @@ export const AdminDashboard = () => {
         <div className="admin-card overview-card">
           <div className="admin-card-header">
             <h2 className="admin-card-title">
-              <BarChart3 size={20} className="section-title-icon" />
+              <BarChart3 size={19} className="section-title-icon" />
               <span>Today's Overview</span>
             </h2>
             <div className="admin-header-controls">
               <div className="admin-date-pill">
-                <Calendar size={14} className="pill-icon" />
+                <Calendar size={13} className="pill-icon" />
                 <span>{currentDisplayDate}</span>
               </div>
             </div>
           </div>
 
-          <div className="admin-table-container">
-            <table className="admin-table">
+          {/* KPI Summary Chips Strip */}
+          <div className="overview-kpi-summary-strip">
+            <div className="overview-kpi-chip chip-blue">
+              <span className="kpi-chip-label">Total Booked</span>
+              <span className="kpi-chip-val">{todayStats.totalAppointmentsToday || 0}</span>
+            </div>
+            <div className="overview-kpi-chip chip-green">
+              <span className="kpi-chip-label">Served</span>
+              <span className="kpi-chip-val">{todayStats.totalServedToday || 0}</span>
+            </div>
+            <div className="overview-kpi-chip chip-amber">
+              <span className="kpi-chip-label">Waiting</span>
+              <span className="kpi-chip-val">{todayStats.totalWaitingToday || 0}</span>
+            </div>
+            <div className="overview-kpi-chip chip-red">
+              <span className="kpi-chip-label">No-Show</span>
+              <span className="kpi-chip-val">{todayStats.totalNoShowToday || 0}</span>
+            </div>
+          </div>
+
+          <div className="admin-table-container overview-table-scroll-wrap">
+            <table className="admin-table overview-data-table">
               <thead>
                 <tr>
-                  <th style={{ width: '40px' }}>#</th>
-                  <th>Service Name</th>
-                  <th style={{ textAlign: 'center' }}>Total Appointments</th>
-                  <th style={{ textAlign: 'center' }}>Served</th>
-                  <th style={{ textAlign: 'center' }}>Waiting</th>
-                  <th style={{ textAlign: 'center' }}>No-Show</th>
-                  <th style={{ textAlign: 'right', paddingRight: '16px' }}>Status</th>
+                  <th className="th-index">#</th>
+                  <th className="th-service">Service</th>
+                  <th className="th-stat">Booked</th>
+                  <th className="th-stat">Served</th>
+                  <th className="th-stat">Waiting</th>
+                  <th className="th-stat">No-Show</th>
+                  <th className="th-status">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {liveServices.length > 0 ? (
-                  liveServices.slice(0, 10).map((srv, idx) => {
+                  liveServices.map((srv, idx) => {
                     const srvId = srv._id || srv.id;
                     const srvStats = todayStats.services?.[srvId] || {
                       totalAppointments: 0,
@@ -252,14 +357,22 @@ export const AdminDashboard = () => {
                         <td className="col-index">{idx + 1}</td>
                         <td className="col-service">
                           <div className="service-icon-circle blue-service-bg">
-                            <Layers size={16} className="blue-service-icon" />
+                            <Layers size={15} className="blue-service-icon" />
                           </div>
                           <span className="service-name-text">{srv.name || srv.title}</span>
                         </td>
-                        <td className="col-stat">{srvStats.totalAppointments}</td>
-                        <td className="col-stat">{srvStats.served}</td>
-                        <td className="col-stat">{srvStats.waiting}</td>
-                        <td className="col-stat">{srvStats.noShow}</td>
+                        <td className="col-stat">
+                          <span className="stat-count-pill pill-neutral">{srvStats.totalAppointments}</span>
+                        </td>
+                        <td className="col-stat">
+                          <span className="stat-count-pill pill-success">{srvStats.served}</span>
+                        </td>
+                        <td className="col-stat">
+                          <span className="stat-count-pill pill-warning">{srvStats.waiting}</span>
+                        </td>
+                        <td className="col-stat">
+                          <span className="stat-count-pill pill-danger">{srvStats.noShow}</span>
+                        </td>
                         <td className="col-status">
                           <span className={`status-pill ${srv.isActive !== false ? 'active-pill' : 'inactive-pill'}`}>
                             <span className={`status-dot ${srv.isActive !== false ? 'green-dot' : 'red-dot'}`} />
@@ -368,20 +481,19 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="admin-header-controls">
-            <div className="admin-date-pill">
-              <Calendar size={14} className="pill-icon" />
-              <span>8 Oct 2026</span>
-            </div>
-            <div className="admin-select-wrapper">
+            <div className="admin-select-wrapper trends-date-select-wrapper">
+              <Calendar size={14} className="select-calendar-icon" />
               <select 
-                value={selectedTimeframe} 
-                onChange={(e) => setSelectedTimeframe(e.target.value)}
-                className="admin-select"
-                aria-label="Select timeframe"
+                value={selectedTrendDate} 
+                onChange={(e) => setSelectedTrendDate(e.target.value)}
+                className="admin-select trends-date-select"
+                aria-label="Filter queue trends by date"
               >
-                <option value="Day">Day</option>
-                <option value="Week">Week</option>
-                <option value="Month">Month</option>
+                {trendDateOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
               <ChevronDown size={14} className="select-chevron" />
             </div>
@@ -392,18 +504,18 @@ export const AdminDashboard = () => {
         <div className="trends-chart-wrapper">
           {/* Y Axis Labels */}
           <div className="chart-y-axis">
-            <span>50</span>
-            <span>40</span>
-            <span>30</span>
-            <span>20</span>
-            <span>10</span>
+            <span>{chartMaxY}</span>
+            <span>{Math.round(chartMaxY * 0.8)}</span>
+            <span>{Math.round(chartMaxY * 0.6)}</span>
+            <span>{Math.round(chartMaxY * 0.4)}</span>
+            <span>{Math.round(chartMaxY * 0.2)}</span>
             <span>0</span>
           </div>
 
           <div className="chart-svg-container">
             <svg 
               viewBox="0 0 940 200" 
-              className="trends-svg"
+              className={`trends-svg ${isTrendsLoading ? 'trends-loading' : ''}`}
               preserveAspectRatio="none"
             >
               <defs>
@@ -450,12 +562,12 @@ export const AdminDashboard = () => {
               <path d={getSvgPath('noShow')} fill="none" stroke="#EF4444" strokeWidth="2.2" />
 
               {/* Data Dots */}
-              {chartData.map((d, index) => {
-                const x = (index / (chartData.length - 1)) * 940;
-                const yTotal = 200 - (d.total / 50) * 200;
-                const yServed = 200 - (d.served / 50) * 200;
-                const yWaiting = 200 - (d.waiting / 50) * 200;
-                const yNoShow = 200 - (d.noShow / 50) * 200;
+              {currentChartData.map((d, index) => {
+                const x = (index / (currentChartData.length - 1)) * 940;
+                const yTotal = 200 - ((d.total || 0) / chartMaxY) * 200;
+                const yServed = 200 - ((d.served || 0) / chartMaxY) * 200;
+                const yWaiting = 200 - ((d.waiting || 0) / chartMaxY) * 200;
+                const yNoShow = 200 - ((d.noShow || 0) / chartMaxY) * 200;
 
                 return (
                   <g key={d.time}>
@@ -470,14 +582,14 @@ export const AdminDashboard = () => {
 
             {/* X Axis Labels */}
             <div className="chart-x-axis">
-              {chartTimePoints.map((time, idx) => (
+              {currentChartData.map((d) => (
                 <span 
-                  key={time} 
+                  key={d.time} 
                   className="x-label"
-                  onMouseEnter={() => setActiveChartPoint(chartData[idx])}
+                  onMouseEnter={() => setActiveChartPoint(d)}
                   onMouseLeave={() => setActiveChartPoint(null)}
                 >
-                  {time}
+                  {d.time}
                 </span>
               ))}
             </div>
@@ -537,61 +649,31 @@ export const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {/* Activity 1 */}
-              <tr>
-                <td className="col-index">1</td>
-                <td className="col-activity">
-                  <div className="activity-icon-badge green-badge">
-                    <Plus size={14} className="activity-green-icon" />
-                  </div>
-                  <span className="activity-name-text">New Service Created</span>
-                </td>
-                <td className="col-details">Follow-up Consultation</td>
-                <td className="col-user">Admin User</td>
-                <td className="col-time">10:15 AM</td>
-              </tr>
-
-              {/* Activity 2 */}
-              <tr>
-                <td className="col-index">2</td>
-                <td className="col-activity">
-                  <div className="activity-icon-badge blue-badge">
-                    <Calendar size={14} className="activity-blue-icon" />
-                  </div>
-                  <span className="activity-name-text">Availability Created</span>
-                </td>
-                <td className="col-details">General Consultation - 8 Oct 2026</td>
-                <td className="col-user">Admin User</td>
-                <td className="col-time">09:48 AM</td>
-              </tr>
-
-              {/* Activity 3 */}
-              <tr>
-                <td className="col-index">3</td>
-                <td className="col-activity">
-                  <div className="activity-icon-badge orange-badge">
-                    <Store size={14} className="activity-orange-icon" />
-                  </div>
-                  <span className="activity-name-text">Counter Added</span>
-                </td>
-                <td className="col-details">Counter 3</td>
-                <td className="col-user">Admin User</td>
-                <td className="col-time">09:30 AM</td>
-              </tr>
-
-              {/* Activity 4 */}
-              <tr>
-                <td className="col-index">4</td>
-                <td className="col-activity">
-                  <div className="activity-icon-badge purple-badge">
-                    <FileText size={14} className="activity-purple-icon" />
-                  </div>
-                  <span className="activity-name-text">Queue Log Viewed</span>
-                </td>
-                <td className="col-details">General Consultation</td>
-                <td className="col-user">Admin User</td>
-                <td className="col-time">09:12 AM</td>
-              </tr>
+              {recentActivities && recentActivities.length > 0 ? (
+                recentActivities.slice(0, 5).map((act, idx) => {
+                  const colorClass = `activity-color-${(idx % 5) + 1}`;
+                  return (
+                    <tr key={act.id || idx}>
+                      <td className="col-index">{idx + 1}</td>
+                      <td className="col-activity">
+                        <div className={`activity-icon-badge ${colorClass}`}>
+                          <Activity size={14} className="common-activity-icon" />
+                        </div>
+                        <span className="activity-name-text">{act.activity}</span>
+                      </td>
+                      <td className="col-details">{act.details || '—'}</td>
+                      <td className="col-user">{act.user || '—'}</td>
+                      <td className="col-time">{act.time || '—'}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} className="no-activity-cell">
+                    No activity
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

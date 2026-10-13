@@ -75,6 +75,22 @@ router.get(
     queueFunction.getQueueLogs
 );
 
+//GET /api/v1/queue/trends
+router.get(
+    "/trends",
+    authenticate,
+    authorizeRoles("ADMIN", "STAFF"),
+    queueFunction.getQueueTrends
+);
+
+//GET /api/v1/queue/recent-activities
+router.get(
+    "/recent-activities",
+    authenticate,
+    authorizeRoles("ADMIN", "STAFF"),
+    queueFunction.getRecentActivities
+);
+
 //GET /api/v1/queue/:queueId
 router.get(
     "/:queueId",

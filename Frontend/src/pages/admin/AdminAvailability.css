@@ -1392,13 +1392,118 @@
 }
 
 @media (max-width: 768px) {
+  .admin-availability-page,
+  .admin-avail-page-container {
+    padding: 12px 14px 24px 14px;
+  }
+
+  /* Compact tabs on mobile */
+  .admin-avail-tabs-header,
+  .admin-avail-tabs-bar {
+    padding: 8px 12px 0 12px;
+    gap: 8px;
+    display: flex;
+  }
+
+  .admin-avail-tab-btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 13px;
+    padding: 10px 6px 12px 6px;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .admin-avail-card-body {
+    padding: 14px 12px;
+  }
+
+  /* Split layout stacked */
+  .admin-avail-split-layout {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Hide bulky 3D illustration on mobile */
+  .avail-left-illustration-wrapper {
+    display: none !important;
+  }
+
+  /* Compact guidance banner on mobile */
+  .admin-avail-left-panel {
+    padding: 14px 12px;
+    border-radius: 12px;
+    background: #F8FAFC;
+    border: 1px solid #EEF2F6;
+  }
+
+  .avail-left-heading {
+    font-size: 15px;
+    margin: 0 0 4px 0;
+  }
+
+  .avail-left-subheading {
+    font-size: 12px;
+    margin: 0 0 10px 0;
+    max-width: 100%;
+    line-height: 1.4;
+  }
+
+  .avail-guidance-list {
+    gap: 8px;
+  }
+
+  .avail-guidance-item {
+    gap: 10px;
+    align-items: center;
+  }
+
+  .guidance-icon-bubble {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  .guidance-title {
+    font-size: 12px;
+  }
+
+  .guidance-desc {
+    font-size: 11px;
+    display: none;
+  }
+
+  .admin-avail-right-form-panel {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+
+  .admin-avail-form-header {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .avail-header-badge-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .avail-form-title {
+    font-size: 16px;
+  }
+
+  .avail-form-subtitle {
+    font-size: 12px;
+  }
+
   .avail-form-two-col-row {
     flex-direction: column;
+    gap: 14px;
   }
 
   .avail-form-footer-action-bar {
     flex-direction: column-reverse;
-    gap: 12px;
+    gap: 10px;
     align-items: stretch;
   }
 
@@ -1409,32 +1514,39 @@
   .footer-right-buttons {
     width: 100%;
     display: flex;
-    gap: 12px;
+    gap: 10px;
   }
 
   .avail-btn-cancel,
   .avail-btn-submit {
     flex: 1;
     justify-content: center;
+    height: 42px;
   }
 
   .avail-btn-clear {
     width: 100%;
     justify-content: center;
+    height: 40px;
   }
 
+  /* Tab 2: Existing controls and search */
   .existing-controls-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
 
   .existing-search-input-wrapper {
     min-width: 100%;
+    width: 100%;
   }
 
   .existing-filters-group {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+    width: 100%;
   }
 
   .status-filter-dropdown-wrapper {
@@ -1444,39 +1556,97 @@
   .status-filter-toggle-btn {
     width: 100%;
     justify-content: space-between;
+    height: 42px;
+  }
+
+  .add-new-quick-btn {
+    width: 100%;
+    justify-content: center;
+    height: 42px;
+  }
+
+  /* Mobile Dropdowns */
+  .avail-floating-dropdown-menu,
+  .status-filter-menu {
+    max-width: calc(100vw - 32px) !important;
+    width: 100% !important;
+    z-index: 1000 !important;
+    max-height: 250px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+  }
+
+  .avail-dropdown-option {
+    min-height: 42px;
+    padding: 10px 12px;
+  }
+
+  /* Table optimizations for mobile */
+  .avail-table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-height: 480px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+  }
+
+  .avail-data-table {
+    min-width: 660px;
+  }
+
+  .avail-data-table th {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  .avail-data-table td {
+    padding: 10px 12px;
+    font-size: 12.5px;
+  }
+
+  .service-cell-inner {
+    gap: 8px;
+  }
+
+  .service-cell-icon-box {
+    width: 28px;
+    height: 28px;
+  }
+
+  .service-cell-title {
+    font-size: 13px;
+  }
+
+  .service-cell-code {
+    font-size: 10.5px;
+  }
+
+  .capacity-bar-wrapper {
+    min-width: 130px;
   }
 }
 
-@media (max-width: 680px) {
-
+@media (max-width: 480px) {
   .admin-availability-page,
   .admin-avail-page-container {
-    padding: 12px 16px 20px 16px;
-    min-height: calc(100vh - 62px - 28px);
-  }
-
-  .admin-avail-tabs-header,
-  .admin-avail-tabs-bar {
-    padding: 10px 14px 0 14px;
-    gap: 14px;
-    overflow-x: auto;
+    padding: 8px 10px 20px 10px;
   }
 
   .admin-avail-tab-btn {
-    font-size: 13.5px;
-    padding: 10px 2px 12px 2px;
+    font-size: 12px;
+    padding: 8px 4px 10px 4px;
   }
 
-  .admin-avail-card-body {
-    padding: 16px;
+  .admin-avail-tab-btn .tab-btn-icon {
+    width: 15px;
+    height: 15px;
   }
 
-  .admin-avail-right-form-panel {
-    padding: 20px 14px;
-  }
-
-  .admin-avail-left-panel {
-    padding: 20px 14px;
+  .avail-tab-counter-badge {
+    padding: 1px 5px;
+    font-size: 10px;
   }
 }
 

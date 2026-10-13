@@ -112,7 +112,22 @@
   min-height: 38px;
 }
 
-/* Duration Pill between Description and Timing */
+/* Meta Row: Duration and Service Code between Description and Timing */
+.ql-service-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 9px;
+  width: 100%;
+}
+
+.ql-service-meta-row .ql-service-duration-pill,
+.ql-service-meta-row .ql-service-code-pill {
+  margin-bottom: 0;
+}
+
+/* Duration Pill */
 .ql-service-duration-pill {
   display: inline-flex;
   align-items: center;
@@ -137,6 +152,35 @@
 }
 
 .ql-service-duration-pill .ql-duration-pill-icon {
+  color: #1D68F2;
+  flex-shrink: 0;
+}
+
+/* Service Code Pill in the same row */
+.ql-service-code-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 9px;
+  width: fit-content;
+  box-sizing: border-box;
+  transition: background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
+}
+
+.ql-service-card:hover .ql-service-code-pill {
+  background-color: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.ql-service-code-pill .ql-code-pill-icon {
   color: #1D68F2;
   flex-shrink: 0;
 }
@@ -604,9 +648,9 @@
   gap: 6.5px;
   padding: 5px 12px;
   border-radius: var(--radius-full, 9999px);
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
   font-family: var(--font-sans);
@@ -761,9 +805,16 @@
   min-height: 38px;
 }
 
+.admin-card-mode .ql-service-meta-row,
 .admin-card-mode .ql-service-duration-pill {
   margin-top: auto;
   margin-bottom: 8px;
+}
+
+.admin-card-mode .ql-service-meta-row .ql-service-duration-pill,
+.admin-card-mode .ql-service-meta-row .ql-service-code-pill {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .admin-card-mode .ql-service-schedule-pill {

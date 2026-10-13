@@ -24,6 +24,26 @@ export const queueApi = {
   },
 
   /**
+   * Fetch queue trends by date
+   * @param {string} [date] - YYYY-MM-DD
+   */
+  getQueueTrends: async (date) => {
+    const q = date ? `?date=${encodeURIComponent(date)}` : '';
+    return apiClient(`/queue/trends${q}`, {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Fetch recent activities
+   */
+  getRecentActivities: async () => {
+    return apiClient('/queue/recent-activities', {
+      method: 'GET',
+    });
+  },
+
+  /**
    * Fetch active queue status for a queue ID (Customer)
    * @param {string} queueId
    * @param {string} [appointmentId]

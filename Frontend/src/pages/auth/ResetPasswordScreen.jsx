@@ -165,7 +165,7 @@ export const ResetPasswordScreen = () => {
       }
     } catch (err) {
       console.warn('Password reset submit error:', err);
-      showToast('Invalid or expired reset token. Please request a new link.', 'warning');
+      showToast(err?.message || 'Invalid or expired reset token. Please request a new link.', 'warning');
     } finally {
       setIsSubmitting(false);
     }

@@ -209,6 +209,17 @@ export const AdminManageUsers = () => {
     };
   }, []);
 
+  // Prevent background scrolling when modals are open
+  useEffect(() => {
+    if (isEditModalOpen || confirmDialog.isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow || 'unset';
+      };
+    }
+  }, [isEditModalOpen, confirmDialog.isOpen]);
+
   // Compute Active/Inactive counts dynamically across both datasets
   const metrics = useMemo(() => {
     const totalStaff = staffList.length;
@@ -605,7 +616,7 @@ export const AdminManageUsers = () => {
                             <div className="user-name-meta">
                               <span className="user-name-text">{user.name}</span>
                               <span className="user-role-badge-sub">
-                                {activeTab === 'staff' ? 'Staff' : 'Customer'}
+                                {activeTab === 'staff' ? 'Queue Manager' : 'Customer'}
                               </span>
                             </div>
                           </div>

@@ -203,6 +203,17 @@ export const BookingModal = ({
     }
   }, [isOpen, serviceId, fetchAvailability]);
 
+  // Prevent background scrolling when booking modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow || 'unset';
+      };
+    }
+  }, [isOpen]);
+
   // Generate date options strictly from real database availability records
   const dateOptions = useMemo(() => {
     return buildDateOptions(dbAvailabilities);

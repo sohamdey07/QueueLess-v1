@@ -17,14 +17,17 @@ export const authApi = {
 
     // If login is successful, store accessToken and user profile in storage
     if (response?.success && response?.data) {
-      const { accessToken, userId, name, role } = response.data;
+      const { accessToken, userId, name, email: respEmail, phone, isVerified, isActive, role } = response.data;
       if (accessToken) {
         tokenStorage.setAccessToken(accessToken);
       }
       tokenStorage.setUser({
         userId,
         name,
-        email: email.trim().toLowerCase(),
+        email: respEmail || email.trim().toLowerCase(),
+        phone: phone || '',
+        isVerified: isVerified !== undefined ? Boolean(isVerified) : false,
+        isActive: isActive !== undefined ? Boolean(isActive) : true,
         role,
       });
     }

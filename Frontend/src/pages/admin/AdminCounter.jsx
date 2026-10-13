@@ -45,7 +45,7 @@ const UNASSIGNED_STAFF = {
   name: 'Unassigned (No Staff)',
   email: 'Assign a staff member later',
   status: 'Inactive',
-  role: 'Staff'
+  role: 'Queue Manager'
 };
 
 export const AdminCounter = () => {
@@ -98,7 +98,7 @@ export const AdminCounter = () => {
         name: s.name,
         email: s.email,
         status: s.isActive !== false ? 'Active' : 'Inactive',
-        role: s.role || 'Staff'
+        role: s.role === 'STAFF' ? 'Queue Manager' : (s.role || 'Queue Manager')
       }));
       setStaffList(normalized);
     } catch (e) {
@@ -233,7 +233,7 @@ export const AdminCounter = () => {
         name: counter.staffName,
         email: counter.staffEmail,
         status: 'Active',
-        role: 'Staff',
+        role: 'Queue Manager',
       };
       setSelectedStaff(stf);
     } else {
@@ -309,6 +309,17 @@ export const AdminCounter = () => {
       showToast(err.message || 'Failed to delete counter.');
     }
   };
+
+  // Prevent background scrolling when delete confirmation modal is open
+  useEffect(() => {
+    if (counterToDelete) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow || 'unset';
+      };
+    }
+  }, [counterToDelete]);
 
   // Reset page when filter or search changes
   useEffect(() => {

@@ -11,6 +11,7 @@ export const StaffLayout = ({ children }) => {
         staffName="Arindam" 
         staffFullName="Arindam Mukherjee" 
         counterName="Counter 2" 
+        role="Queue Manager"
       />
 
       {/* Main Page Body */}

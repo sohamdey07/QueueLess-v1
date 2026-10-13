@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Menu, User, Settings, LogOut, ShieldCheck } from 'lucide-react';
 import authApi from '../../../services/api/auth.api.js';
 import tokenStorage from '../../../services/storage/tokenStorage.js';
+import CommonAvatar from '../../common/CommonAvatar';
+import ProfileModal from '../../common/ProfileModal';
+import SettingsModal from '../../common/SettingsModal';
+import UserMenuDropdown from '../../common/UserMenuDropdown';
 import './AdminHeader.css';
 
 export const AdminHeader = ({ 
@@ -13,12 +17,12 @@ export const AdminHeader = ({
   onMenuToggle
 }) => {
   const navigate = useNavigate();
-  const currentUser = tokenStorage.getUser();
-  const activeAdminName = userName || currentUser?.name || 'Admin User';
+  const [currentUser, setCurrentUser] = useState(() => tokenStorage.getUser());
+  const activeAdminName = currentUser?.name || userName || 'Admin User';
   const activeAdminInitials =
     userInitials ||
-    (currentUser?.name
-      ? currentUser.name
+    (activeAdminName
+      ? activeAdminName
           .trim()
           .split(/\s+/)
           .filter(Boolean)
@@ -30,9 +34,26 @@ export const AdminHeader = ({
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const profileRef = useRef(null);
   const notificationRef = useRef(null);
+
+  const handleCloseProfileModal = useCallback(() => {
+    setIsProfileModalOpen(false);
+  }, []);
+
+  const handleCloseSettingsModal = useCallback(() => {
+    setIsSettingsModalOpen(false);
+  }, []);
+
+  const handleProfileUpdated = useCallback((updatedData) => {
+    setCurrentUser((prev) => ({
+      ...prev,
+      ...updatedData
+    }));
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -60,7 +81,8 @@ export const AdminHeader = ({
   }, []);
 
   return (
-    <header className="admin-header">
+    <>
+      <header className="admin-header">
       {/* Left: Mobile Toggle, Title & Subtitle */}
       <div className="admin-header-left">
         {onMenuToggle && (
@@ -121,42 +143,49 @@ export const AdminHeader = ({
             aria-expanded={profileOpen}
             aria-label={`Admin user menu for ${activeAdminName}`}
           >
-            <div className="admin-profile-avatar-circle">
-              <span>{activeAdminInitials}</span>
-            </div>
+            <CommonAvatar 
+              size={42} 
+              showRing={true} 
+              showStatusDot={true} 
+              isActive={true} 
+              alt={`Avatar for ${activeAdminName}`} 
+            />
           </button>
 
-          {/* Profile Dropdown */}
-          {profileOpen && (
-            <div className="admin-header-dropdown-menu admin-profile-dropdown">
-              <div className="admin-profile-dropdown-user-info">
-                <div className="admin-profile-dropdown-text">
-                  <div className="admin-profile-name-row">
-                    <span className="admin-profile-dropdown-name">{activeAdminName}</span>
-                    <ShieldCheck size={14} className="admin-shield-icon" />
-                  </div>
-                  <span className="admin-profile-dropdown-role">System Administrator</span>
-                </div>
-              </div>
-              <div className="admin-dropdown-divider" />
-              <button type="button" className="admin-dropdown-item">
-                <User size={15} />
-                <span>Admin Profile</span>
-              </button>
-              <button type="button" className="admin-dropdown-item">
-                <Settings size={15} />
-                <span>System Settings</span>
-              </button>
-              <div className="admin-dropdown-divider" />
-              <button type="button" className="admin-dropdown-item text-danger" onClick={handleLogout}>
-                <LogOut size={15} />
-                <span>Log Out</span>
-              </button>
-            </div>
-          )}
+          {/* Universal User Dropdown */}
+          <UserMenuDropdown
+            isOpen={profileOpen}
+            userName={activeAdminName}
+            userRole="System Administrator"
+            isActive={true}
+            onManageAccount={() => {
+              setProfileOpen(false);
+              setIsProfileModalOpen(true);
+            }}
+            onChangePassword={() => {
+              setProfileOpen(false);
+              setIsSettingsModalOpen(true);
+            }}
+            onSignOut={handleLogout}
+          />
         </div>
       </div>
     </header>
+
+    {/* Admin Profile Modal */}
+    <ProfileModal
+      isOpen={isProfileModalOpen}
+      onClose={handleCloseProfileModal}
+      onProfileUpdated={handleProfileUpdated}
+      roleLabel="System Administrator"
+    />
+
+    {/* Admin Settings Modal */}
+    <SettingsModal
+      isOpen={isSettingsModalOpen}
+      onClose={handleCloseSettingsModal}
+    />
+  </>
   );
 };
 

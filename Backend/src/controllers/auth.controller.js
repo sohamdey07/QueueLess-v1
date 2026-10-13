@@ -197,6 +197,9 @@ export async function login(req,res,next){
                 userId:user._id,
                 name:user.name,
                 email:user.email,
+                phone:user.phone || "",
+                isVerified:Boolean(user.isVerified),
+                isActive:user.isActive !== undefined ? Boolean(user.isActive) : true,
                 role:user.role,
                 accessToken:accessToken
             }
@@ -477,6 +480,15 @@ export async function resetPasswordController(req, res, next) {
             return errorResponse(res, {
                 statusCode: 404,
                 message: "User account not found."
+            });
+        }
+
+        // Check if new password is identical to the current password
+        const isSame = await comparePassword(newPassword, user.password);
+        if (isSame) {
+            return errorResponse(res, {
+                statusCode: 400,
+                message: "Both passwords are the same, cannot change/modify."
             });
         }
 

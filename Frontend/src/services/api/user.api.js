@@ -46,12 +46,32 @@ export const userApi = {
   },
 
   /**
-   * Update user details (name, email, phone, status, password)
+   * Get current authenticated user profile
+   */
+  getProfile: async () => {
+    return apiClient('/users/me', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Update user details (name, phone, password)
    * @param {string} userId
    * @param {Object} data
    */
   updateUser: async (userId, data) => {
     return apiClient(`/users/${userId}`, {
+      method: 'PATCH',
+      body: data,
+    });
+  },
+
+  /**
+   * Update current authenticated user profile
+   * @param {Object} data
+   */
+  updateProfile: async (data) => {
+    return apiClient('/users/me', {
       method: 'PATCH',
       body: data,
     });

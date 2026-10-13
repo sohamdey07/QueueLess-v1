@@ -325,7 +325,7 @@ export async function skipQueueEntryService({
                 await appointmentModel.findOneAndUpdate(
                     {
                         _id: updatedEntry.appointmentId,
-                        status: "CHECKED_IN"
+                        status: { $ne: "COMPLETED" }
                     },
                     {
                         $set: {

@@ -101,3 +101,24 @@ img {
   transform-origin: center;
   flex-shrink: 0;
 }
+
+/* Universal: Prevent background screen from scrolling whenever any pop up / modal is open */
+body:has(
+  .profile-modal-backdrop,
+  .settings-modal-backdrop,
+  .admin-modal-backdrop,
+  .avail-modal-backdrop,
+  .counter-modal-backdrop,
+  .admin-user-modal-overlay,
+  .admin-confirm-modal-overlay,
+  .booking-modal-overlay,
+  .queue-token-modal-backdrop,
+  .cancel-modal-backdrop,
+  .details-modal-backdrop,
+  [role="dialog"],
+  [aria-modal="true"]
+) {
+  overflow: hidden !important;
+  touch-action: none;
+}
+

@@ -366,7 +366,6 @@
 
 .auth-submit-btn:hover:not(:disabled) {
   background-color: #1557D0;
-  transform: translateY(-1px);
   box-shadow: none; /* Adhering strictly to AGENTS.md */
 }
 
