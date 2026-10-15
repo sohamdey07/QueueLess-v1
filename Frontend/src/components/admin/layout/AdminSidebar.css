@@ -182,7 +182,7 @@
   inset: 0;
   background-color: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(3px);
-  z-index: 45;
+  z-index: 9990;
   animation: adminBackdropIn 0.2s ease;
 }
 
@@ -196,7 +196,7 @@
   .admin-sidebar {
     transform: translateX(-100%);
     transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 50;
+    z-index: 9995;
     box-shadow: none;
   }
 

@@ -15,6 +15,14 @@
   gap: 32px;
   padding-bottom: 0;
   margin-top: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.my-bookings-tabs-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .booking-tab-btn {
@@ -33,6 +41,12 @@
   transition: all var(--transition-fast, 0.15s ease);
   box-shadow: none;
   border-bottom: 3px solid transparent;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+.booking-tab-btn span {
+  white-space: nowrap !important;
 }
 
 .booking-tab-btn:hover {
@@ -1438,11 +1452,26 @@
   .my-bookings-tabs-bar {
     gap: 8px;
     padding-bottom: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .my-bookings-tabs-bar::-webkit-scrollbar {
+    display: none;
   }
 
   .booking-tab-btn {
     padding: 10px 14px;
     font-size: 13.5px;
+    white-space: nowrap !important;
+    min-width: max-content;
+    flex-shrink: 0;
+  }
+
+  .booking-tab-btn span {
+    white-space: nowrap !important;
   }
 
   .my-bookings-content-card {
@@ -1471,6 +1500,13 @@
     padding: 8px 11px;
     font-size: 12.5px;
     gap: 6px;
+    white-space: nowrap !important;
+    min-width: max-content;
+    flex-shrink: 0;
+  }
+
+  .booking-tab-btn span {
+    white-space: nowrap !important;
   }
 
   .history-modal-card {

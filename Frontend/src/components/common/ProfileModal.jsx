@@ -441,12 +441,12 @@ export const ProfileModal = ({
                 {isSaving ? (
                   <>
                     <RotateCw size={15} className="spin-icon" />
-                    <span>Saving...</span>
+                    <span>Updating...</span>
                   </>
                 ) : (
                   <>
                     <Check size={16} strokeWidth={2.4} />
-                    <span>Save Changes</span>
+                    <span>Update</span>
                   </>
                 )}
               </button>

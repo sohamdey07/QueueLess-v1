@@ -73,6 +73,14 @@
   background: #FFFFFF;
   box-sizing: border-box;
   border-radius: 20px 20px 0 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.admin-counter-tabs-header::-webkit-scrollbar {
+  display: none;
 }
 
 .admin-counter-tab-btn {
@@ -91,6 +99,12 @@
   transition: all 0.15s ease;
   border-radius: 10px 10px 0 0;
   outline: none;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+.admin-counter-tab-btn span {
+  white-space: nowrap !important;
 }
 
 .admin-counter-tab-btn:hover {
@@ -376,7 +390,7 @@
 }
 
 .counter-form-group.open-downward {
-  z-index: 80;
+  z-index: 1;
 }
 
 .counter-form-group.open-downward.dropdown-active-z {
@@ -1747,116 +1761,297 @@
 
 @media (max-width: 768px) {
   .admin-counter-page {
-    padding: 12px 14px 24px 14px;
+    padding: 10px 14px 24px 14px;
   }
 
-  /* Compact tabs on mobile */
+  /* Compact tabs on mobile - strictly single row with horizontal scroll */
   .admin-counter-tabs-header {
     padding: 8px 12px 0 12px;
     gap: 8px;
     display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-counter-tabs-header::-webkit-scrollbar {
+    display: none;
   }
 
   .admin-counter-tab-btn {
     flex: 1;
+    min-width: max-content;
+    white-space: nowrap !important;
     justify-content: center;
     font-size: 13px;
-    padding: 10px 6px 12px 6px;
+    padding: 10px 12px 12px 12px;
     text-align: center;
     gap: 6px;
+    flex-shrink: 0;
   }
 
+  .admin-counter-tab-btn span {
+    white-space: nowrap !important;
+  }
+
+  /* Tab 1: Form card body & split layout matching Availability */
   .admin-counter-card-body {
     padding: 14px 12px;
   }
 
-  /* Split layout stacked */
+  /* Split layout: full width single column on mobile */
   .admin-counter-split-layout {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
   }
 
-  /* Hide bulky 3D illustration on mobile */
-  .counter-left-illustration-wrapper {
+  /* Hide left guidance/intro panel completely on mobile */
+  .admin-counter-left-panel {
     display: none !important;
   }
 
-  /* Compact guidance banner on mobile */
-  .admin-counter-left-panel {
-    padding: 14px 12px;
-    border-radius: 12px;
-    background: #F8FAFC;
-    border: 1px solid #EEF2F6;
-  }
-
-  .counter-left-heading {
-    font-size: 15px;
-    margin: 0 0 4px 0;
-  }
-
-  .counter-left-subheading {
-    font-size: 12px;
-    margin: 0 0 10px 0;
-    max-width: 100%;
-    line-height: 1.4;
-  }
-
-  .counter-guidance-list {
-    gap: 8px;
-  }
-
-  .counter-guidance-item {
-    gap: 10px;
-    align-items: center;
-  }
-
-  .guidance-icon-bubble {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-  }
-
-  .guidance-title {
-    font-size: 12px;
-  }
-
-  .guidance-desc {
-    font-size: 11px;
-    display: none;
-  }
-
+  /* Right form panel: exactly matching Availability's admin-avail-right-form-panel */
   .admin-counter-right-form-panel {
     padding: 16px 12px;
     border-radius: 12px;
+    background: #FFFFFF;
+    border: 1px solid #EEF2F6;
+    box-sizing: border-box;
   }
 
-  .counter-form-header {
+  /* Form header styling matching Availability */
+  .admin-counter-form-header {
+    display: flex;
+    align-items: flex-start;
     gap: 10px;
     margin-bottom: 14px;
+    padding-bottom: 0;
+    border-bottom: none;
   }
 
   .counter-header-badge-icon {
     width: 38px;
     height: 38px;
+    border-radius: 12px;
+    background: #EBF3FE;
+    color: #1D68F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 
   .counter-form-title {
     font-size: 16px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 3px 0;
+    letter-spacing: -0.01em;
   }
 
   .counter-form-subtitle {
     font-size: 12px;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* Form layout & group spacing matching Availability */
+  .counter-interactive-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
   }
 
   .counter-form-two-col-row {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 14px;
+    width: 100%;
+    z-index: 1 !important;
   }
 
+  .counter-form-two-col-row.row-active-z {
+    z-index: 25 !important;
+  }
+
+  .counter-form-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0;
+    z-index: 1 !important;
+  }
+
+  .counter-form-group.open-downward {
+    z-index: 1 !important;
+  }
+
+  .counter-form-group.dropdown-active-z,
+  .counter-form-group.open-downward.dropdown-active-z,
+  .counter-form-group.open-upward.dropdown-active-z {
+    z-index: 30 !important;
+  }
+
+  .counter-field-label {
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 7px;
+    display: block;
+  }
+
+  .counter-text-input {
+    height: 44px;
+    font-size: 13.5px;
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    padding: 0 14px 0 42px;
+    background: #FFFFFF;
+    box-sizing: border-box;
+  }
+
+  .counter-input-icon {
+    left: 14px;
+  }
+
+  .counter-custom-selector-box {
+    height: 44px;
+    min-height: 44px;
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    padding: 0 14px;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+  }
+
+  .counter-selector-left-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .service-leading-icon-box,
+  .staff-leading-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .selector-text-title {
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #0F172A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .selector-text-subcode {
+    font-size: 11px;
+    color: #64748B;
+  }
+
+  .selector-service-tag,
+  .selector-status-badge {
+    background: #DCFCE7;
+    color: #15803D;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+    flex-shrink: 0;
+  }
+
+  .selector-service-tag.tag-required {
+    background: #FEE2E2;
+    color: #DC2626;
+  }
+
+  .selector-status-badge.badge-gray {
+    background: #F1F5F9;
+    color: #64748B;
+  }
+
+  /* Mobile Dropdowns: Matching Availability exact floating dropdown overlay */
+  .counter-floating-dropdown-menu {
+    position: absolute !important;
+    top: calc(100% + 6px) !important;
+    bottom: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    z-index: 1000 !important;
+    max-height: 250px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 6px;
+    transform: none !important;
+    animation: counterDropdownFade 0.15s ease-out !important;
+  }
+
+  @keyframes counterDropdownFade {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .counter-dropdown-option-item {
+    min-height: 42px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+
+  .option-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F172A;
+  }
+
+  .option-subtext {
+    font-size: 11px;
+    color: #64748B;
+  }
+
+  /* Form action buttons matching Availability */
   .counter-form-footer-action-bar {
+    display: flex;
     flex-direction: column-reverse;
     gap: 10px;
     align-items: stretch;
+    margin-top: 10px;
+    padding-top: 16px;
+    border-top: 1px solid #F1F5F9;
   }
 
   .footer-left-buttons {
@@ -1874,16 +2069,30 @@
     flex: 1;
     justify-content: center;
     height: 42px;
+    font-size: 13.5px;
+    font-weight: 700;
+    border-radius: 10px;
   }
 
   .counter-btn-clear {
     width: 100%;
     justify-content: center;
     height: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
   }
 
-  /* Controls & Search */
+  /* Tab 2: Controls & Search */
+  .admin-counter-assigned-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+
   .counter-controls-bar {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
@@ -1892,42 +2101,75 @@
   .counter-search-input-wrapper {
     max-width: 100%;
     width: 100%;
+    min-width: 0;
   }
 
+  .counter-search-field {
+    height: 42px;
+    font-size: 13px;
+    border-radius: 10px;
+    padding: 0 34px 0 36px;
+  }
+
+  .counter-search-input-wrapper .search-icon {
+    left: 12px;
+  }
+
+  /* Place status filter and Add Counter button in the same single row */
   .counter-filters-group {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
     width: 100%;
+  }
+
+  .status-filter-dropdown-wrapper {
+    flex: 1;
+    min-width: 0;
+    position: relative;
   }
 
   .status-filter-toggle-btn {
     width: 100%;
+    height: 42px;
+    font-size: 12.5px;
+    padding: 0 10px;
+    border-radius: 10px;
     justify-content: space-between;
-    height: 42px;
+    gap: 6px;
   }
 
-  .counter-add-quick-btn {
-    width: 100%;
+  .add-counter-quick-btn {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    font-size: 12.5px;
+    padding: 0 10px;
+    border-radius: 10px;
     justify-content: center;
-    height: 42px;
+    white-space: nowrap;
+    gap: 6px;
   }
 
-  /* Mobile Dropdowns */
-  .counter-floating-dropdown-menu,
-  .counter-filter-menu {
-    max-width: calc(100vw - 32px) !important;
-    width: 100% !important;
-    z-index: 1000 !important;
-    max-height: 250px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+  .status-filter-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: 130px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    border-radius: 10px;
+    padding: 4px;
   }
 
-  .counter-dropdown-option {
-    min-height: 42px;
-    padding: 10px 12px;
+  .status-filter-option {
+    padding: 8px 10px;
+    font-size: 12.5px;
+    min-height: 38px;
+    border-radius: 7px;
   }
 
   /* Table optimizations for mobile */
@@ -1935,35 +2177,146 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
+    height: auto !important;
+    max-height: none !important;
     border-radius: 12px;
     border: 1px solid #E2E8F0;
+    margin-top: 2px;
   }
 
   .counter-data-table {
-    min-width: 680px;
+    min-width: 760px;
   }
 
   .counter-data-table th {
     padding: 10px 12px;
     font-size: 11px;
+    white-space: nowrap !important;
   }
 
   .counter-data-table td {
     padding: 10px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .counter-identity-inner,
+  .counter-service-cell-inner,
+  .counter-staff-cell-inner {
+    min-width: 0;
+  }
+
+  .counter-identity-meta,
+  .service-meta-block,
+  .staff-meta-block {
+    min-width: 0;
+  }
+
+  .counter-allpurpose-icon-box {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    flex-shrink: 0 !important;
+  }
+
+  .counter-data-table .counter-name-text,
+  .counter-data-table .service-cell-title,
+  .counter-data-table .staff-cell-name,
+  .counter-data-table .staff-cell-email {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.35;
+    max-height: 2.7em;
+    max-width: 170px;
+  }
+
+  .counter-name-text {
     font-size: 12.5px;
   }
 
+  .service-mini-icon-box {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0 !important;
+  }
+
+  .service-cell-title {
+    font-size: 12px;
+  }
+
+  .staff-table-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 10.5px;
+    flex-shrink: 0 !important;
+  }
+
+  .staff-cell-name {
+    font-size: 12px;
+  }
+
+  .staff-cell-email {
+    font-size: 11px;
+  }
+
+  .counter-data-table .row-num-badge,
+  .counter-data-table .counter-code-badge,
+  .counter-data-table .service-cell-code,
+  .counter-data-table .counter-status-pill,
+  .counter-data-table .action-icon-btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .counter-code-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .counter-status-pill {
+    font-size: 11px;
+    padding: 3px 9px;
+  }
+
+  .action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
   .counter-table-footer {
+    display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     justify-content: center;
-    padding: 14px 12px;
+    padding: 12px 4px 4px 4px;
+    margin-top: 4px;
+  }
+
+  .footer-count-text {
+    font-size: 12px;
+    text-align: center;
   }
 
   .table-footer-pagination {
     flex-wrap: wrap;
     justify-content: center;
+    gap: 4px;
+  }
+
+  .pagination-step-btn,
+  .pagination-num-btn {
+    height: 32px;
+    min-width: 32px;
+    font-size: 12px;
+    padding: 0 8px;
+    border-radius: 7px;
   }
 }
 
@@ -1972,9 +2325,25 @@
     padding: 8px 10px 20px 10px;
   }
 
+  .admin-counter-card-body {
+    padding: 14px 10px 18px 10px;
+  }
+
+  .admin-counter-tabs-header {
+    padding: 6px 8px 0 8px;
+    gap: 6px;
+  }
+
   .admin-counter-tab-btn {
     font-size: 12px;
-    padding: 8px 4px 10px 4px;
+    padding: 8px 8px 10px 8px;
+    white-space: nowrap !important;
+    min-width: max-content;
+    flex-shrink: 0;
+  }
+
+  .admin-counter-tab-btn span {
+    white-space: nowrap !important;
   }
 
   .admin-counter-tab-btn .tab-btn-icon {
@@ -1985,6 +2354,26 @@
   .counter-tab-counter-badge {
     padding: 1px 5px;
     font-size: 10px;
+  }
+
+  .counter-custom-selector-box {
+    padding: 7px 10px;
+    gap: 6px;
+  }
+
+  .selector-text-title {
+    font-size: 12.5px;
+  }
+
+  .selector-service-tag,
+  .selector-status-badge {
+    font-size: 9.5px;
+    padding: 1px 5px;
+  }
+
+  .counter-data-table th,
+  .counter-data-table td {
+    padding: 8px 10px;
   }
 }
 

@@ -43,7 +43,7 @@ const UNASSIGNED_STAFF = {
   id: '',
   _id: '',
   name: 'Unassigned (No Staff)',
-  email: 'Assign a staff member later',
+  email: 'Assign a staff later',
   status: 'Inactive',
   role: 'Queue Manager'
 };
@@ -188,7 +188,11 @@ export const AdminCounter = () => {
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
   }, []);
 
   // Show Toast Helper
@@ -636,7 +640,7 @@ export const AdminCounter = () => {
                               {selectedStaff?.name || 'Unassigned (No Staff)'}
                             </span>
                             <span className="selector-text-subcode">
-                              {selectedStaff?.email || 'Assign a staff member later'}
+                              {selectedStaff?.email || 'Assign a staff later'}
                             </span>
                           </div>
                           <span

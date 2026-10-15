@@ -348,7 +348,7 @@ export const SettingsModal = ({
                 ) : (
                   <>
                     <Lock size={15} strokeWidth={2.4} />
-                    <span>Update Password</span>
+                    <span>Update</span>
                   </>
                 )}
               </button>

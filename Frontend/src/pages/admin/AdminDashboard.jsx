@@ -356,10 +356,12 @@ export const AdminDashboard = () => {
                       <tr key={srvId || idx}>
                         <td className="col-index">{idx + 1}</td>
                         <td className="col-service">
-                          <div className="service-icon-circle blue-service-bg">
-                            <Layers size={15} className="blue-service-icon" />
+                          <div className="dashboard-service-cell-inner">
+                            <div className="service-icon-circle blue-service-bg">
+                              <Layers size={15} className="blue-service-icon" />
+                            </div>
+                            <span className="service-name-text">{srv.name || srv.title}</span>
                           </div>
-                          <span className="service-name-text">{srv.name || srv.title}</span>
                         </td>
                         <td className="col-stat">
                           <span className="stat-count-pill pill-neutral">{srvStats.totalAppointments}</span>
@@ -656,13 +658,19 @@ export const AdminDashboard = () => {
                     <tr key={act.id || idx}>
                       <td className="col-index">{idx + 1}</td>
                       <td className="col-activity">
-                        <div className={`activity-icon-badge ${colorClass}`}>
-                          <Activity size={14} className="common-activity-icon" />
+                        <div className="dashboard-activity-cell-inner">
+                          <div className={`activity-icon-badge ${colorClass}`}>
+                            <Activity size={14} className="common-activity-icon" />
+                          </div>
+                          <span className="activity-name-text">{act.activity}</span>
                         </div>
-                        <span className="activity-name-text">{act.activity}</span>
                       </td>
-                      <td className="col-details">{act.details || '—'}</td>
-                      <td className="col-user">{act.user || '—'}</td>
+                      <td className="col-details">
+                        <span className="activity-details-text">{act.details || '—'}</span>
+                      </td>
+                      <td className="col-user">
+                        <span className="activity-user-text">{act.user || '—'}</span>
+                      </td>
                       <td className="col-time">{act.time || '—'}</td>
                     </tr>
                   );

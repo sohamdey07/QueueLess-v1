@@ -94,6 +94,22 @@ export const AdminQueueLogs = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Responsive state for mobile pagination
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Fetch all registered services on mount
   useEffect(() => {
     let isMounted = true;
@@ -338,8 +354,49 @@ export const AdminQueueLogs = () => {
     return list;
   }, [availableDates]);
 
-  // Helper to render pagination numbers with ellipsis
+  // Helper to render pagination numbers with max 3 buttons on mobile, or desktop ellipsis
   const renderPaginationItems = () => {
+    // Mobile View Pagination: Exactly max 3 page buttons visible, sliding window
+    if (isMobile) {
+      if (totalPages <= 3) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+          <button
+            key={pageNum}
+            type="button"
+            className={`queue-log-page-btn ${currentPage === pageNum ? 'active' : ''}`}
+            onClick={() => setCurrentPage(pageNum)}
+          >
+            {pageNum}
+          </button>
+        ));
+      }
+
+      // When totalPages > 3:
+      // Page 1 shows [1, 2, 3]
+      // Page totalPages shows [totalPages - 2, totalPages - 1, totalPages]
+      // In-between centers the current page: [currentPage - 1, currentPage, currentPage + 1]
+      let startPage = currentPage - 1;
+      if (startPage < 1) {
+        startPage = 1;
+      } else if (startPage + 2 > totalPages) {
+        startPage = totalPages - 2;
+      }
+
+      const mobilePages = [startPage, startPage + 1, startPage + 2];
+
+      return mobilePages.map((pageNum) => (
+        <button
+          key={pageNum}
+          type="button"
+          className={`queue-log-page-btn ${currentPage === pageNum ? 'active' : ''}`}
+          onClick={() => setCurrentPage(pageNum)}
+        >
+          {pageNum}
+        </button>
+      ));
+    }
+
+    // Desktop View Pagination: Standard desktop layout with ellipsis
     if (totalPages <= 6) {
       return Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
         <button
@@ -509,152 +566,9 @@ export const AdminQueueLogs = () => {
         </div>
       </div>
 
-      {/* 3. Controls & Filter Bar (Select Service & Select Date + Search + Refresh) */}
+      {/* 3. Controls & Filter Bar (Search -> Select Service -> Select Date & Refresh) */}
       <div className="queue-logs-filters-card">
-        {/* Left Filter: Select Service */}
-        <div className="filter-item-wrapper">
-          <label className="filter-item-label">Select Service</label>
-          <div className="filter-dropdown-relative" ref={serviceDropdownRef}>
-            <button
-              type="button"
-              className="filter-dropdown-button"
-              onClick={() => setIsServiceDropdownOpen((prev) => !prev)}
-              aria-haspopup="listbox"
-              aria-expanded={isServiceDropdownOpen}
-            >
-              <div className="filter-button-content">
-                <span className="filter-service-icon-box">
-                  <Layers size={14} className="filter-coffee-icon" />
-                </span>
-                <span className="filter-button-text">{selectedService.name}</span>
-              </div>
-              <ChevronDown
-                size={16}
-                className={`filter-chevron-icon ${isServiceDropdownOpen ? 'rotated' : ''}`}
-              />
-            </button>
-
-            {/* Service Dropdown Options */}
-            {isServiceDropdownOpen && (
-              <div className="filter-popover-menu service-popover">
-                {/* Option: All Services */}
-                <button
-                  type="button"
-                  className={`filter-popover-item ${selectedService.id === 'all' ? 'selected' : ''
-                    }`}
-                  onClick={() => {
-                    setSelectedService({ id: 'all', name: 'All Services', code: 'ALL' });
-                    setIsServiceDropdownOpen(false);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <span className="popover-item-icon">
-                    <Layers size={15} />
-                  </span>
-                  <span className="popover-item-label">All Services</span>
-                </button>
-
-                {/* Dynamically loaded services */}
-                {services.map((srv) => {
-                  const srvId = srv._id || srv.id;
-                  const isSelected = selectedService.id === srvId;
-                  return (
-                    <button
-                      key={srvId}
-                      type="button"
-                      className={`filter-popover-item ${isSelected ? 'selected' : ''}`}
-                      onClick={() => {
-                        setSelectedService({ id: srvId, name: srv.name, code: srv.code });
-                        setIsServiceDropdownOpen(false);
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <span className="popover-item-icon">
-                        <Activity size={14} />
-                      </span>
-                      <span className="popover-item-label">
-                        {srv.name} {srv.code ? `(${srv.code})` : ''}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Filter: Select Date */}
-        <div className="filter-item-wrapper">
-          <label className="filter-item-label">Select Date</label>
-          <div className="filter-dropdown-relative" ref={dateDropdownRef}>
-            <button
-              type="button"
-              className="filter-dropdown-button"
-              onClick={() => setIsDateDropdownOpen((prev) => !prev)}
-              aria-haspopup="listbox"
-              aria-expanded={isDateDropdownOpen}
-            >
-              <div className="filter-button-content">
-                <Calendar size={15} className="filter-calendar-icon" />
-                <span className="filter-button-text">
-                  {selectedDate === 'all' ? 'All Dates' : formatDateLabel(selectedDate)}
-                </span>
-              </div>
-              <ChevronDown
-                size={16}
-                className={`filter-chevron-icon ${isDateDropdownOpen ? 'rotated' : ''}`}
-              />
-            </button>
-
-            {/* Date Presets Dropdown */}
-            {isDateDropdownOpen && (
-              <div className="filter-popover-menu date-popover">
-                <div className="date-popover-header">
-                  <span className="date-popover-title">Available Dates</span>
-                </div>
-
-                {dateOptions.map((d) => (
-                  <button
-                    key={d.value}
-                    type="button"
-                    className={`filter-popover-item ${selectedDate === d.value ? 'selected' : ''
-                      }`}
-                    onClick={() => {
-                      setSelectedDate(d.value);
-                      setIsDateDropdownOpen(false);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <Calendar size={14} className="popover-item-icon" />
-                    <span className="popover-item-label">{d.label}</span>
-                    {d.tag && <span className="popover-date-tag">{d.tag}</span>}
-                  </button>
-                ))}
-
-                {/* Custom Date Input Picker */}
-                <div className="date-popover-custom">
-                  <span className="date-popover-title">Pick Specific Date</span>
-                  <input
-                    type="date"
-                    className="date-custom-input"
-                    value={customDateInput}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setCustomDateInput(val);
-                      if (val) {
-                        setSelectedDate(val);
-                        setIsDateDropdownOpen(false);
-                        setCurrentPage(1);
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Search Box */}
+        {/* 1. Quick Search Box */}
         <div className="filter-search-box">
           <Search size={15} color="#94A3B8" />
           <input
@@ -678,16 +592,164 @@ export const AdminQueueLogs = () => {
           )}
         </div>
 
-        {/* Refresh button */}
-        <button
-          type="button"
-          className="queue-log-step-btn"
-          onClick={() => loadQueueLogs()}
-          title="Refresh queue logs"
-          style={{ width: 42, height: 42, borderRadius: 10 }}
-        >
-          <RefreshCw size={15} className={isLoading ? 'spin-icon' : ''} />
-        </button>
+        {/* Right: Filters & Action Controls Group (arranged together on the right side) */}
+        <div className="queue-logs-filters-right">
+          {/* Select Service Filter */}
+          <div className="filter-item-wrapper service-filter-item">
+            <label className="filter-item-label">Select Service</label>
+            <div className="filter-dropdown-relative" ref={serviceDropdownRef}>
+              <button
+                type="button"
+                className="filter-dropdown-button"
+                onClick={() => setIsServiceDropdownOpen((prev) => !prev)}
+                aria-haspopup="listbox"
+                aria-expanded={isServiceDropdownOpen}
+              >
+                <div className="filter-button-content">
+                  <span className="filter-service-icon-box">
+                    <Layers size={14} className="filter-coffee-icon" />
+                  </span>
+                  <span className="filter-button-text">{selectedService.name}</span>
+                </div>
+                <ChevronDown
+                  size={16}
+                  className={`filter-chevron-icon ${isServiceDropdownOpen ? 'rotated' : ''}`}
+                />
+              </button>
+
+              {/* Service Dropdown Options */}
+              {isServiceDropdownOpen && (
+                <div className="filter-popover-menu service-popover">
+                  {/* Option: All Services */}
+                  <button
+                    type="button"
+                    className={`filter-popover-item ${selectedService.id === 'all' ? 'selected' : ''
+                      }`}
+                    onClick={() => {
+                      setSelectedService({ id: 'all', name: 'All Services', code: 'ALL' });
+                      setIsServiceDropdownOpen(false);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span className="popover-item-icon">
+                      <Layers size={15} />
+                    </span>
+                    <span className="popover-item-label">All Services</span>
+                  </button>
+
+                  {/* Dynamically loaded services */}
+                  {services.map((srv) => {
+                    const srvId = srv._id || srv.id;
+                    const isSelected = selectedService.id === srvId;
+                    return (
+                      <button
+                        key={srvId}
+                        type="button"
+                        className={`filter-popover-item ${isSelected ? 'selected' : ''}`}
+                        onClick={() => {
+                          setSelectedService({ id: srvId, name: srv.name, code: srv.code });
+                          setIsServiceDropdownOpen(false);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <span className="popover-item-icon">
+                          <Activity size={14} />
+                        </span>
+                        <span className="popover-item-label">
+                          {srv.name} {srv.code ? `(${srv.code})` : ''}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Select Date Filter & Refresh Button */}
+          <div className="filter-date-refresh-row">
+            <div className="filter-item-wrapper date-filter-item">
+              <label className="filter-item-label">Select Date</label>
+              <div className="filter-dropdown-relative" ref={dateDropdownRef}>
+                <button
+                  type="button"
+                  className="filter-dropdown-button"
+                  onClick={() => setIsDateDropdownOpen((prev) => !prev)}
+                  aria-haspopup="listbox"
+                  aria-expanded={isDateDropdownOpen}
+                >
+                  <div className="filter-button-content">
+                    <Calendar size={15} className="filter-calendar-icon" />
+                    <span className="filter-button-text">
+                      {selectedDate === 'all' ? 'All Dates' : formatDateLabel(selectedDate)}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className={`filter-chevron-icon ${isDateDropdownOpen ? 'rotated' : ''}`}
+                  />
+                </button>
+
+                {/* Date Presets Dropdown */}
+                {isDateDropdownOpen && (
+                  <div className="filter-popover-menu date-popover">
+                    <div className="date-popover-header">
+                      <span className="date-popover-title">Available Dates</span>
+                    </div>
+
+                    {dateOptions.map((d) => (
+                      <button
+                        key={d.value}
+                        type="button"
+                        className={`filter-popover-item ${selectedDate === d.value ? 'selected' : ''
+                          }`}
+                        onClick={() => {
+                          setSelectedDate(d.value);
+                          setIsDateDropdownOpen(false);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <Calendar size={14} className="popover-item-icon" />
+                        <span className="popover-item-label">{d.label}</span>
+                        {d.tag && <span className="popover-date-tag">{d.tag}</span>}
+                      </button>
+                    ))}
+
+                    {/* Custom Date Input Picker */}
+                    <div className="date-popover-custom">
+                      <span className="date-popover-title">Pick Specific Date</span>
+                      <input
+                        type="date"
+                        className="date-custom-input"
+                        value={customDateInput}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomDateInput(val);
+                          if (val) {
+                            setSelectedDate(val);
+                            setIsDateDropdownOpen(false);
+                            setCurrentPage(1);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Refresh button */}
+            <button
+              type="button"
+              className="queue-logs-refresh-btn"
+              onClick={() => loadQueueLogs()}
+              title="Refresh queue logs"
+              aria-label="Refresh queue logs"
+            >
+              <RefreshCw size={15} className={isLoading ? 'spin-icon' : ''} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* 4. Queue Logs Table Card */}

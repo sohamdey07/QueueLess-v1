@@ -73,6 +73,15 @@
   border-bottom: 1px solid #F1F5F9;
   background: #FFFFFF;
   box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.admin-avail-tabs-header::-webkit-scrollbar,
+.admin-avail-tabs-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .admin-avail-tab-btn {
@@ -91,6 +100,12 @@
   transition: all 0.15s ease;
   border-radius: 10px 10px 0 0;
   outline: none;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+.admin-avail-tab-btn span {
+  white-space: nowrap !important;
 }
 
 .admin-avail-tab-btn:hover {
@@ -657,7 +672,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 50px;
+  margin-top: 30px;
   padding-top: 10px;
 }
 
@@ -1403,74 +1418,46 @@
     padding: 8px 12px 0 12px;
     gap: 8px;
     display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-avail-tabs-header::-webkit-scrollbar,
+  .admin-avail-tabs-bar::-webkit-scrollbar {
+    display: none;
   }
 
   .admin-avail-tab-btn {
     flex: 1;
+    min-width: max-content;
+    white-space: nowrap !important;
     justify-content: center;
     font-size: 13px;
-    padding: 10px 6px 12px 6px;
+    padding: 10px 10px 12px 10px;
     text-align: center;
     gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .admin-avail-tab-btn span {
+    white-space: nowrap !important;
   }
 
   .admin-avail-card-body {
     padding: 14px 12px;
   }
 
-  /* Split layout stacked */
+  /* Split layout: full width single column on mobile */
   .admin-avail-split-layout {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
   }
 
-  /* Hide bulky 3D illustration on mobile */
-  .avail-left-illustration-wrapper {
-    display: none !important;
-  }
-
-  /* Compact guidance banner on mobile */
+  /* Hide left guidance/intro panel completely on mobile */
   .admin-avail-left-panel {
-    padding: 14px 12px;
-    border-radius: 12px;
-    background: #F8FAFC;
-    border: 1px solid #EEF2F6;
-  }
-
-  .avail-left-heading {
-    font-size: 15px;
-    margin: 0 0 4px 0;
-  }
-
-  .avail-left-subheading {
-    font-size: 12px;
-    margin: 0 0 10px 0;
-    max-width: 100%;
-    line-height: 1.4;
-  }
-
-  .avail-guidance-list {
-    gap: 8px;
-  }
-
-  .avail-guidance-item {
-    gap: 10px;
-    align-items: center;
-  }
-
-  .guidance-icon-bubble {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-  }
-
-  .guidance-title {
-    font-size: 12px;
-  }
-
-  .guidance-desc {
-    font-size: 11px;
-    display: none;
+    display: none !important;
   }
 
   .admin-avail-right-form-panel {
@@ -1593,34 +1580,54 @@
   }
 
   .avail-data-table {
-    min-width: 660px;
+    min-width: 720px;
   }
 
   .avail-data-table th {
     padding: 10px 12px;
     font-size: 11px;
+    white-space: nowrap !important;
   }
 
   .avail-data-table td {
     padding: 10px 12px;
     font-size: 12.5px;
+    white-space: nowrap;
   }
 
   .service-cell-inner {
     gap: 8px;
+    min-width: 0;
   }
 
   .service-cell-icon-box {
     width: 28px;
     height: 28px;
+    flex-shrink: 0 !important;
   }
 
-  .service-cell-title {
+  .avail-data-table .service-cell-title {
     font-size: 13px;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.35;
+    max-height: 2.7em;
+    max-width: 180px;
   }
 
-  .service-cell-code {
-    font-size: 10.5px;
+  .avail-data-table .service-cell-code,
+  .avail-data-table .date-cell-badge,
+  .avail-data-table .capacity-text-row,
+  .avail-data-table .status-pill,
+  .avail-data-table .row-action-buttons,
+  .avail-data-table .action-icon-btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
 
   .capacity-bar-wrapper {
@@ -1636,7 +1643,14 @@
 
   .admin-avail-tab-btn {
     font-size: 12px;
-    padding: 8px 4px 10px 4px;
+    padding: 8px 8px 10px 8px;
+    white-space: nowrap !important;
+    min-width: max-content;
+    flex-shrink: 0;
+  }
+
+  .admin-avail-tab-btn span {
+    white-space: nowrap !important;
   }
 
   .admin-avail-tab-btn .tab-btn-icon {

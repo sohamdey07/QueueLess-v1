@@ -122,3 +122,220 @@ body:has(
   touch-action: none;
 }
 
+/* Universal: Ensure all tab buttons and options stay strictly in a single row without wrapping */
+[role="tablist"],
+.admin-users-tabs-header,
+.admin-avail-tabs-header,
+.admin-avail-tabs-bar,
+.admin-counter-tabs-header,
+.my-bookings-tabs-bar,
+.auth-tabs-pill-container {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+[role="tablist"]::-webkit-scrollbar,
+.admin-users-tabs-header::-webkit-scrollbar,
+.admin-avail-tabs-header::-webkit-scrollbar,
+.admin-avail-tabs-bar::-webkit-scrollbar,
+.admin-counter-tabs-header::-webkit-scrollbar,
+.my-bookings-tabs-bar::-webkit-scrollbar,
+.auth-tabs-pill-container::-webkit-scrollbar {
+  display: none !important;
+}
+
+[role="tab"],
+.admin-users-tab-btn,
+.admin-avail-tab-btn,
+.admin-counter-tab-btn,
+.booking-tab-btn,
+.auth-tab-btn {
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+[role="tab"] *,
+.admin-users-tab-btn *,
+.admin-avail-tab-btn *,
+.admin-counter-tab-btn *,
+.booking-tab-btn *,
+.auth-tab-btn * {
+  white-space: nowrap !important;
+}
+
+/* ==========================================================================
+   Universal Mobile Table Standards for Admin Portal
+   Single-row default for all cells; max 2 rows for long data only
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Enforce native table row-wise structure like desktop (never stacked column) */
+  .admin-table,
+  .overview-data-table,
+  .activity-table,
+  .admin-users-data-table,
+  .avail-data-table,
+  .counter-data-table,
+  .queue-logs-data-table {
+    display: table !important;
+    width: 100% !important;
+    table-layout: auto !important;
+  }
+
+  .admin-table thead,
+  .overview-data-table thead,
+  .activity-table thead,
+  .admin-users-data-table thead,
+  .avail-data-table thead,
+  .counter-data-table thead,
+  .queue-logs-data-table thead {
+    display: table-header-group !important;
+  }
+
+  .admin-table tbody,
+  .overview-data-table tbody,
+  .activity-table tbody,
+  .admin-users-data-table tbody,
+  .avail-data-table tbody,
+  .counter-data-table tbody,
+  .queue-logs-data-table tbody {
+    display: table-row-group !important;
+  }
+
+  .admin-table tr,
+  .overview-data-table tr,
+  .activity-table tr,
+  .admin-users-data-table tr,
+  .avail-data-table tr,
+  .counter-data-table tr,
+  .queue-logs-data-table tr {
+    display: table-row !important;
+  }
+
+  .admin-table th,
+  .overview-data-table th,
+  .activity-table th,
+  .admin-users-data-table th,
+  .avail-data-table th,
+  .counter-data-table th,
+  .queue-logs-data-table th,
+  .admin-table td,
+  .overview-data-table td,
+  .activity-table td,
+  .admin-users-data-table td,
+  .avail-data-table td,
+  .counter-data-table td,
+  .queue-logs-data-table td {
+    display: table-cell !important;
+    vertical-align: middle !important;
+  }
+
+  /* Enforce single-row table headers */
+  .admin-table th,
+  .overview-data-table th,
+  .activity-table th,
+  .admin-users-data-table th,
+  .avail-data-table th,
+  .counter-data-table th,
+  .queue-logs-data-table th {
+    white-space: nowrap !important;
+  }
+
+  /* Default table cells to single-row */
+  .admin-table td,
+  .overview-data-table td,
+  .activity-table td,
+  .admin-users-data-table td,
+  .avail-data-table td,
+  .counter-data-table td,
+  .queue-logs-data-table td {
+    white-space: nowrap;
+  }
+
+  /* Ensure flex wrappers inside cells don't blow out or restrict clamping, and stay in a single row */
+  .admin-table td > div,
+  .overview-data-table td > div,
+  .activity-table td > div,
+  .admin-users-data-table td > div,
+  .avail-data-table td > div,
+  .counter-data-table td > div,
+  .queue-logs-data-table td > div {
+    min-width: 0;
+  }
+
+  /* Universal row layout for table cell icon + text pairs */
+  .dashboard-activity-cell-inner,
+  .dashboard-service-cell-inner,
+  .user-name-cell-wrapper,
+  .service-cell-inner,
+  .counter-identity-inner,
+  .counter-service-cell-inner,
+  .counter-staff-cell-inner,
+  .queue-customer-name-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    width: max-content;
+  }
+
+  /* Compact single-row elements: badges, pills, counters, switches, icons, action buttons */
+  .row-num-badge,
+  .col-index,
+  .stat-count-pill,
+  .token-number-badge,
+  .status-pill,
+  .status-badge,
+  .user-status-pill,
+  .counter-status-pill,
+  .log-status-badge,
+  .counter-code-badge,
+  .service-cell-code,
+  .counter-pill-text,
+  .time-pill-text,
+  .date-cell-badge,
+  .joined-date-text,
+  .customer-phone-text,
+  .user-role-badge-sub,
+  .null-dash-pill,
+  .ios-toggle-switch,
+  .table-action-btn,
+  .action-icon-btn,
+  .capacity-text-row,
+  .activity-name-text {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Long text clamping: single-row by default, maximum 2 rows if very long */
+  .overview-data-table .service-name-text,
+  .activity-table .activity-details-text,
+  .activity-table .activity-user-text,
+  .admin-users-data-table .user-name-text,
+  .admin-users-data-table .cell-col-email .contact-val-text,
+  .avail-data-table .service-cell-title,
+  .counter-data-table .counter-name-text,
+  .counter-data-table .service-cell-title,
+  .counter-data-table .staff-cell-name,
+  .counter-data-table .staff-cell-email,
+  .queue-logs-data-table .customer-name-text,
+  .queue-logs-data-table .customer-email-text {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.35;
+    max-height: 2.7em;
+  }
+}
+
+
+
+

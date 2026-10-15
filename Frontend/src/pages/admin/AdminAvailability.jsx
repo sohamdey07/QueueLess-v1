@@ -749,7 +749,7 @@ export const AdminAvailability = () => {
                         ) : (
                           <>
                             <CalendarCheck size={16} />
-                            <span>{editingId ? 'Update Availability' : 'Save Availability'}</span>
+                            <span>{editingId ? 'Update' : 'Save'}</span>
                           </>
                         )}
                       </button>
