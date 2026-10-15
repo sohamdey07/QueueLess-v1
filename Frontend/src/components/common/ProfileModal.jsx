@@ -104,16 +104,25 @@ export const ProfileModal = ({
     }
   }, [isOpen]);
 
-  // Prevent background scrolling when modal is open
+  // Prevent background scrolling when modal is open and cleanly restore on close
   useEffect(() => {
     if (isOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = originalOverflow || 'unset';
+        document.body.style.overflow = (originalOverflow && originalOverflow !== 'hidden') ? originalOverflow : '';
       };
+    } else {
+      document.body.style.overflow = '';
     }
   }, [isOpen]);
+
+  // Ensure body scroll is unlocked on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   // Handle Escape key to close modal
   useEffect(() => {
@@ -359,8 +368,10 @@ export const ProfileModal = ({
                   disabled
                   title="Email address is permanent and cannot be changed"
                 />
-                <span className="profile-locked-tag">
-                  <Lock size={12} /> Cannot be changed
+                <span className="profile-locked-tag" title="Email address is permanent and cannot be changed">
+                  <Lock size={12} className="lock-icon" />
+                  <span className="locked-tag-text-desktop">Cannot be changed</span>
+                  <span className="locked-tag-text-mobile">Locked</span>
                 </span>
               </div>
               <span className="profile-field-hint">

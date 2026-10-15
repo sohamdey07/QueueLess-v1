@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, CalendarPlus, Users, CalendarCheck, X } from 'lucide-react';
 import logoImg from '../../assets/images/logo/logo.png';
@@ -37,6 +37,25 @@ export const CustomerSidebar = ({
 }) => {
   const location = useLocation();
 
+  // Prevent background scrolling when mobile sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = (originalOverflow && originalOverflow !== 'hidden') ? originalOverflow : '';
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -68,7 +87,7 @@ export const CustomerSidebar = ({
             onClick={onClose}
             aria-label="Close sidebar"
           >
-            <X size={20} />
+            <X size={18} strokeWidth={2.2} />
           </button>
         </div>
 

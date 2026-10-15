@@ -110,9 +110,240 @@
   line-height: 1;
 }
 
-@media (max-width: 580px) {
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .settings-modal-card {
+    border-radius: 18px !important;
+    padding: 18px 16px 20px 16px !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    max-height: 92vh !important;
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.25) !important;
+  }
+
+  .settings-modal-card .account-modal-header {
+    margin-bottom: 14px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .settings-modal-card .account-modal-title {
+    font-size: 17px !important;
+  }
+
+  .settings-modal-card .account-modal-subtitle {
+    font-size: 12px !important;
+  }
+
+  .settings-modal-card .account-modal-close-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .settings-modal-card .account-modal-body {
+    max-height: calc(92vh - 80px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #CBD5E1 transparent !important;
+    padding-right: 2px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .settings-modal-card .account-modal-body::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .settings-modal-card .account-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .settings-modal-card .account-modal-body::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+  }
+
+  /* Security Header Banner - compact horizontal card on mobile */
   .settings-security-card {
-    flex-direction: column;
-    text-align: center;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left !important;
+    padding: 12px 14px !important;
+    gap: 12px !important;
+    border-radius: 14px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .settings-security-icon-box {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .settings-security-icon-box svg,
+  .settings-key-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .settings-security-text {
+    gap: 2px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .settings-security-title {
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    margin: 0 0 2px 0 !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .settings-security-desc {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+    color: #475569 !important;
+  }
+
+  /* Form and Fields on Mobile */
+  .settings-form {
+    gap: 12px !important;
+  }
+
+  .settings-modal-card .profile-form-group {
+    gap: 4px !important;
+  }
+
+  .settings-modal-card .profile-field-label {
+    font-size: 12.5px !important;
+  }
+
+  .settings-modal-card .profile-field-input-wrapper {
+    height: 42px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .settings-modal-card .profile-field-icon {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 8px !important;
+  }
+
+  .settings-modal-card .profile-field-input {
+    font-size: 13px !important;
+  }
+
+  .settings-eye-btn {
+    padding: 4px !important;
+    margin-right: 0 !important;
+  }
+
+  .settings-eye-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .settings-requirement-row {
+    margin-top: 3px !important;
+    gap: 6px !important;
+  }
+
+  .requirement-indicator {
+    font-size: 11px !important;
+    gap: 4px !important;
+  }
+
+  /* Action Buttons on Mobile - Equal Size, Full Width Side-by-Side */
+  .settings-modal-card .account-modal-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+    margin-bottom: 2px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .settings-modal-card .account-modal-secondary-btn,
+  .settings-modal-card .account-modal-primary-btn {
+    flex: 1 1 0 !important;
+    width: calc(50% - 5px) !important;
+    min-width: 0 !important;
+    max-width: calc(50% - 5px) !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  .settings-modal-card .account-modal-secondary-btn {
+    background: #F1F5F9 !important;
+    color: #334155 !important;
+    border: 1px solid #E2E8F0 !important;
+  }
+
+  .settings-modal-card .account-modal-primary-btn {
+    background: #1D68F2 !important;
+    color: #FFFFFF !important;
+  }
+
+  .settings-modal-card .account-modal-primary-btn:hover:not(:disabled) {
+    background: #1555C9 !important;
+    box-shadow: none !important;
+  }
+
+  .settings-modal-card .account-modal-secondary-btn:hover:not(:disabled) {
+    background: #E2E8F0 !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .settings-modal-card {
+    padding: 14px 12px 16px 12px !important;
+  }
+
+  .settings-modal-card .account-modal-header {
+    margin-bottom: 12px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .settings-modal-card .account-modal-title {
+    font-size: 16px !important;
+  }
+
+  .settings-security-card {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .settings-security-icon-box {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .settings-modal-card .account-modal-actions {
+    gap: 8px !important;
+  }
+
+  .settings-modal-card .account-modal-secondary-btn,
+  .settings-modal-card .account-modal-primary-btn {
+    width: calc(50% - 4px) !important;
+    max-width: calc(50% - 4px) !important;
+    font-size: 12.5px !important;
+    padding: 0 6px !important;
   }
 }

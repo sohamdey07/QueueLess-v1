@@ -18,7 +18,7 @@ export const MyBookingBanner = () => {
           Your Appointments
         </h1>
         <p className="my-booking-banner-description">
-          Keep track of your appointments and<br className="banner-br" />
+          Keep track of your appointments and <br className="banner-br" />
           join the queue when it’s time.
         </p>
       </div>

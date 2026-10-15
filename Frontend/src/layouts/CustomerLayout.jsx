@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import CustomerSidebar from '../components/layout/CustomerSidebar';
 import CustomerHeader from '../components/layout/CustomerHeader';
@@ -34,6 +34,13 @@ const routeHeaders = {
 export const CustomerLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+
+  // Reset sidebar state and body overflow whenever customer route changes so scrolling is never trapped
+  useEffect(() => {
+    setSidebarOpen(false);
+    document.body.style.overflow = '';
+  }, [location.pathname]);
+
   const currentMeta = routeHeaders[location.pathname] || (
     location.pathname === '/' || location.pathname === ''
       ? routeHeaders['/home']

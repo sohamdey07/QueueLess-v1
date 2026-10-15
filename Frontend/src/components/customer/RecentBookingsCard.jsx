@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, ChevronRight, ArrowRight } from 'lucide-react';
+import { RotateCcw, ChevronRight, ArrowRight, Calendar } from 'lucide-react';
 import Badge from '../common/Badge';
 import './RecentBookingsCard.css';
 
@@ -77,6 +77,7 @@ export const RecentBookingsCard = ({
                 <div className="recent-booking-info">
                   <h4 className="recent-booking-title">{item.title}</h4>
                   <p className="recent-booking-sub">
+                    <Calendar size={11.5} className="recent-date-icon" />
                     <span className="recent-booking-date">{item.date}</span>
                   </p>
                 </div>

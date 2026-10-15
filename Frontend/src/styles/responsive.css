@@ -50,11 +50,6 @@
   .hero-banner-title {
     font-size: 22px !important;
   }
-
-  .hero-floating-queue-badge {
-    display: none !important;
-  }
-
   .quick-actions-grid {
     grid-template-columns: 1fr !important;
   }

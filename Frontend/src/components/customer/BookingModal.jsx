@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -167,6 +168,7 @@ export const BookingModal = ({
   onClose,
   onBookingSuccess
 }) => {
+  const navigate = useNavigate();
   const [dbAvailabilities, setDbAvailabilities] = useState([]);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
   const [selectedDateStr, setSelectedDateStr] = useState('');
@@ -203,16 +205,25 @@ export const BookingModal = ({
     }
   }, [isOpen, serviceId, fetchAvailability]);
 
-  // Prevent background scrolling when booking modal is open
+  // Prevent background scrolling when booking modal is open and cleanly restore on close
   useEffect(() => {
     if (isOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = originalOverflow || 'unset';
+        document.body.style.overflow = (originalOverflow && originalOverflow !== 'hidden') ? originalOverflow : '';
       };
+    } else {
+      document.body.style.overflow = '';
     }
   }, [isOpen]);
+
+  // Unconditionally unlock body scroll if modal component unmounts
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   // Generate date options strictly from real database availability records
   const dateOptions = useMemo(() => {
@@ -236,17 +247,6 @@ export const BookingModal = ({
   const currentSelectedDate = useMemo(() => {
     return dateOptions.find((d) => d.dateStr === selectedDateStr && d.isAvailable) || null;
   }, [dateOptions, selectedDateStr]);
-
-  // Prevent background page from scrolling when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
 
   // Trigger celebration poppers when confirmed
   useEffect(() => {
@@ -329,6 +329,11 @@ export const BookingModal = ({
     setBookingError(null);
     setSelectedDateStr('');
     onClose();
+  };
+
+  const handleNavigateToBookings = () => {
+    handleClose();
+    navigate('/my-bookings');
   };
 
   const handleCopyId = () => {
@@ -607,8 +612,24 @@ export const BookingModal = ({
                 </div>
               </div>
 
-              {/* Success Action Buttons */}
-
+              {/* Post-booking action buttons */}
+              <div className="booking-success-actions">
+                <button
+                  type="button"
+                  className="booking-action-btn view-bookings-btn"
+                  onClick={handleNavigateToBookings}
+                >
+                  <CalendarCheck size={16} />
+                  <span>View in My Bookings</span>
+                </button>
+                <button
+                  type="button"
+                  className="booking-action-btn done-btn"
+                  onClick={handleClose}
+                >
+                  Done
+                </button>
+              </div>
             </div>
           )}
         </div>

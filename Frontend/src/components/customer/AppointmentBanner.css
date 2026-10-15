@@ -90,28 +90,64 @@
   }
 }
 
-@media (max-width: 600px) {
+/* Mobile View: Solid colors only, NO banner image for compatibility (matching AdminBanner) */
+@media (max-width: 768px) {
   .appointment-banner-card {
-    min-height: 200px;
+    min-height: auto !important;
+    background: #EFF6FF !important;
+    border: 1px solid #DBEAFE !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  /* Completely hide banner image on mobile view */
+  .appointment-banner-bg {
+    display: none !important;
   }
 
   .appointment-banner-content {
-    padding: var(--banner-padding-mobile, 22px 18px);
-    background: rgba(235, 243, 254, 0.92);
+    padding: 22px 18px !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
   }
 
   .appointment-banner-eyebrow {
-    font-size: 10.5px;
-    margin-bottom: 6px;
+    font-size: 11.5px !important;
+    margin-bottom: 6px !important;
+    letter-spacing: 0.06em !important;
+    color: #3B82F6 !important;
   }
 
   .appointment-banner-title {
-    font-size: 20px;
-    line-height: 1.25;
-    margin-bottom: 8px;
+    font-size: 20px !important;
+    line-height: 1.28 !important;
+    margin-bottom: 8px !important;
+    letter-spacing: -0.01em !important;
   }
 
   .appointment-banner-description {
-    font-size: 13px;
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    max-width: 100% !important;
+    color: #475569 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .appointment-banner-card {
+    border-radius: 14px !important;
+  }
+
+  .appointment-banner-content {
+    padding: 18px 14px !important;
+  }
+
+  .appointment-banner-title {
+    font-size: 18px !important;
+  }
+
+  .appointment-banner-description {
+    font-size: 12.5px !important;
   }
 }

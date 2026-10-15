@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Menu, User, Settings, LogOut } from 'lucide-react';
 import authApi from '../../services/api/auth.api.js';
 import tokenStorage from '../../services/storage/tokenStorage.js';
 import CommonAvatar from '../common/CommonAvatar';
@@ -18,13 +17,11 @@ export const CustomerHeader = ({
 }) => {
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [displayName, setDisplayName] = useState(userName);
 
   const profileRef = useRef(null);
-  const notificationRef = useRef(null);
 
   const handleCloseProfileModal = useCallback(() => {
     setIsProfileModalOpen(false);
@@ -58,9 +55,6 @@ export const CustomerHeader = ({
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setNotificationsOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -79,9 +73,13 @@ export const CustomerHeader = ({
               type="button" 
               className="mobile-menu-btn" 
               onClick={onMenuToggle}
-              aria-label="Open sidebar"
+              aria-label="Open sidebar menu"
             >
-              <Menu size={20} />
+              <span className="modern-hamburger-icon" aria-hidden="true">
+                <span className="hamburger-bar bar-top" />
+                <span className="hamburger-bar bar-middle" />
+                <span className="hamburger-bar bar-bottom" />
+              </span>
             </button>
           )}
           <div className="header-title-block">
@@ -90,35 +88,8 @@ export const CustomerHeader = ({
           </div>
         </div>
 
-        {/* Right: Notifications & Profile */}
+        {/* Right: Profile */}
         <div className="header-right">
-          {/* Notification Bell (naked outline icon with red dot) */}
-          <div className="header-notification-wrap" ref={notificationRef}>
-            <button 
-              type="button" 
-              className="header-bell-btn"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              aria-label="Notifications"
-            >
-              <Bell size={21} className="header-bell-icon" />
-              <span className="header-bell-dot" />
-            </button>
-
-            {/* Notifications Dropdown */}
-            {notificationsOpen && (
-              <div className="header-dropdown-menu notification-popover">
-                <div className="dropdown-header">
-                  <span className="dropdown-title">Notifications</span>
-                  <span className="dropdown-badge">1 New</span>
-                </div>
-                <div className="notification-item unread">
-                  <p className="notification-text">Your appointment for General Consultation is confirmed for 26 Sep.</p>
-                  <span className="notification-time">10 mins ago</span>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* User Profile Avatar */}
           <div className="header-profile-wrap" ref={profileRef}>
             <button 

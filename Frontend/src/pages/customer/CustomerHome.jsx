@@ -73,6 +73,9 @@ function getStatusVariant(status = '') {
   if (norm === 'COMPLETED') return 'completed';
   if (norm === 'CANCELLED') return 'cancelled';
   if (norm === 'NO_SHOW') return 'no_show';
+  if (norm === 'CHECKED_IN') return 'checked_in';
+  if (norm === 'IN_SERVICE') return 'in_service';
+  if (norm === 'CONFIRMED' || norm === 'BOOKED') return 'confirmed';
   return 'upcoming';
 }
 

@@ -25,16 +25,71 @@
   gap: 14px;
 }
 
+/* Modern Mobile Hamburger Menu Button */
 .mobile-menu-btn {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  color: var(--color-text-main);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: var(--color-text-main, #0F172A);
+  background: #FFFFFF;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-menu-btn:hover {
   background: #F8FAFC;
-  border: 1px solid var(--color-border);
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.95);
+  background: #F1F5F9;
+}
+
+/* Modern Hamburger 3-Bar Icon */
+.modern-hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4px;
+  width: 18px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.hamburger-bar {
+  display: block;
+  height: 2px;
+  background-color: var(--color-text-main, #0F172A);
+  border-radius: 2px;
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, transform 0.2s ease;
+}
+
+.bar-top {
+  width: 18px;
+}
+
+.bar-middle {
+  width: 12px;
+}
+
+.bar-bottom {
+  width: 16px;
+}
+
+.mobile-menu-btn:hover .bar-middle {
+  width: 18px;
+}
+
+.mobile-menu-btn:hover .bar-bottom {
+  width: 14px;
 }
 
 @media (max-width: 1024px) {

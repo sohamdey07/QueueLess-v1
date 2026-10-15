@@ -172,29 +172,112 @@
   transition: all var(--transition-fast);
 }
 
+.recent-date-icon {
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
 /* Responsive adjustments */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .recent-bookings-outer-card {
-    padding: 18px 16px;
+    padding: 16px 14px;
     border-radius: 16px;
+  }
+
+  .recent-bookings-card-header {
+    margin-bottom: 22px;
+  }
+
+  .recent-header-title {
+    font-size: 15.5px;
+    font-weight: 700;
+  }
+
+  .recent-view-all-link {
+    font-size: 12.5px;
+    font-weight: 600;
+    gap: 4px;
   }
 
   .recent-booking-item {
     gap: 12px;
-    padding: 11px 0;
+    padding: 12px 0;
+    align-items: center;
   }
 
+  /* Upgraded crisp rounded square thumbnail instead of cramped wide rectangle */
   .recent-booking-image-wrap {
-    width: 52px;
-    height: 34px;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 10px !important;
+    border: 1px solid #F1F5F9;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    flex-shrink: 0 !important;
+  }
+
+  .recent-booking-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .recent-booking-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
   }
 
   .recent-booking-title {
-    font-size: 13.5px;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    color: var(--color-text-main, #0F172A);
+    line-height: 1.3 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .recent-booking-sub {
-    font-size: 11.5px;
+    font-size: 11.5px !important;
+    color: var(--color-text-muted, #64748B);
+    display: flex;
+    align-items: center;
+    gap: 4.5px;
+    margin-top: 1px;
+  }
+
+  /* Status Badge: sleek, uniform pill */
+  .recent-booking-badge-wrap {
+    flex-shrink: 0;
+  }
+
+  .recent-booking-badge-wrap .ql-badge {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 3.5px 9px !important;
+    border-radius: 20px !important;
+    text-transform: capitalize !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Compact Chevron Button */
+  .recent-booking-arrow-wrap {
+    flex-shrink: 0;
+  }
+
+  .recent-chevron-circle {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+  }
+
+  .recent-chevron-circle svg {
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -205,17 +288,36 @@
 
   .recent-booking-item {
     gap: 9px;
+    padding: 10px 0;
   }
 
   .recent-booking-image-wrap {
-    width: 44px;
-    height: 30px;
-    border-radius: 6px;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 9px !important;
+  }
+
+  .recent-booking-title {
+    font-size: 13px !important;
+  }
+
+  .recent-booking-sub {
+    font-size: 11px !important;
+  }
+
+  .recent-booking-badge-wrap .ql-badge {
+    font-size: 10.5px !important;
+    padding: 3px 8px !important;
   }
 
   .recent-chevron-circle {
-    width: 28px;
-    height: 28px;
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .recent-chevron-circle svg {
+    width: 13px;
+    height: 13px;
   }
 }
 

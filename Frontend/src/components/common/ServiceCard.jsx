@@ -8,6 +8,7 @@ import {
   ArrowRight, 
   CheckCircle2, 
   XCircle,
+  AlertCircle,
   MoreVertical,
   Pencil,
   Trash2,
@@ -100,6 +101,21 @@ export const ServiceCard = ({
   const isInactive = status === 'inactive' || service.status === 'inactive';
   const isBookingMode = Boolean(appointmentDate || appointmentId || onJoinQueue || onCancel);
   const effectiveStatus = status || (isBookingMode ? 'Booked' : null);
+
+  // Clean status label formatter (e.g. CHECKED_IN -> Checked In)
+  const formatStatusDisplay = (st, customLabel) => {
+    if (customLabel) return customLabel;
+    if (!st) return '';
+    const norm = String(st).toUpperCase().replace(/[-_]/g, ' ');
+    return norm
+      .split(' ')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  const displayStatusText = formatStatusDisplay(effectiveStatus, statusLabel);
+  const statusLower = effectiveStatus ? effectiveStatus.toLowerCase() : '';
+  const statusHyphen = effectiveStatus ? effectiveStatus.toLowerCase().replace(/_/g, '-') : '';
 
   const handleBook = () => {
     if (onBook) {
@@ -196,13 +212,18 @@ export const ServiceCard = ({
             </div>
           </>
         ) : effectiveStatus ? (
-          <div className={`ql-service-status-badge status-${effectiveStatus.toLowerCase()}`} aria-label={`Status: ${effectiveStatus}`}>
+          <div 
+            className={`ql-service-status-badge status-${statusHyphen} status-${statusLower}`} 
+            aria-label={`Status: ${effectiveStatus}`}
+          >
             {effectiveStatus.toLowerCase() === 'cancelled' ? (
               <XCircle size={13.5} strokeWidth={2.5} className="ql-status-badge-icon" />
+            ) : effectiveStatus.toLowerCase() === 'no_show' || effectiveStatus.toLowerCase() === 'no-show' ? (
+              <AlertCircle size={13.5} strokeWidth={2.5} className="ql-status-badge-icon" />
             ) : (
               <CheckCircle2 size={13.5} strokeWidth={2.5} className="ql-status-badge-icon" />
             )}
-            <span>{statusLabel || (effectiveStatus.charAt(0).toUpperCase() + effectiveStatus.slice(1).toLowerCase())}</span>
+            <span>{displayStatusText}</span>
           </div>
         ) : relativeBadge ? (
           <div className="ql-service-relative-badge" aria-label={`Due: ${relativeBadge}`}>

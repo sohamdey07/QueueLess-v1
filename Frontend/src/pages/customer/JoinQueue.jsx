@@ -45,10 +45,18 @@ export const JoinQueue = () => {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = originalOverflow;
+        document.body.style.overflow = (originalOverflow && originalOverflow !== 'hidden') ? originalOverflow : '';
       };
+    } else {
+      document.body.style.overflow = '';
     }
   }, [queueTokenModal]);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   // Load customer appointments on mount to check if user already joined a queue today or has an appointment today
   useEffect(() => {

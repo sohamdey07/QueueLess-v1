@@ -236,10 +236,18 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = originalOverflow;
+        document.body.style.overflow = (originalOverflow && originalOverflow !== 'hidden') ? originalOverflow : '';
       };
+    } else {
+      document.body.style.overflow = '';
     }
   }, [cancelModalBooking, selectedDetailsBooking]);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const mappedBookings = useMemo(() => {
     return appointments.map(mapAppointmentToBooking);
@@ -496,39 +504,43 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
       {/* 1. Standardized Hero Banner */}
       <MyBookingBanner />
 
-      {/* 2. Top Navigation Tabs */}
-      <div className="my-bookings-tabs-bar" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'upcoming'}
-          className={`booking-tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`}
-          onClick={() => handleTabSwitch('upcoming')}
-        >
-          <CalendarDays size={18} className="tab-btn-icon" />
-          <span>Upcoming Appointments</span>
-          <span className={`tab-badge ${activeTab === 'upcoming' ? 'blue-badge' : 'gray-badge'}`}>
-            {upcomingBookings.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'history'}
-          className={`booking-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => handleTabSwitch('history')}
-        >
-          <CalendarClock size={18} className="tab-btn-icon" />
-          <span>Appointment History</span>
-          <span className={`tab-badge ${activeTab === 'history' ? 'blue-badge' : 'gray-badge'}`}>
-            {historyBookings.length}
-          </span>
-        </button>
-      </div>
-
-      {/* 3. Main Appointments Container */}
+      {/* 2. Main Appointments Card Container (Enclosing Navigation Tabs & Body, matching Admin Portal) */}
       <section className="my-bookings-content-card" aria-label="Appointments Section">
+        {/* Navigation Tabs Header - Placed inside the white box */}
+        <div className="my-bookings-tabs-bar" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'upcoming'}
+            className={`booking-tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`}
+            onClick={() => handleTabSwitch('upcoming')}
+          >
+            <CalendarDays size={18} className="tab-btn-icon" />
+            <span className="tab-desktop-label">Upcoming Appointments</span>
+            <span className="tab-mobile-label">Upcoming</span>
+            <span className={`tab-badge ${activeTab === 'upcoming' ? 'blue-badge' : 'gray-badge'}`}>
+              {upcomingBookings.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'history'}
+            className={`booking-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => handleTabSwitch('history')}
+          >
+            <CalendarClock size={18} className="tab-btn-icon" />
+            <span className="tab-desktop-label">Appointment History</span>
+            <span className="tab-mobile-label">History</span>
+            <span className={`tab-badge ${activeTab === 'history' ? 'blue-badge' : 'gray-badge'}`}>
+              {historyBookings.length}
+            </span>
+          </button>
+        </div>
+
+        {/* Card Body Container */}
+        <div className="my-bookings-card-body">
         {/* Section Header */}
         <div className="my-bookings-section-header">
           <div className="section-header-left">
@@ -763,6 +775,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
                   service={{
                     ...booking,
                     status: booking.status || 'Booked',
+                    statusLabel: formatStatusLabel(booking.status),
                   }}
                   onJoinQueue={handleJoinQueue}
                   onCancel={handleOpenCancelModal}
@@ -906,6 +919,7 @@ export const MyBookings = ({ defaultTab = 'upcoming' }) => {
             </div>
           )
         )}
+        </div>
       </section>
 
       {/* Cancel Upcoming Appointment Confirmation Modal */}

@@ -478,45 +478,103 @@
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 5.5px;
-  padding: 5px 12px;
+  gap: 6px;
+  padding: 5.5px 12px;
   border-radius: var(--radius-full, 9999px);
   font-family: var(--font-sans);
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.02em;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
-  transition: transform 0.2s ease;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ql-service-card:hover .ql-service-status-badge {
   transform: translateY(-1px);
 }
 
-.ql-service-status-badge.status-booked {
+/* Booked & Confirmed Badge - Vibrant Emerald Green */
+.ql-service-status-badge.status-booked,
+.ql-service-status-badge.status-confirmed {
   background: #10B981;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
 }
 
+/* Checked In Badge - Crisp Vibrant Sky Blue */
+.ql-service-status-badge.status-checked-in,
+.ql-service-status-badge.status-checked_in,
+.ql-service-status-badge.status-checkedin {
+  background: #0284C7;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+}
+
+/* In Service Badge - Royal Purple */
+.ql-service-status-badge.status-in-service,
+.ql-service-status-badge.status-in_service,
+.ql-service-status-badge.status-serving {
+  background: #7C3AED;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+}
+
+/* In Queue / Waiting Badge - Indigo */
+.ql-service-status-badge.status-in-queue,
+.ql-service-status-badge.status-in_queue,
+.ql-service-status-badge.status-waiting {
+  background: #4F46E5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+}
+
+/* Completed Badge - Deep Forest Emerald */
 .ql-service-status-badge.status-completed {
-  background: rgba(16, 185, 129, 0.95);
+  background: #059669;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
 }
 
+/* Cancelled Badge - Vibrant Ruby Red */
 .ql-service-status-badge.status-cancelled {
-  background: rgba(239, 68, 68, 0.95);
+  background: #EF4444;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+}
+
+/* No Show Badge - Vivid Burnt Orange */
+.ql-service-status-badge.status-no-show,
+.ql-service-status-badge.status-no_show {
+  background: #EA580C;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);
 }
 
 .ql-status-badge-icon {
@@ -820,4 +878,14 @@
 .admin-card-mode .ql-service-schedule-pill {
   margin-top: 0;
   margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .ql-service-status-badge {
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    gap: 5px;
+  }
 }

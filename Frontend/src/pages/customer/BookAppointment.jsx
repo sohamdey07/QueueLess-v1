@@ -3,7 +3,7 @@ import AppointmentBanner from '../../components/customer/AppointmentBanner';
 import ServiceCard from '../../components/common/ServiceCard';
 import BookingModal from '../../components/customer/BookingModal';
 import serviceApi from '../../services/api/service.api';
-import { RefreshCw, AlertCircle, Calendar } from 'lucide-react';
+import { RefreshCw, AlertCircle, Calendar, Layers } from 'lucide-react';
 
 // Fallback images for services that do not have custom uploaded photos
 import generalConsultationImg from '../../assets/images/bookings/general_consultation.jpg';
@@ -87,6 +87,13 @@ export const BookAppointment = () => {
     };
   }, []);
 
+  // Ensure body scroll is unlocked when leaving page
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   const handleBook = (service) => {
     setSelectedBookingService(service);
     setIsBookingModalOpen(true);
@@ -100,6 +107,7 @@ export const BookAppointment = () => {
   const handleCloseModal = () => {
     setIsBookingModalOpen(false);
     setSelectedBookingService(null);
+    document.body.style.overflow = '';
   };
 
   return (
@@ -107,59 +115,32 @@ export const BookAppointment = () => {
       {/* 1. Hero Banner with Image & Exact Layout */}
       <AppointmentBanner />
 
-      {/* 2. Text specifying number of available services */}
-      <div className="available-services-header">
-        <div className="available-services-text-group">
-          <h2 className="available-services-title">Available Services</h2>
-          <p className="available-services-subtitle">
-            {isLoading
-              ? 'Loading available services...'
-              : `Choose from ${services.length} available services to schedule your appointment at a time that works for you.`}
-          </p>
-        </div>
-        {!isLoading && (
-          <div className="available-services-badge">
-            <span className="badge-pulse-dot" />
-            <span>{services.length} Services Available</span>
-          </div>
-        )}
-      </div>
-
-      {/* 3. Error Banner */}
+      {/* 2. Error Banner */}
       {error && (
-        <div style={{
-          background: '#FEF2F2',
-          border: '1px solid #FECACA',
-          color: '#B91C1C',
-          borderRadius: 12,
-          padding: '16px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          marginBottom: 24,
-          fontSize: 14
-        }}>
+        <div className="book-appointment-error-banner">
           <AlertCircle size={20} />
           <span>{error}</span>
         </div>
       )}
 
-      {/* 4. Services Grid */}
-      <section className="appointment-services-section" aria-label="Available Services">
+      {/* 3. Available Services White Box Container (Matching Admin Services Layout) */}
+      <div className="book-appointment-content-box">
+        {/* Section Title Row */}
+        <div className="book-appointment-header-row">
+          <h2 className="book-appointment-section-title">
+            <Layers size={20} className="section-title-icon" />
+            <span>Available Services {!isLoading && `(${services.length})`}</span>
+          </h2>
+        </div>
+
+        {/* Loading Spinner */}
         {isLoading ? (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '60px 20px',
-            gap: 16,
-            color: '#64748B'
-          }}>
-            <RefreshCw size={28} className="spin-icon" color="#1D68F2" />
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 500 }}>
-              Loading services from database...
-            </p>
+          <div className="book-appointment-empty" style={{ borderStyle: 'none' }}>
+            <div className="book-appointment-empty-icon-box spin-icon">
+              <RefreshCw size={28} color="#1D68F2" />
+            </div>
+            <h3 className="book-appointment-empty-title">Loading services...</h3>
+            <p className="book-appointment-empty-desc">Fetching live services from database.</p>
           </div>
         ) : services.length > 0 ? (
           <div className="appointment-services-grid">
@@ -173,30 +154,19 @@ export const BookAppointment = () => {
             ))}
           </div>
         ) : (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '60px 20px',
-            gap: 14,
-            background: '#FFFFFF',
-            borderRadius: 16,
-            border: '1px solid #EEF2F6',
-            color: '#64748B'
-          }}>
-            <Calendar size={36} color="#94A3B8" />
-            <h3 style={{ margin: 0, fontSize: 16, color: '#1E293B', fontWeight: 600 }}>
-              No Services Currently Available
-            </h3>
-            <p style={{ margin: 0, fontSize: 14, color: '#64748B' }}>
+          <div className="book-appointment-empty">
+            <div className="book-appointment-empty-icon-box">
+              <Calendar size={32} color="#94A3B8" />
+            </div>
+            <h3 className="book-appointment-empty-title">No services found</h3>
+            <p className="book-appointment-empty-desc">
               Please check back soon as new appointment slots and services are added regularly.
             </p>
           </div>
         )}
-      </section>
+      </div>
 
-      {/* 5. Book Appointment Modal */}
+      {/* 4. Book Appointment Modal */}
       <BookingModal
         service={selectedBookingService}
         isOpen={isBookingModalOpen}

@@ -409,6 +409,11 @@
 .input-readonly .profile-field-input {
   color: #334155;
   cursor: default;
+  min-width: 0;
+  flex: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .profile-locked-tag {
@@ -421,6 +426,14 @@
   margin-left: auto;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.locked-tag-text-mobile {
+  display: none;
+}
+
+.locked-tag-text-desktop {
+  display: inline;
 }
 
 .profile-field-hint {
@@ -622,28 +635,316 @@
 }
 
 /* Mobile responsiveness */
-@media (max-width: 580px) {
+@media (max-width: 640px) {
   .account-modal-backdrop {
-    padding: 14px;
+    padding: 12px 10px !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .account-modal-container {
-    border-radius: 20px;
-    padding: 22px 20px 24px 20px;
+    border-radius: 18px !important;
+    padding: 18px 16px 20px 16px !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    max-height: 92vh !important;
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.25) !important;
   }
 
   .account-modal-header {
-    margin-bottom: 16px;
+    margin-bottom: 14px !important;
+    padding-bottom: 12px !important;
   }
 
+  .account-modal-title {
+    font-size: 17px !important;
+  }
+
+  .account-modal-subtitle {
+    font-size: 12px !important;
+  }
+
+  .account-modal-close-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .account-modal-body {
+    max-height: calc(92vh - 80px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #CBD5E1 transparent !important;
+    padding-right: 2px !important;
+  }
+
+  .account-modal-body::-webkit-scrollbar {
+    width: 4px !important;
+  }
+
+  .account-modal-body::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+
+  .account-modal-body::-webkit-scrollbar-thumb {
+    background: #CBD5E1 !important;
+    border-radius: 4px !important;
+  }
+
+  /* Identity Card - sleek horizontal mobile presentation */
   .profile-identity-card {
-    flex-direction: column;
-    text-align: center;
-    align-items: center;
-    padding: 18px 16px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left !important;
+    padding: 12px 14px !important;
+    gap: 12px !important;
+    border-radius: 14px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .profile-identity-card .common-user-avatar-wrap {
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 54px !important;
+    min-height: 54px !important;
+  }
+
+  .profile-identity-card .common-user-avatar-wrap > div {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .profile-identity-details {
+    gap: 4px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+
+  .profile-display-name {
+    font-size: 15.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   .profile-badges-row {
-    justify-content: center;
+    gap: 6px !important;
+    justify-content: flex-start !important;
+  }
+
+  .profile-badge-pill {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    gap: 4px !important;
+  }
+
+  .profile-badge-pill svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  /* Section Headings */
+  .profile-section-heading-group {
+    margin-bottom: 10px !important;
+  }
+
+  .profile-section-title {
+    font-size: 13.5px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .profile-section-subtitle {
+    font-size: 11.5px !important;
+  }
+
+  /* Form Elements */
+  .profile-edit-form {
+    gap: 12px !important;
+  }
+
+  .profile-form-group {
+    gap: 4px !important;
+  }
+
+  .profile-field-label {
+    font-size: 12.5px !important;
+  }
+
+  .profile-field-input-wrapper {
+    height: 42px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .profile-field-icon {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 8px !important;
+  }
+
+  .profile-field-input {
+    font-size: 13px !important;
+  }
+
+  .input-readonly .profile-field-input {
+    min-width: 0 !important;
+    flex: 1 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .locked-tag-text-desktop {
+    display: none !important;
+  }
+
+  .locked-tag-text-mobile {
+    display: inline !important;
+  }
+
+  .profile-locked-tag {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    padding: 2px 6px !important;
+    background: #F1F5F9 !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px !important;
+    margin-left: 6px !important;
+    gap: 3px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .profile-locked-tag svg {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .profile-field-hint {
+    font-size: 11px !important;
+    margin-top: 2px !important;
+  }
+
+  /* Phone Field */
+  .phone-input-wrapper {
+    padding-left: 10px !important;
+  }
+
+  .phone-field-divider {
+    height: 18px !important;
+    margin: 0 8px 0 6px !important;
+  }
+
+  .country-code-btn {
+    font-size: 13px !important;
+    gap: 3px !important;
+  }
+
+  .country-chevron {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .phone-digits-input {
+    font-size: 13px !important;
+  }
+
+  /* Action Buttons on Mobile - Equal Size, Full Width Side-by-Side */
+  .account-modal-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .account-modal-secondary-btn,
+  .account-modal-primary-btn {
+    flex: 1 1 0 !important;
+    width: calc(50% - 5px) !important;
+    min-width: 0 !important;
+    max-width: calc(50% - 5px) !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  .account-modal-secondary-btn {
+    background: #F1F5F9 !important;
+    color: #334155 !important;
+    border: 1px solid #E2E8F0 !important;
+  }
+
+  .account-modal-primary-btn {
+    background: #1D68F2 !important;
+    color: #FFFFFF !important;
+  }
+
+  .account-modal-primary-btn:hover:not(:disabled) {
+    background: #1555C9 !important;
+    box-shadow: none !important;
+  }
+
+  .account-modal-secondary-btn:hover:not(:disabled) {
+    background: #E2E8F0 !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .account-modal-container {
+    padding: 14px 12px 16px 12px !important;
+  }
+
+  .account-modal-header {
+    margin-bottom: 12px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .account-modal-title {
+    font-size: 16px !important;
+  }
+
+  .profile-identity-card {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .profile-identity-card .common-user-avatar-wrap {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .profile-identity-card .common-user-avatar-wrap > div {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .account-modal-actions {
+    gap: 8px !important;
+  }
+
+  .account-modal-secondary-btn,
+  .account-modal-primary-btn {
+    width: calc(50% - 4px) !important;
+    max-width: calc(50% - 4px) !important;
+    font-size: 12.5px !important;
+    padding: 0 6px !important;
   }
 }

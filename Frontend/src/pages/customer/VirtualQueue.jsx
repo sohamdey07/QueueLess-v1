@@ -606,7 +606,9 @@ export const VirtualQueue = ({
                     className={`vq-mini-counter-card ${['SERVING', 'CALLED'].includes(cnt.status) ? 'active' : 'idle'}`}
                   >
                     <div className="vq-mini-counter-header">
-                      <span className="vq-mini-counter-name">{cnt.name || `Counter ${cnt.code}`}</span>
+                      <span className="vq-mini-counter-name">
+                        {(cnt.name || `Counter ${cnt.code}`).replace(/\s*-\s*/g, '-')}
+                      </span>
                       <span className={`vq-mini-counter-status ${cnt.status ? cnt.status.toLowerCase() : 'idle'}`}>
                         {cnt.status === 'SERVING' ? 'Serving' : cnt.status === 'CALLED' ? 'Called' : 'Idle'}
                       </span>

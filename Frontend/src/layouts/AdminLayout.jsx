@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import AdminSidebar from '../components/admin/layout/AdminSidebar';
 import AdminHeader from '../components/admin/layout/AdminHeader';
@@ -66,6 +66,13 @@ const adminRouteHeaders = {
 export const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+
+  // Reset sidebar state and body overflow whenever admin route changes so scrolling is never trapped
+  useEffect(() => {
+    setSidebarOpen(false);
+    document.body.style.overflow = '';
+  }, [location.pathname]);
+
   const currentMeta = adminRouteHeaders[location.pathname] || {
     title: 'Admin Portal',
     subtitle: 'Manage system settings and operations.',

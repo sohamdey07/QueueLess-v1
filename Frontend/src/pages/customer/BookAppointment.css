@@ -8,66 +8,60 @@
   box-sizing: border-box;
 }
 
-/* Available Services Count Header Bar */
-.available-services-header {
+/* Error Banner */
+.book-appointment-error-banner {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #B91C1C;
+  border-radius: 14px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 4px 2px 0 2px;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.available-services-text-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.available-services-title {
+  gap: 12px;
   font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-text-main, #0F172A);
-  letter-spacing: -0.015em;
-  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.available-services-subtitle {
-  font-family: var(--font-sans);
-  font-size: 13.5px;
-  color: var(--color-text-muted, #64748B);
-  margin: 0;
-}
-
-.available-services-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background-color: var(--color-primary-light, #EBF3FE);
-  color: var(--color-primary, #1D68F2);
-  border: 1px solid rgba(29, 104, 242, 0.15);
-  padding: 6px 14px;
-  border-radius: var(--radius-full, 9999px);
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.badge-pulse-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--color-primary, #1D68F2);
-  display: inline-block;
-}
-
-/* Services Grid - 3 Columns per row with increased width */
-.appointment-services-section {
+/* ==========================================================================
+   Available Services White Box Container (Matching Admin Services Layout)
+   ========================================================================== */
+.book-appointment-content-box {
+  background: #FFFFFF;
+  border: 1px solid #EEF2F6;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  padding: 24px 28px 28px 28px;
+  box-sizing: border-box;
   width: 100%;
 }
 
+.book-appointment-content-box .book-appointment-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0;
+  margin-bottom: 22px;
+}
+
+.book-appointment-section-title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.book-appointment-section-title .section-title-icon {
+  color: #1D68F2;
+  flex-shrink: 0;
+}
+
+/* Services 3-Column Grid */
 .appointment-services-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -76,11 +70,73 @@
   box-sizing: border-box;
 }
 
-/* Responsive Grid Breakpoints */
+/* Empty State / Loading State */
+.book-appointment-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #FFFFFF;
+  border: 1px dashed #CBD5E1;
+  border-radius: 18px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.book-appointment-empty-icon-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.book-appointment-empty-icon-box.spin-icon {
+  animation: book-spin 1.4s linear infinite;
+}
+
+@keyframes book-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.book-appointment-empty-title {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 6px 0;
+}
+
+.book-appointment-empty-desc {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: #64748B;
+  margin: 0;
+  max-width: 440px;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
 @media (max-width: 1024px) {
   .book-appointment-page {
     padding: 0 24px 28px 24px;
     gap: 18px;
+  }
+
+  .book-appointment-content-box {
+    padding: 20px 22px 24px 22px;
   }
 
   .appointment-services-grid {
@@ -89,16 +145,19 @@
   }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 768px) {
   .book-appointment-page {
-    padding: 0 16px 20px 16px;
+    padding: 0 16px 24px 16px;
     gap: 16px;
   }
 
-  .available-services-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+  .book-appointment-content-box {
+    padding: 18px 16px 20px 16px;
+    border-radius: 16px;
+  }
+
+  .book-appointment-content-box .book-appointment-header-row {
+    margin-bottom: 16px;
   }
 
   .appointment-services-grid {
@@ -109,7 +168,17 @@
 
 @media (max-width: 480px) {
   .book-appointment-page {
-    padding: 0 10px 18px 10px;
-    gap: 12px;
+    padding: 0 12px 20px 12px;
+    gap: 14px;
+  }
+
+  .book-appointment-content-box {
+    padding: 16px 12px 18px 12px;
+    border-radius: 14px;
+  }
+
+  .book-appointment-section-title {
+    font-size: 18px;
   }
 }
+

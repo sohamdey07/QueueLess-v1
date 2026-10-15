@@ -41,16 +41,25 @@ export const SettingsModal = ({
     }
   }, [isOpen]);
 
-  // Prevent background scrolling when modal is open
+  // Prevent background scrolling when modal is open and cleanly restore on close
   useEffect(() => {
     if (isOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = originalOverflow || 'unset';
+        document.body.style.overflow = (originalOverflow && originalOverflow !== 'hidden') ? originalOverflow : '';
       };
+    } else {
+      document.body.style.overflow = '';
     }
   }, [isOpen]);
+
+  // Ensure body scroll is unlocked on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   // Handle Escape key to close modal
   useEffect(() => {

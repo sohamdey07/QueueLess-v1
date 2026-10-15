@@ -21,7 +21,7 @@ const actionItems = [
   },
   {
     id: 'join-queue',
-    title: 'Join Queue',
+    title: 'Join Virtual Queue',
     description: 'Already at the venue? Join the virtual queue.',
     icon: Users,
     theme: 'green',
@@ -64,7 +64,6 @@ export const QuickActions = ({ onActionClick }) => {
         </div>
         <div className="quick-actions-title-wrap">
           <h2 className="quick-actions-title">Quick Actions</h2>
-          <p className="quick-actions-subtitle">Everything you need, just a click away.</p>
         </div>
       </div>
 

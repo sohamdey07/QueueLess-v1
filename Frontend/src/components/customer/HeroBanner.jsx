@@ -25,16 +25,7 @@ export const HeroBanner = () => {
           Book your appointments, join the virtual queue and<br className="hero-desc-br" />
           get real-time updates — all in one place.
         </p>
-      </div>
-
-      {/* Overlay Queue Ticket on right card matching screenshot */}
-      <div className="hero-floating-queue-badge">
-        <div className="queue-badge-token-row">
-          <MapPin size={13} className="queue-pin-icon" />
-          <span className="queue-token-number">A-042</span>
-        </div>
-        <span className="queue-token-label">You're in the Queue</span>
-      </div>
+      </div>      
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Menu, User, Settings, LogOut, ShieldCheck } from 'lucide-react';
 import authApi from '../../../services/api/auth.api.js';
 import tokenStorage from '../../../services/storage/tokenStorage.js';
 import CommonAvatar from '../../common/CommonAvatar';
@@ -33,12 +32,10 @@ export const AdminHeader = ({
       : 'AU');
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const profileRef = useRef(null);
-  const notificationRef = useRef(null);
 
   const handleCloseProfileModal = useCallback(() => {
     setIsProfileModalOpen(false);
@@ -69,9 +66,6 @@ export const AdminHeader = ({
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setNotificationsOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -90,9 +84,13 @@ export const AdminHeader = ({
             type="button" 
             className="admin-mobile-menu-btn" 
             onClick={onMenuToggle}
-            aria-label="Open sidebar"
+            aria-label="Open sidebar menu"
           >
-            <Menu size={20} />
+            <span className="modern-hamburger-icon" aria-hidden="true">
+              <span className="hamburger-bar bar-top" />
+              <span className="hamburger-bar bar-middle" />
+              <span className="hamburger-bar bar-bottom" />
+            </span>
           </button>
         )}
         <div className="admin-header-title-block">
@@ -101,39 +99,8 @@ export const AdminHeader = ({
         </div>
       </div>
 
-      {/* Right: Notifications & Profile */}
+      {/* Right: Profile */}
       <div className="admin-header-right">
-        {/* Notification Bell */}
-        <div className="admin-header-notification-wrap" ref={notificationRef}>
-          <button 
-            type="button" 
-            className="admin-header-bell-btn"
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            aria-label="Admin Notifications"
-          >
-            <Bell size={21} className="admin-header-bell-icon" />
-            <span className="admin-header-bell-dot" />
-          </button>
-
-          {/* Notifications Dropdown */}
-          {notificationsOpen && (
-            <div className="admin-header-dropdown-menu admin-notification-popover">
-              <div className="admin-dropdown-header">
-                <span className="admin-dropdown-title">System Alerts</span>
-                <span className="admin-dropdown-badge">2 New</span>
-              </div>
-              <div className="admin-notification-item unread">
-                <p className="admin-notification-text">General Consultation has reached 80% daily capacity.</p>
-                <span className="admin-notification-time">15 mins ago</span>
-              </div>
-              <div className="admin-notification-item unread" style={{ marginTop: '6px' }}>
-                <p className="admin-notification-text">Counter 3 was assigned to Sarah Jenkins.</p>
-                <span className="admin-notification-time">45 mins ago</span>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* User Profile Avatar with Popover */}
         <div className="admin-header-profile-wrap" ref={profileRef}>
           <button 
