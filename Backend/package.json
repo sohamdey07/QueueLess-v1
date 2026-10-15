@@ -8,9 +8,9 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "keywords": [],
-  "author": "",
+  "author": "Soham Kumar Dey",
   "license": "ISC",
-  "description": "",
+  "description": "An end-to-end, real-time virtual queue and appointment scheduling platform designed to eliminate physical waiting lines in clinics, hospitals, banks, and service centers.",
   "devDependencies": {
     "cross-env": "^10.1.0",
     "eslint": "^10.11.0",
