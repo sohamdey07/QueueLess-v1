@@ -19,6 +19,5 @@ const generateAppointmentId = (date = new Date()) => {
 };
 
 export {
-    generateRandomString,
     generateAppointmentId
 };

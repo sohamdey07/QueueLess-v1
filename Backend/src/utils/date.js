@@ -22,10 +22,6 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
-const isToday = (date) => {
-    return formatDate(date) === getTodayDate();
-};
-
 const isValidDateString = (dateString) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
         return false;
@@ -50,8 +46,6 @@ const isPastDate = (dateString) => {
 
 export {
     getTodayDate,
-    formatDate,
-    isToday,
     isValidDateString,
     isPastDate
 };

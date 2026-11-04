@@ -8,7 +8,7 @@ import {
     generateRefreshToken,
     verifyRefreshToken,
     hashedToken} from "../utils/jwt.js";
-import {generateOTP, getOtpHtml, getPasswordResetOtpHtml, getPasswordResetEmailHtml } from "../utils/mail.js";
+import {generateOTP, getOtpHtml, getPasswordResetEmailHtml } from "../utils/mail.js";
 import {hashPassword,comparePassword} from "../utils/password.js";
 import {successResponse,errorResponse} from "../utils/apiResponse.js";
 
@@ -23,6 +23,21 @@ import {
     deletePasswordResetToken
 } from "../services/otp.service.js";
 
+
+const getAuthCookieOptions = (maxAge) => {
+    const isProduction = process.env.NODE_ENV === "production";
+    const sameSite = config.cookieSameSite || (isProduction ? "none" : "lax");
+    const secure = isProduction || sameSite === "none";
+    const options = {
+        httpOnly: true,
+        secure,
+        sameSite
+    };
+    if (maxAge !== undefined) {
+        options.maxAge = maxAge;
+    }
+    return options;
+};
 
 //Register a new user
 export async function registerUser(req,res,next){
@@ -145,8 +160,8 @@ export async function login(req,res,next){
 
         if(!user){
             return errorResponse(res,{
-                statusCode:404,
-                message:"User not found"
+                statusCode:401,
+                message:"Invalid email or password"
             });
         }
 
@@ -157,13 +172,20 @@ export async function login(req,res,next){
             });
         }
 
+        if(user.isActive === false){
+            return errorResponse(res,{
+                statusCode:403,
+                message:"Account has been deactivated. Please contact support."
+            });
+        }
+
         //compare password
         const isPasswordValid = await comparePassword(password, user.password);
 
         if(!isPasswordValid){
             return errorResponse(res,{
                 statusCode:401,
-                message:"Invalid password"
+                message:"Invalid email or password"
             });
         }
 
@@ -182,13 +204,7 @@ export async function login(req,res,next){
 
         const accessToken = generateAccessToken({id:user._id, role:user.role,sessionId:newSession._id});
 
-        const isProduction = process.env.NODE_ENV === "production";
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? "strict" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
+        res.cookie("refreshToken", refreshToken, getAuthCookieOptions(7 * 24 * 60 * 60 * 1000));
 
         return successResponse(res,{
             statusCode:200,
@@ -237,12 +253,7 @@ export async function logout(req,res,next){
         await session.save();
 
         //delete the refresh token cookie
-        const isProduction = process.env.NODE_ENV === "production";
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? "strict" : "lax"
-        });
+        res.clearCookie("refreshToken", getAuthCookieOptions());
 
         return successResponse(res,{
             statusCode:200,
@@ -288,12 +299,18 @@ export async function rotateToken(req,res,next){
             });
         }
 
-        const user = await userModel.findById(session.userId).select("name email role");
+        const user = await userModel.findById(session.userId).select("name email role isActive");
 
-        if(!user){
+        if(!user || user.isActive === false){
+            // Invalidate session immediately so it cannot be used again
+            session.revoke = true;
+            await session.save();
+
+            res.clearCookie("refreshToken", getAuthCookieOptions());
+
             return errorResponse(res,{
-                statusCode:401,
-                message:"Invalid refresh token, user is not logged in"
+                statusCode:403,
+                message:"Account is deactivated. Please contact support."
             });
         }
 
@@ -309,13 +326,7 @@ export async function rotateToken(req,res,next){
         //generate new access token
         const accessToken = generateAccessToken({id:decoded.id, role:user.role, sessionId:session._id});
 
-        const isProduction = process.env.NODE_ENV === "production";
-        res.cookie("refreshToken", newRefreshToken, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? "strict" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
+        res.cookie("refreshToken", newRefreshToken, getAuthCookieOptions(7 * 24 * 60 * 60 * 1000));
 
         return successResponse(res,{
             statusCode:200,
@@ -514,12 +525,7 @@ export async function resetPasswordController(req, res, next) {
         await redisClient.del(`ql:otp:cooldown:password-reset:${email}`);
 
         // Clear refresh token cookie if any exists
-        const isProduction = process.env.NODE_ENV === "production";
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? "strict" : "lax"
-        });
+        res.clearCookie("refreshToken", getAuthCookieOptions());
 
         return successResponse(res, {
             statusCode: 200,
@@ -532,12 +538,6 @@ export async function resetPasswordController(req, res, next) {
         next(err);
     }
 }
-
-// Aliases for convenience
-export const forgotPassword = forgotPasswordController;
-export const verifyResetLink = verifyResetLinkController;
-export const verifyResetOtp = verifyResetOtpController;
-export const resetPassword = resetPasswordController;
 
 
 

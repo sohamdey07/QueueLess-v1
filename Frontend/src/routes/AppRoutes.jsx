@@ -25,7 +25,7 @@ import ResetPasswordScreen from '../pages/auth/ResetPasswordScreen';
 
 import UnderDevelopment from '../pages/customer/UnderDevelopment';
 import { ProtectedRoute, PublicOnlyRoute, getDestinationForRole } from './ProtectedRoute';
-import tokenStorage from '../services/storage/tokenStorage';
+import { useAuth } from '../context/authContextDef';
 
 const extractResetToken = () => {
   if (typeof window === 'undefined') return null;
@@ -37,15 +37,18 @@ const extractResetToken = () => {
 };
 
 const RootRedirect = () => {
+  const { isAuthenticated, userRole, isInitializing } = useAuth();
   const token = extractResetToken();
   if (token) {
     return <Navigate to={`/reset-password/${token}`} replace />;
   }
 
-  const isAuth = tokenStorage.isAuthenticated();
-  if (isAuth) {
-    const role = tokenStorage.getUserRole();
-    return <Navigate to={getDestinationForRole(role)} replace />;
+  if (isInitializing) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={getDestinationForRole(userRole)} replace />;
   }
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
@@ -53,15 +56,18 @@ const RootRedirect = () => {
 };
 
 const OnboardingRoute = () => {
+  const { isAuthenticated, userRole, isInitializing } = useAuth();
   const token = extractResetToken();
   if (token) {
     return <Navigate to={`/reset-password/${token}`} replace />;
   }
 
-  const isAuth = tokenStorage.isAuthenticated();
-  if (isAuth) {
-    const role = tokenStorage.getUserRole();
-    return <Navigate to={getDestinationForRole(role)} replace />;
+  if (isInitializing) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={getDestinationForRole(userRole)} replace />;
   }
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;

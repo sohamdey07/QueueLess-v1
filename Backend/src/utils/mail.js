@@ -59,11 +59,4 @@ function getPasswordResetEmailHtml({ resetUrl }) {
     `;
 }
 
-function getPasswordResetOtpHtml(arg) {
-    if (typeof arg === 'string') {
-        return getPasswordResetEmailHtml({ resetUrl: arg });
-    }
-    return getPasswordResetEmailHtml(arg || {});
-}
-
-export { generateOTP, getOtpHtml, getPasswordResetOtpHtml, getPasswordResetEmailHtml, otpHashing };
+export { generateOTP, getOtpHtml, getPasswordResetEmailHtml, otpHashing };

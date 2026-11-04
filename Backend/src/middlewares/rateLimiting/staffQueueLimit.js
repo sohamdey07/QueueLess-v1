@@ -18,4 +18,16 @@ const staffQueueLimiter = rateLimit({
     }
 });
 
-export {staffQueueLimiter};
+const tvDisplayLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 60, // Limit each IP to 60 requests per minute
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        statusCode: 429,
+        success: false,
+        message: "Too many TV display requests from this IP. Please slow down."
+    }
+});
+
+export { staffQueueLimiter, tvDisplayLimiter };

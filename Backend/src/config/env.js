@@ -38,7 +38,7 @@ if (!process.env.GOOGLE_USER) {
 }
 
 const config = {
-    port: process.env.PORT,
+    port: process.env.PORT || 3000,
     logLevel: process.env.LOG_LEVEL || 'info',
     mongodbUri: process.env.MONGODB_URI,
     redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
@@ -49,6 +49,7 @@ const config = {
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     googleRefreshToken: process.env.GOOGLE_REFRESH_TOKEN,
     googleUser: process.env.GOOGLE_USER,
+    cookieSameSite: process.env.COOKIE_SAME_SITE,
     
     testQueueId: process.env.TEST_QUEUE_ID,
     testStaff1AccessToken: process.env.TEST_STAFF_1_ACCESS_TOKEN,

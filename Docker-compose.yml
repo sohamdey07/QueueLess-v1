@@ -9,5 +9,36 @@ services:
       - redis_data:/data
     command: redis-server --appendonly yes
 
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: queueless-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - ./Backend/.env
+    depends_on:
+      - redis
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-/api/v1}
+        - VITE_SOCKET_URL=${VITE_SOCKET_URL:-http://localhost:3000}
+    container_name: queueless-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
 volumes:
   redis_data:

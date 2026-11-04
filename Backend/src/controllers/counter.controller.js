@@ -207,6 +207,16 @@ export async function updateCounter(req, res, next) {
             });
         }
 
+        // Security: Prevent Staff IDOR. Staff can only toggle/update their own assigned counter.
+        if (req.user?.role === "STAFF") {
+            if (!counter.assignedStaffId || counter.assignedStaffId.toString() !== req.user.id) {
+                return errorResponse(res, {
+                    statusCode: 403,
+                    message: "Unauthorized: you can only update your own assigned counter"
+                });
+            }
+        }
+
         const updateData = {};
 
         if (name !== undefined) {

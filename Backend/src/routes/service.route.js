@@ -13,7 +13,17 @@ import {
 } from "../validations/service.validation.js";
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+    fileFilter: (req, file, cb) => {
+        const allowedMime = ["image/jpeg", "image/png", "image/webp"];
+        if (allowedMime.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only JPEG, PNG, and WebP images are permitted"), false);
+        }
+    }
+ });
 
 // POST /api/v1/service OR /api/v1/service/create -- ADMIN ACCESS
 const handleCreateService = [

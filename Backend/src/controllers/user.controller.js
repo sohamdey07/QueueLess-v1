@@ -1,5 +1,6 @@
 import userModel from "../models/user.model.js";
 import counterModel from "../models/counter.model.js";
+import sessionModel from "../models/session.model.js";
 import { hashPassword, comparePassword } from "../utils/password.js";
 import { successResponse, errorResponse } from "../utils/apiResponse.js";
 
@@ -171,15 +172,21 @@ export async function updateUser(req, res, next) {
                     });
                 }
 
-                // If currentPassword is provided, verify it against existing user.password
-                if (currentPassword) {
-                    const isCurrentValid = await comparePassword(String(currentPassword).trim(), user.password);
-                    if (!isCurrentValid) {
-                        return errorResponse(res, {
-                            statusCode: 400,
-                            message: "Current password is incorrect. Please verify."
-                        });
-                    }
+                // Security: Current password is strictly required to change password
+                if (!currentPassword || !String(currentPassword).trim()) {
+                    return errorResponse(res, {
+                        statusCode: 400,
+                        message: "Current password is required to set a new password."
+                    });
+                }
+
+                // Verify currentPassword against existing user.password
+                const isCurrentValid = await comparePassword(String(currentPassword).trim(), user.password);
+                if (!isCurrentValid) {
+                    return errorResponse(res, {
+                        statusCode: 400,
+                        message: "Current password is incorrect. Please verify."
+                    });
                 }
 
                 // Check if new password is identical to the current password
@@ -240,6 +247,14 @@ export async function toggleUserStatus(req, res, next) {
         user.isActive = isActive !== undefined ? Boolean(isActive) : !user.isActive;
         await user.save();
 
+        // If account is deactivated, revoke all active sessions immediately
+        if (user.isActive === false) {
+            await sessionModel.updateMany(
+                { userId: user._id, revoke: false },
+                { $set: { revoke: true } }
+            );
+        }
+
         const sanitized = user.toObject();
         delete sanitized.password;
 
@@ -294,6 +309,9 @@ export async function deleteUser(req, res, next) {
                 { $set: { assignedStaffId: null } }
             );
         }
+
+        // Invalidate and delete all active sessions for this user
+        await sessionModel.deleteMany({ userId: user._id });
 
         await userModel.findByIdAndDelete(userId);
 

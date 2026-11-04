@@ -31,6 +31,9 @@ export async function refreshAccessToken() {
   }
 
   activeRefreshPromise = (async () => {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 8000) : null;
+
     try {
       const response = await fetch(`${BASE_URL}/auth/rotate-token`, {
         method: 'POST',
@@ -38,6 +41,7 @@ export async function refreshAccessToken() {
           'Content-Type': 'application/json',
         },
         credentials: 'include', // sends/receives httpOnly refreshToken cookie
+        signal: controller ? controller.signal : undefined,
       });
 
       let data = null;
@@ -68,21 +72,33 @@ export async function refreshAccessToken() {
 
       return accessToken;
     } catch (error) {
-      // Refresh token is expired or invalidated - clear session
-      tokenStorage.clearAuth();
+      // If server explicitly rejected session (401 Unauthorized or 403 Forbidden)
+      if (error.status === 401 || error.status === 403) {
+        tokenStorage.clearAuth();
 
-      // In browser environment, if currently on a protected route, redirect to login
-      if (typeof window !== 'undefined') {
-        const hash = window.location.hash || '';
-        const isAuthPage =
-          hash.includes('/login') || hash.includes('/register') || hash.includes('/onboarding');
-        if (!isAuthPage) {
-          window.location.hash = '#/login';
+        // In browser environment, if currently on a protected route, redirect to login
+        if (typeof window !== 'undefined') {
+          const hash = window.location.hash || '';
+          const isAuthPage =
+            hash.includes('/login') ||
+            hash.includes('/register') ||
+            hash.includes('/onboarding') ||
+            hash.includes('/verify-otp') ||
+            hash.includes('/forgot-password') ||
+            hash.includes('/reset-password') ||
+            hash.includes('/tv-display');
+          if (!isAuthPage) {
+            window.location.hash = '#/login';
+          }
         }
+      } else {
+        // Transient network or connection abort error
+        tokenStorage.setAccessToken(null);
       }
 
       throw error;
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       activeRefreshPromise = null;
     }
   })();
@@ -102,9 +118,24 @@ export async function apiClient(endpoint, options = {}) {
   const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${BASE_URL}${formattedEndpoint}`;
 
-  // 1. Proactive Token Refresh:
-  // If the user has an existing session and the access token is expired or expiring within 30s,
-  // rotate it before making the request (bypasses auth endpoints and retries).
+  // 1. Proactive Token Hydration on Reload:
+  // If the user has an existing session hint but in-memory access token is null (e.g. page reload),
+  // hydrate it via silent refresh before dispatching the request.
+  if (
+    !_retry &&
+    !isAuthEndpoint(formattedEndpoint) &&
+    !tokenStorage.getAccessToken() &&
+    tokenStorage.hasSession()
+  ) {
+    try {
+      await refreshAccessToken();
+    } catch (e) {
+      console.warn('Silent token hydration attempt failed:', e.message);
+    }
+  }
+
+  // 2. Proactive Token Refresh on Expiry:
+  // If the access token is expiring within 30 seconds, rotate it beforehand.
   if (
     !_retry &&
     !isAuthEndpoint(formattedEndpoint) &&
@@ -114,7 +145,6 @@ export async function apiClient(endpoint, options = {}) {
     try {
       await refreshAccessToken();
     } catch (e) {
-      // Proactive refresh failed; proceed with existing token, will handle on 401
       console.warn('Proactive token refresh attempt failed, proceeding with request:', e.message);
     }
   }
@@ -128,7 +158,7 @@ export async function apiClient(endpoint, options = {}) {
     defaultHeaders['Content-Type'] = 'application/json';
   }
 
-  // Attach access token if available
+  // Attach in-memory access token if available
   const token = tokenStorage.getAccessToken();
   if (token) {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
@@ -154,13 +184,13 @@ export async function apiClient(endpoint, options = {}) {
   try {
     const response = await fetch(url, config);
 
-    // 2. Reactive Token Refresh:
+    // 3. Reactive Token Refresh:
     // If the server returns 401 Unauthorized, rotate token and retry original request once.
     if (
       response.status === 401 &&
       !_retry &&
       !isAuthEndpoint(formattedEndpoint) &&
-      tokenStorage.isAuthenticated()
+      (tokenStorage.isAuthenticated() || tokenStorage.hasSession())
     ) {
       const newAccessToken = await refreshAccessToken();
       if (newAccessToken) {

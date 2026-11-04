@@ -4,7 +4,7 @@ import {queueParamsSchema,queueEntryParamsSchema} from "../validations/queue.val
 import {validate} from "../middlewares/validate.middleware.js";
 import { authorizeRoles } from "../middlewares/role.middleware.js";
 import authenticate from "../middlewares/auth.middleware.js";
-import { staffQueueLimiter } from "../middlewares/rateLimiting/staffQueueLimit.js";
+import { staffQueueLimiter, tvDisplayLimiter } from "../middlewares/rateLimiting/staffQueueLimit.js";
 
 
 const router = express.Router();
@@ -56,6 +56,7 @@ router.post(
 //GET /api/v1/queue/tv-display
 router.get(
     "/tv-display",
+    tvDisplayLimiter,
     queueFunction.getTvDisplayOverview
 );
 

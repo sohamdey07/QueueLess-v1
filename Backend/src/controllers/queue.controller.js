@@ -4,7 +4,6 @@ import queueModel from "../models/queue.model.js";
 import queueEntryModel from "../models/queueEntry.model.js";
 import appointmentModel from "../models/appointment.model.js";
 import counterModel from "../models/counter.model.js";
-import serviceModel from "../models/service.model.js";
 import availabilityModel from "../models/dailyAvailability.model.js";
 import { getTodayDate } from "../utils/date.js";
 

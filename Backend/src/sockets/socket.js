@@ -7,9 +7,14 @@ import config from "../config/env.js";
 let io;
 
 const initializeSocket = (server) => {
+    const socketOrigins = [
+        ...(config.clientUrl ? config.clientUrl.split(',').map(u => u.trim()) : ["http://localhost:5173"]),
+        "http://127.0.0.1:5173"
+    ];
+
     io = new Server(server, {
         cors: {
-            origin: config.clientUrl,
+            origin: socketOrigins,
             credentials: true
         }
     });

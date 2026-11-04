@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import tokenStorage from '../services/storage/tokenStorage.js';
+import { useAuth } from '../context/authContextDef.js';
 
 /**
  * Helper to determine target portal based on user role
@@ -18,11 +18,15 @@ export const getDestinationForRole = (role) => {
  */
 export const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
-  const isAuth = tokenStorage.isAuthenticated();
-  const userRole = tokenStorage.getUserRole();
+  const { isAuthenticated, userRole, isInitializing } = useAuth();
+
+  // If silent refresh is still running, prevent premature redirection
+  if (isInitializing) {
+    return null;
+  }
 
   // Without login, no user can go to any portal
-  if (!isAuth) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -43,10 +47,13 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
  * If user is already authenticated with an access token, redirects them to their portal.
  */
 export const PublicOnlyRoute = ({ children }) => {
-  const isAuth = tokenStorage.isAuthenticated();
-  const userRole = tokenStorage.getUserRole();
+  const { isAuthenticated, userRole, isInitializing } = useAuth();
 
-  if (isAuth) {
+  if (isInitializing) {
+    return null;
+  }
+
+  if (isAuthenticated) {
     return <Navigate to={getDestinationForRole(userRole)} replace />;
   }
 
